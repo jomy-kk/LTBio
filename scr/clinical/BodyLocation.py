@@ -1,7 +1,7 @@
-from enum import Enum, unique
+from enum import unique, Enum
 
 @unique
-class BodyLocation(Enum):
+class BodyLocation(str, Enum):
     CHEST = "Chest"
     V1 = "V1 chest lead"
     V2 = "V2 chest lead"
@@ -35,8 +35,8 @@ class BodyLocation(Enum):
     C3 = "Central 3"
     C4 = "Central 4"
     PZ = "Parietal Z"
-    P3 = "Central 3"
-    P4 = "Central 4"
+    P3 = "Parietal 3"
+    P4 = "Parietal 4"
     O1 = "Occipital 1"
     O2 = "Occipital 2"
     T3 = "Temporal 3"

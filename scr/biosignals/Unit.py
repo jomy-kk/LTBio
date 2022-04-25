@@ -1,11 +1,9 @@
-from enum import Enum, unique
+from enum import unique, Enum
 
 @unique
-class Unit(Enum):
-    VOLT = "Volt"
+class Unit(str, Enum):
+    V = "Volt"
     G = "G"
-
-
 
 """
 FOR A FUTURE VERSION
