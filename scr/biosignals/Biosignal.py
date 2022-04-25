@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-
-from typing import Dict, Union
+from datetime import datetime
+from typing import Dict
 
 from scr.biosignals.Timeseries import Timeseries
 from scr.biosignals.BiosignalSource import BiosignalSource
@@ -11,30 +11,42 @@ from scr.clinical.Patient import Patient
 
 class Biosignal(ABC):
 
-    def __init__(self, timeseries: Dict[Union[str, BodyLocation], Timeseries], patient:Patient=None, source:BiosignalSource=None, acquisition_location:BodyLocation=None, name:str=None):
+    def __init__(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | datetime, source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None):
         self.__name = name
-        self.__timeseries = timeseries
-        self.__n_channels = len(timeseries)
-        self.__patient = patient
         self.__source = source
         self.__acquisition_location = acquisition_location
+        self.__patient = patient
+
+        # Handle timeseries
+        if isinstance(timeseries, str): # this should be a filepath -> read samples from file
+            if source is None:
+                raise ValueError("To read a biosignal from a file, specify the biosignal source.")
+            else:
+                self.__timeseries = self.source._read(path=timeseries, type=type(self))
+        if isinstance(timeseries, datetime): # this should be a time interval -> fetch from database
+            pass # TODO
+        if isinstance(timeseries, dict): # this should be the {*: Timeseries} -> save samples directly
+            self.__timeseries = timeseries
+
+        self.__n_channels = len(timeseries)
 
 
     def __getitem__(self, channel):
         '''The built-in slicing and indexing ([x:y]) operations.'''
-        if channel.stop != None:
-            raise Exception("Biosignals cannot be sliced. Only one channel may be indexed.")
-        else:
+        try:
+            x = channel.stop
+            raise IndexError("Biosignals cannot be sliced. Only one channel may be indexed.")
+        except AttributeError: # attribute 'stop' should not exist
             if self.n_channels == 1:
                 if isinstance(channel, (str, BodyLocation)):
-                    raise Exception("{} has only 1 channel. No indexing needed.".format(self.__name))
+                    raise IndexError("{} has only 1 channel. No channel indexing needed. Access samples directly with [] operator.".format(self.__name if self.__name is not None else 'This biosignal'))
                 if type(channel) is int:
-                    return (self.__timeseries[0])[channel]
+                    return (self.__timeseries[self.channel_names[0]])[channel]
             return self.__timeseries[channel]
 
     @property
     def channel_names(self):
-        return self.__timeseries.keys()
+        return tuple(self.__timeseries.keys())
 
     @property
     def name(self):
@@ -46,11 +58,11 @@ class Biosignal(ABC):
 
     @property
     def patient_code(self):
-        return self.__patient.getCode()
+        return self.__patient.code
 
     @property
     def patient_conditions(self) -> [MedicalCondition]:
-        return self.__patient.getConditions()
+        return self.__patient.conditions
 
     @property
     def acquisition_location(self):
@@ -71,5 +83,5 @@ class Biosignal(ABC):
     def __str__(self):
         return "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nSource: {}".format(self.name, self.type, self.acquisition_location, self.n_channels, self.source)
 
-    def filter(self, filter_design:Filter):
-        pass # TODO
+    #def filter(self, filter_design:Filter):
+     #   pass # TODO
