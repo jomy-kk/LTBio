@@ -1,4 +1,22 @@
+###################################
+
+# IT - PreEpiSeizures
+
+# Package: clinical
+# File: Patient
+# Description: Class Patient to describe their clinical metadata.
+
+# Contributors: João Saraiva
+# Last update: 23/04/2022
+
+###################################
+
 from typing import Tuple
+
+from clinical.MedicalCondition import MedicalCondition
+from clinical.Medication import Medication
+from clinical.SurgicalProcedure import SurgicalProcedure
+
 
 class Patient():
     def __init__(self, code, name:str=None, age:int=None, conditions:Tuple[MedicalCondition]=(), medications:Tuple[Medication]=(), procedures:Tuple[SurgicalProcedure]=()):
