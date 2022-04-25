@@ -25,10 +25,12 @@ class BiosignalSource(ABC):
     def __eq__(self, other):
         return type(self) == type(other)
 
+    @staticmethod
     @abstractmethod
-    def read(self, path:str, destination:Biosignal):
+    def _read(path:str, type):
         pass
 
+    @staticmethod
     @abstractmethod
-    def write(self, path:str):
+    def _write(path:str):
         pass
