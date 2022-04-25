@@ -20,8 +20,8 @@ class SurgicalProcedure(ABC):
         self.outcome = outcome
         self.date = date
 
-    @abstractmethod
     @property
+    @abstractmethod
     def name(self):
         '''Get the name of the condition. This getter should be overwritten in every subclass.'''
         pass

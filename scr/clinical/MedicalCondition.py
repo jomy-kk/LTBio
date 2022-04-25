@@ -26,8 +26,8 @@ class MedicalCondition(ABC):
     def years_since_diagnosis(self, years: int):
         self.__years_since_diagnosis = years
 
-    @abstractmethod
     @property
+    @abstractmethod
     def name(self):
         '''Get the name of the condition. This getter should be overwritten in every subclass.'''
         pass

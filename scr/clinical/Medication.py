@@ -12,16 +12,18 @@
 ###################################
 
 from abc import ABC, abstractmethod
+from scr.biosignals.Unit import Unit
+
 
 class Medication(ABC):
 
-    def __init__(self, dose:float=None, unit:Unit=None, frequency:Frequency=None):
+    def __init__(self, dose:float=None, unit:Unit=None, frequency:str=None):
         self.frequency = frequency
         self.unit = unit
         self.dose = dose
 
-    @abstractmethod
     @property
+    @abstractmethod
     def name(self):
         '''Get the name of the condition. This getter should be overwritten in every subclass.'''
         pass
