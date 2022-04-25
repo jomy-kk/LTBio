@@ -61,10 +61,14 @@ class Timeseries():
 
     def __getitem__(self, item):
         '''The built-in slicing and indexing ([x:y]) operations.'''
-        if item.stop != None:
-            return self.__get_samples(item.start, item.stop)
-        else:
-            return self.__samples[int(item.timestamp() * self.__sampling_frequency)]
+        try:
+            if item.stop != None:
+                return self.__get_samples(item.start, item.stop)
+        except AttributeError: # when attribute 'stop' does not exist
+            if isinstance(item, str | datetime):
+                return self.__samples[int(item.timestamp() * self.__sampling_frequency)]
+            elif isinstance(item, int):
+                return self.__samples[item]
 
     def trim(self, initial_datetime: datetime, final_datetime: datetime):
         '''Trims the samples of the Timeseries and deletes the remaining.'''
