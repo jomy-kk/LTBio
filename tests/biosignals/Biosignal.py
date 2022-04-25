@@ -1,10 +1,10 @@
 import unittest
 
-from biosignals.Timeseries import Timeseries
-from biosignals.Unit import Unit
-from clinical.BodyLocation import BodyLocation
-from clinical.Epilepsy import Epilepsy
-from clinical.Patient import Patient
+from scr.biosignals.Timeseries import Timeseries
+from scr.biosignals.Unit import Unit
+from scr.clinical.BodyLocation import BodyLocation
+from scr.clinical.Epilepsy import Epilepsy
+from scr.clinical.Patient import Patient
 from scr.biosignals.ECG import ECG
 from scr.biosignals.HSM import HSM
 from scr.clinical.BodyLocation import BodyLocation
