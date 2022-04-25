@@ -1,12 +1,17 @@
 from abc import ABC, abstractmethod
 
-from typing import Dict
+from typing import Dict, Union
 
 from Timeseries import Timeseries
+from biosignals.BiosignalSource import BiosignalSource
+from clinical.BodyLocation import BodyLocation
+from clinical.MedicalCondition import MedicalCondition
+from clinical.Patient import Patient
+
 
 class Biosignal(ABC):
 
-    def __init__(self, timeseries: Dict[str, Timeseries], patient:Patient=None, source:BiosignalSource=None, acquisition_location:BodyLocation=None, name:str=None):
+    def __init__(self, timeseries: Dict[Union[str, BodyLocation], Timeseries], patient:Patient=None, source:BiosignalSource=None, acquisition_location:BodyLocation=None, name:str=None):
         self.__name = name
         self.__timeseries = timeseries
         self.__n_channels = len(timeseries)
@@ -20,6 +25,11 @@ class Biosignal(ABC):
         if channel.stop != None:
             raise Exception("Biosignals cannot be sliced. Only one channel may be indexed.")
         else:
+            if self.n_channels == 1:
+                if isinstance(channel, (str, BodyLocation)):
+                    raise Exception("{} has only 1 channel. No indexing needed.".format(self.__name))
+                if type(channel) is int:
+                    return (self.__timeseries[0])[channel]
             return self.__timeseries[channel]
 
     @property
@@ -59,7 +69,7 @@ class Biosignal(ABC):
         return self.__n_channels
 
     def __str__(self):
-        return "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nSource: {}".format(self.getName(), self.getType(), self.getAcquisitionLocation(), self.getNumberChannels(), self.getSource())
+        return "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nSource: {}".format(self.name, self.type, self.acquisition_location, self.n_channels, self.source)
 
     def filter(self, filter_design:Filter):
         pass # TODO
