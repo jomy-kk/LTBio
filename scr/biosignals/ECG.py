@@ -1,9 +1,9 @@
-from Biosignal import Biosignal
+from scr.biosignals.Biosignal import Biosignal
 from typing import Dict, Type, Union
-from Timeseries import Timeseries
-from biosignals.BiosignalSource import BiosignalSource
-from clinical.BodyLocation import BodyLocation
-from clinical.Patient import Patient
+from scr.biosignals.Timeseries import Timeseries
+from scr.biosignals.BiosignalSource import BiosignalSource
+from scr.clinical.BodyLocation import BodyLocation
+from scr.clinical.Patient import Patient
 
 
 class ECG(Biosignal):

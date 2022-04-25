@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 
 from typing import Dict, Union
 
-from Timeseries import Timeseries
-from biosignals.BiosignalSource import BiosignalSource
-from clinical.BodyLocation import BodyLocation
-from clinical.MedicalCondition import MedicalCondition
-from clinical.Patient import Patient
+from scr.biosignals.Timeseries import Timeseries
+from scr.biosignals.BiosignalSource import BiosignalSource
+from scr.clinical.BodyLocation import BodyLocation
+from scr.clinical.MedicalCondition import MedicalCondition
+from scr.clinical.Patient import Patient
 
 
 class Biosignal(ABC):
