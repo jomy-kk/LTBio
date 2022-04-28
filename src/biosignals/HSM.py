@@ -7,7 +7,7 @@
 # Description: Procedures to read and write datafiles from Hospital de Santa Maria.
 
 # Contributors: João Saraiva, Mariana Abreu
-# Last update: 23/04/2022
+# Last update: 28/04/2022
 
 ###################################
 from os import listdir, path
@@ -47,7 +47,9 @@ class HSM(BiosignalSource):
         # get channels that correspond to type (POL Ecg = type ecg)
         find_label = [hch for hch in hsm_data.ch_names if sensor.lower() in hch.lower()]
         # samples of timeseries
-        samples = hsm_data[find_label]
+        hsm_sig = hsm_data[find_label]
+        samples = hsm_sig[1] # times
+        samples = np.vstack((samples, hsm_sig[0].T))
         # initial datetime
         initial_time = hsm_data.info['meas_date']
         # sampling frequency

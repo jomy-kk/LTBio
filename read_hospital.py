@@ -219,7 +219,7 @@ if __name__ == '__main__':
     Example Script - Computing segmentation
     """
     # read_trc_events('F:\\Patients_HEM\\PAT_3_5_2021_FLRB\\hospital', 'F:\\Patients_HEM\\PAT_3_5_2021_FLRB')
-    read_edf('Patient103')
+    read_trc('PAT_413')
     print('here')
 
     # to transform hospital files into readable dataframes
