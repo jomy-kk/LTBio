@@ -13,7 +13,7 @@
 
 from enum import Enum, unique
 from datetime import datetime
-from scr.clinical.MedicalCondition import MedicalCondition
+from src.clinical.MedicalCondition import MedicalCondition
 
 @unique
 class SeizureOnset(Enum):

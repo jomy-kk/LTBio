@@ -13,9 +13,9 @@
 
 from typing import Tuple
 
-from clinical.MedicalCondition import MedicalCondition
-from clinical.Medication import Medication
-from clinical.SurgicalProcedure import SurgicalProcedure
+from src.clinical.MedicalCondition import MedicalCondition
+from src.clinical.Medication import Medication
+from src.clinical.SurgicalProcedure import SurgicalProcedure
 
 
 class Patient():

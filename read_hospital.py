@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import mne
 import neo
 
-from read_files import read_report as rr
+import read_report as rr
 
 
 def read_trc_events(trc_dir, save_dir):
@@ -182,12 +182,13 @@ def open_edf_file(list):
 
 def read_edf(patient):
 
-    patient_dir = os.path.join('E:\\Patients_HSM', patient, 'HSM')
+    patient_dir = os.path.join('G:\\PreEpiSeizures\\Patients_HSM', patient, 'HSM')
 
     assert os.path.isdir(patient_dir)
     assert os.listdir(patient_dir) != []
 
     edf_files = [file for file in sorted(os.listdir(patient_dir)) if file.endswith('.edf')]
+    open_edf_file(['FA7775S3.edf', patient_dir, ['ecg']])
     map(open_edf_file, [[file, patient_dir, ['ecg', 'emg']] for file in edf_files])
 
 
@@ -218,10 +219,12 @@ if __name__ == '__main__':
     Example Script - Computing segmentation
     """
     # read_trc_events('F:\\Patients_HEM\\PAT_3_5_2021_FLRB\\hospital', 'F:\\Patients_HEM\\PAT_3_5_2021_FLRB')
+    read_edf('Patient103')
+    print('here')
 
     # to transform hospital files into readable dataframes
-    main_dir = 'F:\\PreEpiSeizures\\Patients_HEM\\Retrospective'
-    for pat in os.listdir(main_dir):
-        read_trc(pat, main_dir)
+    # main_dir = 'F:\\PreEpiSeizures\\Patients_HEM\\Retrospective'
+    # for pat in os.listdir(main_dir):
+    #    read_trc(pat, main_dir)
 
 
