@@ -10,11 +10,13 @@
 # Last update: 23/04/2022
 
 ###################################
-from os import listdir
+from os import listdir, path
 import numpy as np
 from mne.io import read_raw_edf
 
 from src.biosignals.BiosignalSource import BiosignalSource
+from src.biosignals.Timeseries import Timeseries
+
 
 class HSM(BiosignalSource):
     '''This class represents the source of Hospital de Santa Maria (Lisboa, PT) and includes methods to read and write
@@ -26,30 +28,47 @@ class HSM(BiosignalSource):
     def __str__(self):
         return "Hospital de Santa Maria"
 
+    def __read_edf(list, metadata=False):
+
+        """
+        Reads one edf file
+        If metadata is True - returns list of channels and sampling frequency and initial datetime
+        Else return arrays one for each channel
+        """
+        dirfile = list[0]
+        sensor = list[1]
+        # get edf data
+        hsm_data = read_raw_edf(dirfile)
+        # get channels that correspond to type (POL Ecg = type ecg)
+        channel_list = [hch for hch in hsm_data.ch_names if sensor.lower() in hch.lower()]
+        # initial datetime
+        if metadata:
+            return channel_list, hsm_data.info['sfreq'], hsm_data.info['meas_date']
+        # structure of hsm_sig is two arrays, the 1st has one array for each channel and the 2nd is an int-time array
+        hsm_sig = hsm_data[channel_list]
+
+        return hsm_data.info['meas_date'], hsm_sig[0]
+
     @staticmethod
-    def _read(path, type):
+    def _read(dir, type):
         '''Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.'''
-        # FIXME
         """
-        def get_signal(filename):
-        log("Collecting {}...".format(filename))
-        signal = ((pd.read_hdf(path.join(self.ecg_path, filename)))['ECG']).to_numpy()
-        sf = 1000  # in Hz
-        n = len(signal)
-        t = n / sf
-        signal = resample(signal, int(360 * t))
-        return signal
-        
-        filenames = [file for file in sorted(listdir(self.ecg_path)) if file.endswith('.edf')]
-        if filenames == []:
-        log("There are no EDF files in {}".format(self.ecg_path), 2)
-        else:
-        self.data = np.array([])
-        for filename in filenames:
-        get_ecg_from_edf(path.join(self.ecg_path, filename))
-        self.data = np.append(self.data, get_signal())
-        return self.data
-        
-        EdfReader.(path)
         """
+        # first a list is created with all the filenames that end in .edf and are inside the chosen dir
+        # this is a list of lists where the second column is the type of channel to extract
+        all_files = sorted([[path.join(dir, file), type] for file in listdir(dir) if file.endswith('.edf')])
+        # run the edf read function for all files in list all_files
+        all_channels = HSM.__read_edf(all_files[0], metadata=True)
+        all_edf = list(map(HSM.__read_edf, all_files))
+        channels = all_channels[0]
+        sfreq = all_channels[1]
+        channels_arrays = []
+        new_dict = {}
+        for ch in range(len(channels)):
+            samples = {edf_data[0]: edf_data[1][ch] for edf_data in all_edf}
+            new_timeseries = Timeseries(samples=samples, sampling_frequency=sfreq, name=channels[ch],
+                                        initial_datetime=all_edf[0][0])
+            new_dict[channels[ch]] = new_timeseries
+
+        return new_dict
 

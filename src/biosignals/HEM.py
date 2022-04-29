@@ -27,7 +27,7 @@ class HEM(BiosignalSource):
     def __str__(self):
         return "Hospital Egas Moniz"
 
-    def __read_trc(list):
+    def __read_trc(list, metadata=False):
 
         """
         This function opens an edf file and saves the columns containing the label "sensor" in an hdf5 file.
@@ -91,16 +91,11 @@ class HEM(BiosignalSource):
         ch_list = seg_micromed.header['signal_channels']['name']
         # get channels that correspond to type (POL Ecg = type ecg)
         find_idx = [hch for hch in range(len(ch_list)) if sensor.lower() in ch_list[hch].lower()]
-        # samples of timeseries
-        samples = hem_sig.times
-        samples = np.vstack((samples, np.array(hem_sig[:, find_idx]).T))
-        # initial datetime
-        initial_time = hem_data.rec_datetime
-        # sampling frequency
-        sfreq = hem_sig.sampling_rate
-        # units = hem_sig.units
-        # return timeseries object
-        return Timeseries(samples=samples, initial_datetime=initial_time, sampling_frequency=sfreq)
+        # returns ch_list of interest, sampling frequency, initial datetime
+        if metadata:
+            return ch_list[find_idx], hem_sig.sampling_rate, hem_data.rec_datetime, hem_sig.units
+        # returns initial date and samples
+        return hem_data.rec_datetime, np.array(hem_sig[:, find_idx]).T
 
     @staticmethod
     def _read(dir, type):
@@ -109,12 +104,26 @@ class HEM(BiosignalSource):
         # this is a list of lists where the second column is the type of channel to extract
         all_files = sorted([[path.join(dir, file), type] for file in listdir(dir) if file.lower().endswith('.trc')])
         # run the edf read function for all files in list all_files
-        all_edf = list(map(HEM.__read_trc, all_files))
+        all_channels = HEM.__read_trc(all_files[0], metadata=True)
+        print(all_channels)
+        all_trc = list(map(HEM.__read_trc, all_files))
+        # first a list is created with all the filenames that end in .edf and are inside the chosen dir
+        # this is a list of lists where the second column is the type of channel to extract
+        all_files = sorted([[path.join(dir, file), type] for file in listdir(dir) if file.endswith('.edf')])
+        # run the trc read function for all files in list all_files
+        channels = all_channels[0]
+        sfreq = all_channels[1]
+        channels_arrays = []
+        new_dict = {}
+        for ch in range(len(channels)):
+            samples = {trc_data[0]: trc_data[1][ch] for trc_data in all_trc}
+            new_timeseries = Timeseries(samples=samples, sampling_frequency=sfreq, name=channels[ch],
+                                        initial_datetime=all_trc[0][0])
+            new_dict[channels[ch]] = new_timeseries
 
-        return all_edf
+        return new_dict
 
     @staticmethod
     def _write(type):
 
         print('Nothing')
-
