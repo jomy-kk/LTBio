@@ -58,16 +58,14 @@ class HSM(BiosignalSource):
         # this is a list of lists where the second column is the type of channel to extract
         all_files = sorted([[path.join(dir, file), type] for file in listdir(dir) if file.endswith('.edf')])
         # run the edf read function for all files in list all_files
-        all_channels = HSM.__read_edf(all_files[0], metadata=True)
+        channels, sfreq, start_datetime = HSM.__read_edf(all_files[0], metadata=True)
         all_edf = list(map(HSM.__read_edf, all_files))
-        channels = all_channels[0]
-        sfreq = all_channels[1]
         channels_arrays = []
         new_dict = {}
         for ch in range(len(channels)):
             samples = {edf_data[0]: edf_data[1][ch] for edf_data in all_edf}
             new_timeseries = Timeseries(samples=samples, sampling_frequency=sfreq, name=channels[ch],
-                                        initial_datetime=all_edf[0][0])
+                                        initial_datetime=start_datetime)
             new_dict[channels[ch]] = new_timeseries
 
         return new_dict
