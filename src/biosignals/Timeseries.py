@@ -1,7 +1,7 @@
 from datetime import datetime
 from numpy import array
 
-from scr.biosignals.Unit import Unit
+from src.biosignals.Unit import Unit
 
 class Timeseries():
     def __init__(self, samples:array, sampling_frequency:float, units:Unit, initial_datetime:datetime=None, name:str=None):

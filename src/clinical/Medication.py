@@ -12,7 +12,7 @@
 ###################################
 
 from abc import ABC, abstractmethod
-from scr.biosignals.Unit import Unit
+from src.biosignals.Unit import Unit
 
 
 class Medication(ABC):

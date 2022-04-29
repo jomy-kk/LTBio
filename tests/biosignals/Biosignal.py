@@ -1,12 +1,12 @@
 import unittest
 
-from scr.biosignals.Timeseries import Timeseries
-from scr.biosignals.Unit import Unit
-from scr.clinical.BodyLocation import BodyLocation
-from scr.clinical.Epilepsy import Epilepsy
-from scr.clinical.Patient import Patient
-from scr.biosignals.ECG import ECG
-from scr.biosignals.HSM import HSM
+from src.biosignals.Timeseries import Timeseries
+from src.biosignals.Unit import Unit
+from src.clinical.BodyLocation import BodyLocation
+from src.clinical.Epilepsy import Epilepsy
+from src.clinical.Patient import Patient
+from src.biosignals.ECG import ECG
+from src.biosignals.HSM import HSM
 
 
 class BiosignalTestCase(unittest.TestCase):

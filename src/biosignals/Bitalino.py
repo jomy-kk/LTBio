@@ -1,4 +1,4 @@
-from scr.biosignals.BiosignalSource import BiosignalSource
+from src.biosignals.BiosignalSource import BiosignalSource
 
 class Bitalino(BiosignalSource):
     def __init__(self):

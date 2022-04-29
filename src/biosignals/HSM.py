@@ -14,7 +14,7 @@ from os import listdir
 import numpy as np
 from mne.io import read_raw_edf
 
-from scr.biosignals.BiosignalSource import BiosignalSource
+from src.biosignals.BiosignalSource import BiosignalSource
 
 class HSM(BiosignalSource):
     '''This class represents the source of Hospital de Santa Maria (Lisboa, PT) and includes methods to read and write

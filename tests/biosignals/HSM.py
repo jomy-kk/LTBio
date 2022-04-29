@@ -1,5 +1,5 @@
 import unittest
-from scr.biosignals import (HSM, ECG)
+from src.biosignals import (HSM, ECG)
 
 class HSMTestCase(unittest.TestCase):
 
