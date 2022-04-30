@@ -4,7 +4,7 @@ from numpy import array
 from src.biosignals.Unit import Unit
 
 class Timeseries():
-    def __init__(self, samples:array, sampling_frequency:float, units:Unit, initial_datetime:datetime=None, name:str=None):
+    def __init__(self, samples:dict, sampling_frequency:float, units:Unit, initial_datetime:datetime=None, name:str=None):
         self.__samples = samples
         self.__sampling_frequency = sampling_frequency,
         self.__units = units,
