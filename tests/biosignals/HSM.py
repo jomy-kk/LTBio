@@ -1,5 +1,9 @@
 import unittest
+from os import rmdir, mkdir
 
+from src.clinical.BodyLocation import BodyLocation
+from src.clinical.Epilepsy import Epilepsy
+from src.clinical.Patient import Patient
 from src.biosignals.Unit import Unit
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals import (HSM, ECG)
@@ -10,14 +14,17 @@ class HSMTestCase(unittest.TestCase):
         self.HSM = HSM.HSM() # HSM needs to be instantiated only to test _read and _write methods, for they are protected.
         self.testpath = 'resources/HSM_EDF_tests' # This is a test directory with EDF files in the HSM structure,
         self.channel1, self.channel2 = "xx", "yy" # containing ECG channels with these names,
+
         self.sampling_frequency = 512 # sampled at 512 Hz,
         self.n_samples = 1000 # with a total of this amount of samples,
         self.units = Unit.V # in the Volt unit.
-        self.first_sample, self.last_sample = 420, 530  # The first and last samples are these values,
+        self.ts1 = Timeseries([0.34, 2.12, 3.75], self.sampling_frequency, self.units) # These are the samples of the first channel
+        self.ts2 = Timeseries([1.34, 3.12, 4.75], self.sampling_frequency, self.units) # and the second channel
         self.first_timestamp, self.last_timestamp = "2022-04-01 16:00", "2022-04-03 09:30"  # and they were acquired at these timepoints.
 
-    def test_read_ECG(self):
-        x = self.HSM._read(self.testpath, ECG.ECG)
+        self.patient = Patient(101, "João Miguel Areias Saraiva", 23, (Epilepsy(),), tuple(), tuple())
+
+    def verify_data(self, x:ECG.ECG):
         # _read should return a dictionary with 2 Timeseries, each corresponding to one ECG channel.
         self.assertTrue(isinstance(x, dict))
         self.assertEquals(len(x), 2)
@@ -35,12 +42,30 @@ class HSMTestCase(unittest.TestCase):
         self.assertEquals(x[self.channel2].n_samples, self.n_samples)
         self.assertEquals(x[self.channel2].units, self.units)
         # Also, checking the first and last samples
-        self.assertEquals((x[self.channel1])[self.first_timestamp], self.first_sample)
-        self.assertEquals((x[self.channel1])[self.last_timestamp], self.last_sample)
+        self.assertEquals((x[self.channel1])[self.first_timestamp], self.ts1[0])
+        self.assertEquals((x[self.channel1])[self.last_timestamp], self.ts1[-1])
+        self.assertEquals((x[self.channel2])[self.first_timestamp], self.ts2[0])
+        self.assertEquals((x[self.channel2])[self.last_timestamp], self.ts2[-1])
 
-    def test_instantiate_ECG(self):
-        #TODO
-        pass
+    def test_read_ECG(self):
+        x = self.HSM._read(self.testpath, ECG.ECG)
+        self.verify_data(x)
+
+    def test_write_ECG(self):
+        x = {self.channel1: self.ts1,
+             self.channel2: self.ts2}
+
+        # Try to write to a temporary path with no exceptions
+        temp_path = self.testpath + '_temp'
+        mkdir(temp_path)
+        self.HSM._write(temp_path, x)
+
+        # Read and verify data
+        x = self.HSM._read(temp_path, ECG.ECG)
+        self.verify_data(x)
+
+        # Delete temporary path
+        rmdir(temp_path)
 
 
 
