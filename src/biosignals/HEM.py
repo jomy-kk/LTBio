@@ -27,6 +27,7 @@ class HEM(BiosignalSource):
     def __str__(self):
         return "Hospital Egas Moniz"
 
+    @staticmethod
     def __read_trc(list, metadata=False):
         """
         Return trc file information, whether it is the values or the metadata, according to boolean metadata
