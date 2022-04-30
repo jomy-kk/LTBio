@@ -28,6 +28,7 @@ class HSM(BiosignalSource):
     def __str__(self):
         return "Hospital de Santa Maria"
 
+    @staticmethod
     def __read_edf(list, metadata=False):
 
         """
