@@ -70,7 +70,3 @@ class HEM(BiosignalSource):
 
         return new_dict
 
-    @staticmethod
-    def _write(type):
-
-        print('Nothing')
