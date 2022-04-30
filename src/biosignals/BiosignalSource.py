@@ -32,5 +32,5 @@ class BiosignalSource(ABC):
 
     @staticmethod
     @abstractmethod
-    def _write(path:str):
+    def _write(path:str, timeseries:dict):
         pass
