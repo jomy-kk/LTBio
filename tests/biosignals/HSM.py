@@ -24,7 +24,7 @@ class HSMTestCase(unittest.TestCase):
 
         self.patient = Patient(101, "João Miguel Areias Saraiva", 23, (Epilepsy(),), tuple(), tuple())
 
-    def verify_data(self, x:ECG.ECG):
+    def verify_data(self, x):
         # _read should return a dictionary with 2 Timeseries, each corresponding to one ECG channel.
         self.assertTrue(isinstance(x, dict))
         self.assertEquals(len(x), 2)
