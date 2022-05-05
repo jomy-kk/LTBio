@@ -17,6 +17,7 @@ class BiosignalTestCase(unittest.TestCase):
         self.ts1 = Timeseries([0.34, 2.12, 3.75], 128, Unit.V)
         self.ts2 = Timeseries([1.34, 3.12, 4.75], 128, Unit.V)
         self.ts3 = Timeseries([2.34, 4.12, 5.75], 128, Unit.V)
+        self.testpath = '../resources/HSM_EDF_tests'  # This is a test directory with EDF files in the HSM structure
 
     def test_get_metadata(self):
         ecg1 = ECG({"a": self.ts1}, HSM, self.patient, BodyLocation.CHEST, "Test")
@@ -38,7 +39,7 @@ class BiosignalTestCase(unittest.TestCase):
         self.assertTrue(isinstance(ecg1['c'], Timeseries) and ecg1['c'].n_samples == 3)
 
     def test_create_biosignal_with_file(self):
-        ecg1 = ECG("resources/101_FA7775L1.edf", HSM) # a Video-EEG recording
+        ecg1 = ECG(self.testpath, HSM) # a Video-EEG recording
         self.assertEqual(ecg1.source, HSM)
         self.assertEqual(ecg1.n_channels, 1)
         self.assertEqual(ecg1.channel_names, ("ECG"))

@@ -12,7 +12,7 @@ class HSMTestCase(unittest.TestCase):
 
     def setUp(self):
         self.HSM = HSM.HSM() # HSM needs to be instantiated only to test _read and _write methods, for they are protected.
-        self.testpath = 'resources/HSM_EDF_tests' # This is a test directory with EDF files in the HSM structure,
+        self.testpath = '../resources/HSM_EDF_tests/' # This is a test directory with EDF files in the HSM structure,
         self.channel1, self.channel2 = "xx", "yy" # containing ECG channels with these names,
 
         self.sampling_frequency = 512 # sampled at 512 Hz,

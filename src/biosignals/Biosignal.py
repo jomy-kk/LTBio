@@ -22,7 +22,7 @@ class Biosignal(ABC):
             if source is None:
                 raise ValueError("To read a biosignal from a file, specify the biosignal source.")
             else:
-                self.__timeseries = self.source._read(path=timeseries, type=type(self))
+                self.__timeseries = self.source._read(dir=timeseries, type=type(self))
         if isinstance(timeseries, datetime): # this should be a time interval -> fetch from database
             pass # TODO
         if isinstance(timeseries, dict): # this should be the {*: Timeseries} -> save samples directly
