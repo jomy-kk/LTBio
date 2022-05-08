@@ -71,3 +71,6 @@ class HSM(BiosignalSource):
 
         return new_dict
 
+    @staticmethod
+    def _write(path:str, timeseries:dict):
+        pass
