@@ -10,10 +10,10 @@ from src.biosignals.Unit import Unit
 class Timeseries():
 
     class Segment(SupportsLessThanT):
-        def __init__(self, samples:array, initial_datetime:datetime, sampling_frequency:float):
+        def __init__(self, samples:array, initial_datetime:datetime):
             self.__samples = samples
             self.__initial_datetime = initial_datetime
-            self.__final_datetime = initial_datetime + timedelta(seconds=len(samples)/sampling_frequency)
+            self.__final_datetime = None  # lazy instantiation: only when it belongs to a Timeseries
             self.__raw_samples = None  # if some filter is applied to a Timeseries, the raw version of each Segment should be saved here
 
         @property
@@ -27,6 +27,10 @@ class Timeseries():
         @property
         def final_datetime(self) -> datetime:
             return self.__final_datetime
+
+        @final_datetime.setter
+        def final_datetime(self, x:datetime):
+            self.__final_datetime = x
 
         @property
         def duration(self) -> timedelta:
@@ -73,15 +77,24 @@ class Timeseries():
         ''' Receives a list of non-overlapping Segments (overlaps will not be checked) and a sampling frequency common to all Segments.
         If they are timely ordered, pass ordered=True, otherwise pass ordered=False.
         Additionally, it can receive the sample units and a name, if needed.'''
+
+        # Order the Segments, if necessary
         if not ordered:
             self.__segments = sorted(segments)
         else:
             self.__segments = segments
+
+        # Compute the final datetime of each Segment, based on the sampling frequency
+        for segment in self.__segments:
+            segment.final_datetime = segment.initial_datetime + timedelta(seconds=len(segment)/sampling_frequency)
+
+        # Save metadata
         self.__sampling_frequency = sampling_frequency,
         self.__units = units,
         self.__initial_datetime = self.__segments[0].initial_datetime  # Is the initial datetime of the first Segment.
         self.__final_datetime = self.__segments[-1].final_datetime  # Is the final datetime of the last Segment.
         self.__name = name
+
 
     # Getters and Setters
 
