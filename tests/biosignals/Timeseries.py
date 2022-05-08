@@ -1,93 +1,121 @@
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from src.biosignals.Timeseries import Timeseries
 from src.biosignals.Unit import Unit
+from src.biosignals.Timeseries import Timeseries
 
 
 class TimeseriesTestCase(unittest.TestCase):
 
     def setUp(self):
         self.samples1, self.samples2 = [0.34, 2.12, 3.75], [1.34, 3.12, 4.75]
-        self.sf = 128
+        self.initial1, self.initial2 = datetime(2022, 1, 1, 16, 0, 0), datetime(2022, 1, 3, 9, 0,
+                                                                                0)  # 1/1/2022 4PM and 3/1/2022 9AM
+        self.sf = 64
+        self.segment1, self.segment2 = Timeseries.Segment(self.samples1, self.initial1, self.sf), Timeseries.Segment(
+            self.samples2, self.initial2, self.sf)
         self.units = Unit.V
-        self.initial1, self.initial2 = datetime(2022, 1, 1, 16, 0), datetime(2022, 1, 3, 9, 0) # 1/1/2022 4PM and 3/1/2022 9AM
         self.name = "Test Timeseries 1"
 
-    def test_create_continuous_timeseries(self):
-        '''A continuous Timeseries is one where all the samples were acquired at each sampling interval. There were no acquisition interruptions on purpose.'''
-        ts = Timeseries(self.samples1, self.sf, self.units, self.initial1, self.name)
+    def verify_metadata(self, ts: Timeseries):
+        self.assertEqual(ts.sampling_frequency, self.sf)
+        self.assertEqual(ts.units, self.units)
+        self.assertEqual(ts.name, self.name)
 
-        # Verify samples
-        self.assertEquals(ts.n_samples, len(self.samples1))
-        self.assertEquals(ts[0], self.samples1[0])
-        self.assertEquals(ts[-1], self.samples1[-1])
+    def test_create_contiguous_timeseries(self):
+        '''A contiguous Timeseries is one where all the samples were acquired at each sampling interval. There were no acquisition interruptions on purpose.'''
+        ts = Timeseries([self.segment1, ], True, self.sf, self.units, self.name)
+        self.assertEqual(len(ts), len(self.samples1))
+        self.verify_metadata(ts)
+        self.assertEqual(ts.initial_datetime, self.initial1)
+        self.assertEqual(ts.final_datetime, self.initial1 + timedelta(seconds=len(self.samples1) / self.sf))
 
-        # Verify metadata
-        self.assertEquals(ts.sampling_frequency, self.sf)
-        self.assertEquals(ts.units, self.units)
-        self.assertEquals(ts.name, self.name)
+    def test_create_discontiguous_timeseries(self):
+        '''A discontiguous Timeseries is one with interruptions between some Segments of samples. Segments are not adjacent in time.'''
+        ts = Timeseries([self.segment1, self.segment2], True, self.sf, self.units, self.name)
+        self.assertEqual(len(ts), len(self.samples1) + len(self.samples2))
+        self.verify_metadata(ts)
+        self.assertEqual(ts.initial_datetime, self.initial1)
+        self.assertEqual(ts.final_datetime, self.initial2 + timedelta(seconds=len(self.samples2) / self.sf))
 
-    def test_create_discrete_timeseries(self):
-        '''A discrete Timeseries is one with interruptions between some sequences of samples. The initial datetime of each timeframe should be specified.'''
-        ts = Timeseries({self.initial1: self.samples1, self.initial2: self.samples2},
-                        self.sf, self.units, name=self.name)
-
-        # Verify samples
-        self.assertEquals(ts.n_samples, len(self.samples1)+len(self.samples2))
-        self.assertEquals(ts[0], self.samples1[0])
-        self.assertEquals(ts[-1], self.samples2[-1])
-        self.assertEquals(ts[0:(len(self.samples1)+len(self.samples2))], self.samples1 + self.samples2) # verifies continuity
-
-        # Verify metadata
-        self.assertEquals(ts.sampling_frequency, self.sf)
-        self.assertEquals(ts.units, self.units)
-        self.assertEquals(ts.name, self.name)
-
-    def test_indexing_with_datetime(self):
-        ts = Timeseries({self.initial1: self.samples1, self.initial2: self.samples2}, self.sf)
-
-        # Time point indexing
-        self.assertEquals(ts['2022-01-01 16:00'], ts[0]) # FIXME
-        self.assertEquals(ts['2022-01-01 16:00'], ts[1]) # FIXME
-        self.assertEquals(ts['2022-01-01 16:00'], ts[2]) # FIXME
-        self.assertEquals(ts['2022-01-01 16:00'], ts[3]) # FIXME
-        self.assertEquals(ts['2022-01-01 16:00'], ts[4]) # FIXME
-        self.assertEquals(ts['2022-01-01 16:00'], ts[5]) # FIXME
-        self.assertEquals(ts[datetime(2022,1,1,16)], ts[5]) # trying with datetime object # FIXME
-
-        # Time interval indexing
-        self.assertEquals(ts['2022-01-01 16:00':'2022-01-01 16:00'], ts[0:3]) # FIXME
-        self.assertEquals(ts['2022-01-01 16:00':'2022-01-01 16:00'], ts[3:6]) # FIXME
-        self.assertEquals(ts['2022-01-01 16:00':'2022-01-01 16:00'], ts[0:6]) # FIXME
+    def test_create_not_ordered_discontiguous_timeseries(self):
+        '''A discontiguous Timeseries is one with interruptions between some Segments of samples. Segments are not adjacent in time.'''
+        ts = Timeseries([self.segment2, self.segment1], False, self.sf, self.units, self.name)
+        self.assertEqual(len(ts), len(self.samples1) + len(self.samples2))
+        self.verify_metadata(ts)
+        self.assertEqual(ts.initial_datetime, self.initial1)
+        self.assertEqual(ts.final_datetime, self.initial2 + timedelta(seconds=len(self.samples2) / self.sf))
 
     def test_set_name(self):
-        ts = Timeseries(dict(), self.sf, name=self.name)
+        ts = Timeseries([self.segment1, ], True, self.sf, name=self.name)
         self.assertEqual(ts.name, self.name)
         ts.name = "New Name"
         self.assertEqual(ts.name, "New Name")
 
+    def test_indexing_one(self):
+        ts = Timeseries([self.segment1, self.segment2], True, self.sf)
+
+        # These timepoints have samples
+        self.assertEqual(ts[self.initial1 + timedelta(seconds=0 / self.sf)], self.samples1[0])
+        self.assertEqual(ts[self.initial1 + timedelta(seconds=1 / self.sf)], self.samples1[1])
+        self.assertEqual(ts[self.initial1 + timedelta(seconds=2 / self.sf)], self.samples1[2])
+        self.assertEqual(ts[self.initial2 + timedelta(seconds=0 / self.sf)], self.samples2[0])
+        self.assertEqual(ts[self.initial2 + timedelta(seconds=1 / self.sf)], self.samples2[1])
+        self.assertEqual(ts[self.initial2 + timedelta(seconds=2 / self.sf)], self.samples2[2])
+
+        # These timepoints do not have samples
+        with self.assertRaises(IndexError):
+            x = ts[self.initial2 - timedelta(seconds=10)]  # in the middle of the two segments
+        with self.assertRaises(IndexError):
+            x = ts[self.initial1 - timedelta(seconds=10)]  # before the first segment
+
+    def test_indexing_multiple(self):
+        ts = Timeseries([self.segment1, self.segment2], True, self.sf)
+
+        # These timepoints have samples
+        self.assertEqual(
+            ts[self.initial1 + timedelta(seconds=0 / self.sf), self.initial2 + timedelta(seconds=1 / self.sf)],
+            (self.samples1[0], self.samples2[1]))
+
+    def test_indexing_slices(self):
+        ts = Timeseries([self.segment1, self.segment2], True, self.sf)
+
+        # Time point indexing
+        self.assertEqual(
+            ts[self.initial1 + timedelta(seconds=0 / self.sf): self.initial1 + timedelta(seconds=3 / self.sf)],
+            self.samples1[0:3])
+        self.assertEqual(
+            ts[self.initial2 + timedelta(seconds=0 / self.sf): self.initial2 + timedelta(seconds=3 / self.sf)],
+            self.samples2[0:3])
+        self.assertEqual(
+            ts[self.initial1 + timedelta(seconds=0 / self.sf): self.initial2 + timedelta(seconds=3 / self.sf)],
+            self.samples1 + self.samples2)  # TODO: Is this really the behaviour we want? To give it all together?
+
     def test_concatenate_two_timeseries(self):
-        # With the same sampling frequency and units
-        ts1 = Timeseries(self.samples1, self.sf, self.units, self.initial1)
-        ts2 = Timeseries(self.samples2, self.sf, self.units, self.initial1)
-        self.assertEquals(ts1 + ts2, self.samples1+self.samples2)
+        # With the same sampling frequency and units, and on the correct order
+        ts1 = Timeseries([self.segment1, ], True, self.sf, self.units, self.name)
+        ts2 = Timeseries([self.segment2, ], True, self.sf, self.units, self.name)
+        self.assertEqual(len(ts1 + ts2), len(self.samples1) + len(self.samples2))
+        ts1 += ts2
+        self.assertEqual(len(ts1), len(self.samples1) + len(self.samples2))
 
         # With different sampling frequencies
-        ts2 = Timeseries(self.samples2, self.sf + 1, self.units, self.initial1)
+        ts2 = Timeseries([self.segment2, ], True, self.sf+1, self.units, self.name)
         with self.assertRaises(ArithmeticError):
             ts1 + ts2
+            ts1 += ts2
 
         # With different units
-        ts2 = Timeseries(self.samples2, self.sf, Unit.G, self.initial1)
+        ts2 = Timeseries([self.segment2, ], True, self.sf, Unit.G, self.name)
         with self.assertRaises(ArithmeticError):
             ts1 + ts2
+            ts1 += ts2
 
         # With initial datetime of the latter coming before the final datetime of the former
-        ts2 = Timeseries(self.samples2, self.sf, self.units, datetime(2022, 1, 1, 15)) # FIXME
+        ts2 = Timeseries([self.segment2, ], True, self.sf, self.units, self.name)
         with self.assertRaises(ArithmeticError):
-            ts1 + ts2
-
+            ts2 + ts1
+            ts2 += ts1
 
 
 if __name__ == '__main__':
