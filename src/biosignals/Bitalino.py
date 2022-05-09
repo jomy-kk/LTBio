@@ -6,7 +6,6 @@ import numpy as np
 
 from src.biosignals.BiosignalSource import BiosignalSource
 from src.biosignals.Timeseries import Timeseries
-from src.biosignals.ECG import ECG
 
 
 class Bitalino(BiosignalSource):
@@ -64,17 +63,15 @@ class Bitalino(BiosignalSource):
         sensor_idx = header['column'].index(sensor)
         sensor_data = data[:, sensor_idx]
         date = Bitalino.__aux_date(header)
+        return date, sensor_data
 
-        return Timeseries.Segment(samples=sensor_data, initial_datetime=date, sampling_frequency=header['sampling rate'])
-
-    @staticmethod
+    # @staticmethod
     def _read(dir, type):
         '''Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.'''
         """
         """
-        if type is ECG:
+        if 'ecg' in str(type).lower():
             label = 'A1'
-            new_key = 'ecg'
         # first a list is created with all the filenames that end in .edf and are inside the chosen dir
         # this is a list of lists where the second column is the type of channel to extract
         all_files = sorted([[path.join(dir, file), label] for file in listdir(dir) if file.startswith('A20')])
@@ -85,14 +82,33 @@ class Bitalino(BiosignalSource):
             header = Bitalino.__read_bit(all_files[i], metadata=True)
             i += 1
 
-        segments = list(map(Bitalino.__read_bit, all_files[i-1:]))
+        all_edf = list(map(Bitalino._Bitalino__read_bit, all_files[i-1:]))
+        channels_arrays = []
         new_dict = {}
-        new_timeseries = Timeseries(samples=segments, sampling_frequency=header['sampling rate'])
-        new_dict[new_key] = new_timeseries
+        sfreq = header['sampling rate']
+        name = header['device connection']
+
+        samples = {edf_data[0]: edf_data[1] for edf_data in all_edf if edf_data[0] != ''}
+        new_timeseries = Timeseries(samples=samples, sampling_frequency=sfreq, name=name,
+                                    initial_datetime=Bitalino.__aux_date(header))
+        new_dict['ecg'] = new_timeseries
+        # TODO ecg or A1 as dict key?
+        print(dir, len(samples))
 
         return new_dict
 
     @staticmethod
-    def _write(dir):
+    def _write(path):
         '''Writes multiple TXT files on the directory 'path' so they can be opened in Opensignals.'''
         # TODO
+
+for patient in listdir('F:\\PreEpiSeizures\\Patients_HSM'):
+    pat_dir = 'F:\\PreEpiSeizures\\Patients_HSM\\'+patient
+    dir = path.join(pat_dir, 'Bitalino')
+    if not path.isdir(dir):
+        dir = path.join(pat_dir, 'Mini')
+    if not path.isdir(dir):
+        print(f'Patient {patient} does not have bitalino directory')
+        continue
+
+    Bitalino._read(dir, 'ecg')
