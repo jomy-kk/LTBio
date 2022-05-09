@@ -7,15 +7,16 @@
 # Description: Procedures to read and write datafiles from Hospital de Santa Maria.
 
 # Contributors: João Saraiva, Mariana Abreu
-# Last update: 23/04/2022
+# Last update: 09/05/2022
 
 ###################################
+
 from os import listdir, path
-import numpy as np
 from mne.io import read_raw_edf
 
 from src.biosignals.BiosignalSource import BiosignalSource
 from src.biosignals.Timeseries import Timeseries
+from src.biosignals import ECG
 
 
 class HSM(BiosignalSource):
@@ -44,38 +45,36 @@ class HSM(BiosignalSource):
         channel_list = [hch for hch in hsm_data.ch_names if sensor.lower() in hch.lower()]
         # initial datetime
         if metadata:
-            return channel_list, hsm_data.info['sfreq'], hsm_data.info['meas_date']
+            return channel_list, hsm_data.info['sfreq']
         # structure of hsm_sig is two arrays, the 1st has one array for each channel and the 2nd is an int-time array
         hsm_sig = hsm_data[channel_list]
 
-        return hsm_data.info['meas_date'], hsm_sig[0]
+        return hsm_sig[0], hsm_data.info['meas_date']
 
     @staticmethod
     def _read(dir, type):
         '''Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.'''
         """
         """
+        if type is ECG:
+            label = 'ecg'
         # first a list is created with all the filenames that end in .edf and are inside the chosen dir
         # this is a list of lists where the second column is the type of channel to extract
-        all_files = sorted([[path.join(dir, file), type] for file in listdir(dir) if file.endswith('.edf')])
+        all_files = sorted([[path.join(dir, file), label] for file in listdir(dir) if file.endswith('.edf')])
         # run the edf read function for all files in list all_files
-        channels, sfreq, start_datetime = HSM.__read_edf(all_files[0], metadata=True)
+        channels, sfreq = HSM.__read_edf(all_files[0], metadata=True)
         all_edf = list(map(HSM.__read_edf, all_files))
-        channels_arrays = []
         new_dict = {}
         for ch in range(len(channels)):
-            samples = {edf_data[0]: edf_data[1][ch] for edf_data in all_edf}
-            new_timeseries = Timeseries(samples=samples, sampling_frequency=sfreq, name=channels[ch],
-                                        initial_datetime=start_datetime)
+            segments = [Timeseries.Segment(edf_data[0][ch], initial_datetime=edf_data[1], sampling_frequency=sfreq)
+                        for edf_data in all_edf]
+            # samples = {edf_data[0]: edf_data[1][ch] for edf_data in segments}
+            new_timeseries = Timeseries(segments, sampling_frequency=sfreq, name=channels[ch], ordered=True)
             new_dict[channels[ch]] = new_timeseries
-
         return new_dict
 
-dir = 'G:\\PreEpiSeizures\\Patients_HSM'
-for patient in listdir(dir):
-    if path.isdir(path.join(dir, patient, 'HSM')):
-        print(patient)
-        HSM._read(path.join(dir, patient, 'HSM'), 'ecg')
     @staticmethod
-    def _write(path:str, timeseries:dict):
+    def _write(path:str, timeseries: dict):
         pass
+
+
