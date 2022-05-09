@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 from os import rmdir, mkdir
 
 from src.clinical.BodyLocation import BodyLocation
@@ -12,17 +13,23 @@ class HEMTestCase(unittest.TestCase):
 
     def setUp(self):
         self.HEM = HEM.HEM() # HEM needs to be instantiated only to test _read and _write methods, for they are protected.
-        self.testpath = 'resources/HEM_TCR_tests' # This is a test directory with TRC files in the HEM structure,
-        self.channel1, self.channel2 = "xx", "yy" # containing ECG channels with these names,
-
-        self.sampling_frequency = 512 # sampled at 512 Hz,
-        self.n_samples = 1000 # with a total of this amount of samples,
-        self.units = Unit.V # in the Volt unit.
-        self.ts1 = Timeseries([0.34, 2.12, 3.75], self.sampling_frequency, self.units) # These are the samples of the first channel
-        self.ts2 = Timeseries([1.34, 3.12, 4.75], self.sampling_frequency, self.units) # and the second channel
-        self.first_timestamp, self.last_timestamp = "2022-04-01 16:00", "2022-04-03 09:30"  # and they were acquired at these timepoints.
+        self.testpath = '../resources/HEM_TRC_tests/' # This is a test directory with TRC files in the HEM structure,
+        self.channelx, self.channely = "ecg", "ECG" # containing ECG channels with these names,
 
         self.patient = Patient(101, "João Miguel Areias Saraiva", 23, (Epilepsy(),), tuple(), tuple())
+        self.samplesx1, self.samplesx2, self.samplesy1, self.samplesy2 = [440.23438, 356.73828, 191.69922], \
+                                                                         [-90.52734, -92.77344, -61.621094], \
+                                                                         [582.03125, 629.98047, 620.01953], \
+                                                                         [154.6875 , 105.17578,  60.64453]
+
+        self.initial1, self.initial2 = datetime(2018, 12, 11, 11, 59, 5), datetime(2018, 12, 11, 19, 39, 17)  # 1/1/2022 4PM and 3/1/2022 9AM
+        self.sf = 256.
+        self.segmentx1, self.segmentx2 = Timeseries.Segment(self.samplesx1, self.initial1, self.sf), Timeseries.Segment(self.samplesx2, self.initial2, self.sf)
+        self.segmenty1, self.segmenty2 = Timeseries.Segment(self.samplesy1, self.initial1, self.sf), Timeseries.Segment(self.samplesy2, self.initial2, self.sf)
+        self.units = Unit.V
+
+        self.tsx = Timeseries([self.segmentx1, self.segmentx2], True, self.sf, self.units)
+        self.tsy = Timeseries([self.segmenty1, self.segmenty2], True, self.sf, self.units)
 
     def verify_data(self, x):
         # _read should return a dictionary with 2 Timeseries, each corresponding to one ECG channel.
