@@ -71,6 +71,11 @@ class HSM(BiosignalSource):
 
         return new_dict
 
+dir = 'G:\\PreEpiSeizures\\Patients_HSM'
+for patient in listdir(dir):
+    if path.isdir(path.join(dir, patient, 'HSM')):
+        print(patient)
+        HSM._read(path.join(dir, patient, 'HSM'), 'ecg')
     @staticmethod
     def _write(path:str, timeseries:dict):
         pass
