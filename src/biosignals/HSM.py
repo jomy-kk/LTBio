@@ -49,7 +49,7 @@ class HSM(BiosignalSource):
         # structure of hsm_sig is two arrays, the 1st has one array for each channel and the 2nd is an int-time array
         hsm_sig = hsm_data[channel_list]
 
-        return hsm_sig[0], hsm_data.info['meas_date']
+        return hsm_sig[0], hsm_data.info['meas_date'].replace(tzinfo=None)
 
     @staticmethod
     def _read(dir, type):
