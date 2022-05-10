@@ -87,7 +87,7 @@ class Bitalino(BiosignalSource):
 
         segments = list(map(Bitalino.__read_bit, all_files[i-1:]))
         new_dict = {}
-        new_timeseries = Timeseries(samples=segments, sampling_frequency=header['sampling rate'])
+        new_timeseries = Timeseries(segments=segments, ordered=True, sampling_frequency=header['sampling rate'])
         new_dict[new_key] = new_timeseries
 
         return new_dict
