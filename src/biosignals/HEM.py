@@ -49,7 +49,7 @@ class HEM(BiosignalSource):
         if metadata:
             return ch_list[find_idx], float(hem_sig.sampling_rate), hem_data.rec_datetime, hem_sig.units
         # returns initial date and samples
-        return array(hem_sig[:, find_idx].T), hem_data.rec_datetime
+        return array(hem_sig[:, find_idx].T, dtype=float), hem_data.rec_datetime
         # return Timeseries.Segment(samples=np.array(hem_sig[:, find_idx]).T, initial_datetime=hem_data.rec_datetime,
         #                          sampling_frequency=float(hem_sig.sampling_rate))
 
@@ -76,3 +76,7 @@ class HEM(BiosignalSource):
             new_timeseries = Timeseries(segments=segments, sampling_frequency=sfreq, ordered=True)
             new_dict[channels[ch]] = new_timeseries
         return new_dict
+
+    @staticmethod
+    def _write(path: str, timeseries: dict):
+        pass
