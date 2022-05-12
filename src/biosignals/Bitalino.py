@@ -1,9 +1,7 @@
 import ast
-from datetime import datetime
-from os import listdir, path
-
-import numpy as np
 from dateutil.parser import parse as to_datetime
+from json import load, dump
+from os import listdir, path, getcwd, access
 
 import numpy as np
 
@@ -25,10 +23,9 @@ class Bitalino(BiosignalSource):
         """
         time_key = [key for key in header.keys() if 'time' in key][0]
         try:
-            start_time = to_datetime(header['date'].strip('\"') + ' ' + header[time_key].strip('\"'))
+            return to_datetime(header['date'].strip('\"') + ' ' + header[time_key].strip('\"'))
         except Exception as e:
             print(e)
-        return start_time
 
     def __check_empty(len_, type=''):
         """
@@ -61,11 +58,12 @@ class Bitalino(BiosignalSource):
         This function leads with several devices and it returns a list that may contain one or several integers
         """
         sensor_idx, sensor_names, json_bool, chosen_device = [], [], False, ''
+        # if options and json key, get json to calculate
         if options:
             if 'json' in options.keys():
                 json_bool = options['json']
                 json_dir = options['json_dir'] if 'json_dir' in options.keys() \
-                    else path.join(os.getcwd(), 'bitalino.json')
+                    else path.join(getcwd(), 'bitalino.json')
         len_ch = 0
         for device in header.keys():
             chosen_device = device
@@ -82,7 +80,11 @@ class Bitalino(BiosignalSource):
 
             if sensor in str(sens):
                 # add other column devices as offset to the column to retrieve
-                sens_id = [lab + '_' + location for lab in sens if sensor in lab.upper()]
+                location_bool = True
+                if 'location' in options.keys():
+                    if location.lower() not in options['location'].lower():
+                        location_bool = False
+                sens_id = [lab + '_' + location for lab in sens if sensor in lab.upper() and location_bool]
                 sensor_idx += [len_ch + ch.index(analogs[sens.index(sid.split('_')[0])]) for sid in sens_id]
             if sens_id != '':
                 chosen_device = device
@@ -93,10 +95,10 @@ class Bitalino(BiosignalSource):
 
     def __read_json(dir_, header):
         # check if bitalino json exists and returns the channels and labels and location
-        if os.path.isfile(dir_) and os.access(dir_, os.R_OK):
+        if path.isfile(dir_) and access(dir_, os.R_OK):
             # checks if file exists
             with open(dir_, 'r') as json_file:
-                json_string = json.load(json_file)
+                json_string = load(json_file)
         else:
             print("Either file is missing or is not readable, creating file...")
             json_string = {}
@@ -119,7 +121,7 @@ class Bitalino(BiosignalSource):
                 sens = Bitalino.__change_sens_list(json_string[device]['label'], device, header['column'])
                 json_string[device][key] = sens
         with open(dir_, 'w') as db_file:
-            json.dump(json_string, db_file, indent=2)
+            dump(json_string, db_file, indent=2)
         return json_string[device]['label'], json_string[device]['column'], json_string[device]['location']
 
     # @staticmethod
@@ -170,7 +172,7 @@ class Bitalino(BiosignalSource):
         # TODO create sensor if other types are used besides ECG
         # first a list is created with all the filenames that end in .edf and are inside the chosen dir
         # this is a list of lists where the second column is the type of channel to extract
-        all_files = sorted([[path.join(dir, file), sensor] for file in listdir(dir) if file.startswith(startkey)])
+        all_files = sorted([[path.join(dir, file), sensor] for file in listdir(dir) if startkey in file])
         # get header and sensor positions by running the bitalino files until a header is found
         if not all_files:
             raise IOError(f'No files in dir="{dir}" that start with {startkey}')
@@ -182,7 +184,7 @@ class Bitalino(BiosignalSource):
             raise IOError(f'The files in {dir} did not contain a bitalino type {header}')
         new_dict = {}
         segments = [Bitalino.__read_bit(file, sensor_idx=ch_idx, sensor_names=channels, device=device, **options)
-                    for file in all_files[h-1:h+2]]
+                    for file in all_files[h-1:]]
         for ch, channel in enumerate(channels):
             samples = [Timeseries.Segment(segment[0][:, ch], initial_datetime=segment[1],
                                           sampling_frequency=header['sampling rate'])
@@ -192,20 +194,7 @@ class Bitalino(BiosignalSource):
         return new_dict
 
     @staticmethod
-    def _write(dir):
+    def _write(dir, timeseries):
         '''Writes multiple TXT files on the directory 'path' so they can be opened in Opensignals.'''
         # TODO
 
-
-import time
-for pat in ['Patient Test']: # listdir('G:\\PreEpiSeizures\\Patients_HSM'):
-    pat_dir = ('G:\\PreEpiSeizures\\Patients_HSM\\'+pat)
-
-    start_time = time.time()
-    bit_dir = 'C:\\Users\\Mariana\\PycharmProjects\\IT-PreEpiSeizures\\resources\\BIT_TXT_tests'
-    options = {'json': True,
-               'json_dir': 'C:\\Users\\Mariana\\PycharmProjects\\IT-PreEpiSeizures\\src\\biosignals\\bitalino.json'}
-    vals = Bitalino._read(bit_dir, 'PPG', **options)
-    for valey in vals.keys():
-        print(f'Pat {pat} files {len(vals[valey])}')
-    print(f'Pat {pat} run in {time.time() - start_time}s')
