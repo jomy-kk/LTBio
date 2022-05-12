@@ -49,12 +49,10 @@ class HEM(BiosignalSource):
         if metadata:
             return ch_list[find_idx], float(hem_sig.sampling_rate), hem_data.rec_datetime, hem_sig.units
         # returns initial date and samples
-        return array(hem_sig[:, find_idx].T, dtype=float), hem_data.rec_datetime
-        # return Timeseries.Segment(samples=np.array(hem_sig[:, find_idx]).T, initial_datetime=hem_data.rec_datetime,
-        #                          sampling_frequency=float(hem_sig.sampling_rate))
+        return array(hem_sig[:, find_idx].T), hem_data.rec_datetime
 
     @staticmethod
-    def _read(dir, type):
+    def _read(dir, type, **options):
         '''Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.'''
         # first a list is created with all the filenames that end in .edf and are inside the chosen dir
         # this is a list of lists where the second column is the type of channel to extract

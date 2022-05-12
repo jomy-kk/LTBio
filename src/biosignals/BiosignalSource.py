@@ -27,7 +27,7 @@ class BiosignalSource(ABC):
 
     @staticmethod
     @abstractmethod
-    def _read(path:str, type):
+    def _read(path:str, type, **options):
         pass
 
     @staticmethod

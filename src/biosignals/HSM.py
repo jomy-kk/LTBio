@@ -52,7 +52,7 @@ class HSM(BiosignalSource):
         return hsm_sig[0], hsm_data.info['meas_date'].replace(tzinfo=None)
 
     @staticmethod
-    def _read(dir, type):
+    def _read(dir, type, **options):
         '''Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.'''
         """
         """
