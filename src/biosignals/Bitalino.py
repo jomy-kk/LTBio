@@ -1,7 +1,7 @@
 import ast
 from dateutil.parser import parse as to_datetime
 from json import load, dump
-from os import listdir, path, getcwd, access
+from os import listdir, path, getcwd, access, R_OK
 
 import numpy as np
 
@@ -100,7 +100,8 @@ class Bitalino(BiosignalSource):
 
     def __read_json(dir_, header):
         # check if bitalino json exists and returns the channels and labels and location
-        if path.isfile(dir_) and access(dir_, os.R_OK):
+        if path.isfile(dir_) and access(dir_,
+                                        R_OK):
             # checks if file exists
             with open(dir_, 'r') as json_file:
                 json_string = load(json_file)
@@ -133,8 +134,23 @@ class Bitalino(BiosignalSource):
     def __read_bit(list_, metadata=False, sensor_idx=[], sensor_names=[], device='', **options):
         """
         Reads one edf file
-        If metadata is True - returns list of channels and sampling frequency and initial datetime
-        Else return arrays one for each channel
+        Args:
+            list_ (list): contains the file path in index 0 and sensor label in index 1
+            metadata (bool): defines whether only metadata or actual timeseries values should be returned
+            sensor_idx (list): list of indexes that correspond to the columns of sensor to extract
+            sensor_names (list): list of names that correspond to the sensor label 
+                ex: sensor='ECG', sensor_names=['ECG_chest'] 
+                ex: sensor='ACC', options['location']='wrist', sensor_names=['ACCX_wrist','ACCY_wrist','ACCZ_wrist']
+            device (str): device MacAddress, this is used to get the specific header, specially when using 2 devices
+            **options (dict): equal to _read arg 
+        
+        Returns:
+            if metadata: sensor_idx (list), sensor_names (list), device (str), header (dict)
+            else: sensor_data (array): 2-dimensional array of time over sensors columns
+                  date (datetime): initial datetime of array
+            
+        Raises:
+            IOError: if sensor_names is empty, meaning no channels could be retrieved for chosen sensor 
         """
         dirfile = list_[0]
         sensor = list_[1]
@@ -169,10 +185,24 @@ class Bitalino(BiosignalSource):
 
     @staticmethod
     def _read(dir, type, startkey='A20', **options):
-        '''Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.'''
+        """Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.
+        Args:
+            dir (str): directory that contains bitalino files in txt format
+            type (Biosignal): type of biosignal to extract can be one of ECG, EDA, PPG, RESP, ACC and EMG
+            startkey (str): default is A20. the key that appears in all bitalino file names to extract from directory
+            **options (dict): only the keys json, json_dir and location are being evaluated.
+                options[json] (bool): if the user wants to use a json to save and load bitalino configurations
+                options[json_dir] (str): directory to json file. If not defined, a default will be set automatically
+                options[location] (str): if given, only the devices with that body location will be retrieved
+
+        Returns:
+            dict: A dictionary where keys are the sensors associated to the Biosignal with a Timeseries to each key
+
+        Raises:
+            IOError: if the Biosignal is not one of the ones mentioned
+            IOError: if the list of bitalino files from dir returns empty
+            IOError: if header is still empty after going through all Bitalino files
         """
-        """
-        # sensor = 'ECG' if type is ECG else 'EDA' if type is EDA else 'PPG' if type is PPG else 'ACC' if type is ACC
         sensor = 'ECG' if type is ECG else 'EDA' if type is EDA else 'PPG' if type is PPG else 'ACC' if type is ACC else 'PZT' if type is RESP else 'EMG' if type is EMG else ''
         if sensor == '':
             raise IOError(f'Type {type} does not have label associated, please insert one')

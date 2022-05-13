@@ -1,4 +1,5 @@
 import unittest
+from os import path
 from datetime import datetime
 from os import rmdir, mkdir
 
@@ -6,13 +7,13 @@ from src.clinical.Epilepsy import Epilepsy
 from src.clinical.Patient import Patient
 from src.biosignals.Unit import Unit
 from src.biosignals.Timeseries import Timeseries
-from src.biosignals import (Bitalino, ECG)
+from src.biosignals import (Bitalino, ECG, ACC, RESP)
 
 class BitalinoTestCase(unittest.TestCase):
 
     def setUp(self):
         self.bitalino = Bitalino.Bitalino()  # Have to instantiate to directly test _read and _write methods.
-        self.testpath = '../resources/BIT_TXT_tests/' # This is a test directory with EDF files in the HSM structure,
+        self.testpath = path.join('..', '..', 'resources', 'BIT_TXT_tests') # This is a test directory with EDF files in the HSM structure,
         self.patient = Patient(101, "João Miguel Areias Saraiva", 23, (Epilepsy(),), tuple(), tuple())
 
         self.samplesx1, self.samplesx2 = [506.0, 501.0, 497.0], [502.0, 505.0, 505.0]
@@ -27,7 +28,7 @@ class BitalinoTestCase(unittest.TestCase):
         self.n_samplesx = 7100
 
 
-        self.channelx = "ecg"
+        self.channelx = "ECG_chest"
         self.tsx = Timeseries([self.segmentx1, self.segmentx2], True, self.sf, self.units)
 
 
@@ -46,8 +47,23 @@ class BitalinoTestCase(unittest.TestCase):
         self.assertEqual((x[self.channelx])[self.initial1], self.samplesx1[0])
 
     def test_read_ECG(self):
-        x = self.bitalino._read(self.testpath, ECG.ECG)
+        options = {'json': True,
+                   'json_dir': 'C:\\Users\\Mariana\\PycharmProjects\\IT-PreEpiSeizures\\src\\biosignals\\bitalino.json'}
+        x = self.bitalino._read(self.testpath, ECG.ECG, **options)
         self.verify_data(x)
+
+    def test_read_ACC(self):
+        options = {'json': True,
+                   'json_dir': 'C:\\Users\\Mariana\\PycharmProjects\\IT-PreEpiSeizures\\src\\biosignals\\bitalino.json'}
+        x = self.bitalino._read(self.testpath, ACC.ACC, **options)
+        self.verify_data(x)
+
+    def test_read_RESP(self):
+        options = {'json': True,
+                   'json_dir': 'C:\\Users\\Mariana\\PycharmProjects\\IT-PreEpiSeizures\\src\\biosignals\\bitalino.json'}
+        x = self.bitalino._read(self.testpath, RESP.RESP, **options)
+        self.verify_data(x)
+
 
     # TODO
     """
