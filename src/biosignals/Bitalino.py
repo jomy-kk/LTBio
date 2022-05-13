@@ -8,6 +8,11 @@ import numpy as np
 from src.biosignals.BiosignalSource import BiosignalSource
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals.ECG import ECG
+from src.biosignals.EDA import EDA
+from src.biosignals.ACC import ACC
+from src.biosignals.PPG import PPG
+from src.biosignals.RESP import RESP
+from src.biosignals.EMG import EMG
 
 
 class Bitalino(BiosignalSource):
@@ -168,8 +173,9 @@ class Bitalino(BiosignalSource):
         """
         """
         # sensor = 'ECG' if type is ECG else 'EDA' if type is EDA else 'PPG' if type is PPG else 'ACC' if type is ACC
-        sensor = 'ECG' if type is ECG else type
-        # TODO create sensor if other types are used besides ECG
+        sensor = 'ECG' if type is ECG else 'EDA' if type is EDA else 'PPG' if type is PPG else 'ACC' if type is ACC else 'PZT' if type is RESP else 'EMG' if type is EMG else ''
+        if sensor == '':
+            raise IOError(f'Type {type} does not have label associated, please insert one')
         # first a list is created with all the filenames that end in .edf and are inside the chosen dir
         # this is a list of lists where the second column is the type of channel to extract
         all_files = sorted([[path.join(dir, file), sensor] for file in listdir(dir) if startkey in file])
