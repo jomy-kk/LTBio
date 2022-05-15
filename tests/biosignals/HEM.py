@@ -56,7 +56,7 @@ class HEMTestCase(unittest.TestCase):
         self.assertEqual((x[self.channely])[self.initial1], self.samplesy1[0])
 
     def test_read_ECG(self):
-        x = self.HEM._read(self.testpath, ECG)
+        x = self.HEM._read(self.testpath, ECG.ECG)
         self.verify_data(x)
 
     # TODO

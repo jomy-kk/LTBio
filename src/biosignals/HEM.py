@@ -16,7 +16,7 @@ from neo import MicromedIO
 
 from src.biosignals.BiosignalSource import BiosignalSource
 from src.biosignals.Timeseries import Timeseries
-from src.biosignals import ECG
+from src.biosignals.ECG import ECG
 
 class HEM(BiosignalSource):
     '''This class represents the source of Hospital de Santa Maria (Lisboa, PT) and includes methods to read and write

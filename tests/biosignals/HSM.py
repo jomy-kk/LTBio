@@ -62,7 +62,7 @@ class HSMTestCase(unittest.TestCase):
         self.assertEqual((x[self.channely])[self.initial1], self.samplesy1[0])
 
     def test_read_ECG(self):
-        x = self.HSM._read(self.testpath, ECG)
+        x = self.HSM._read(self.testpath, ECG.ECG)
         self.verify_data(x)
 
     # TODO

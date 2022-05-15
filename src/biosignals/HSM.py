@@ -16,7 +16,7 @@ from mne.io import read_raw_edf
 
 from src.biosignals.BiosignalSource import BiosignalSource
 from src.biosignals.Timeseries import Timeseries
-from src.biosignals import ECG
+from src.biosignals.ECG import ECG
 
 
 class HSM(BiosignalSource):
