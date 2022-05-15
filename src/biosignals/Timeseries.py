@@ -138,7 +138,7 @@ class Timeseries():
             if isinstance(initial, datetime) and isinstance(final, datetime):
                 return self.__get_samples(initial, final)
             else:
-                IndexError("Index types not supported. Give a slice of datetimes (can be in string format).")
+                raise IndexError("Index types not supported. Give a slice of datetimes (can be in string format).")
 
         if isinstance(item, tuple):
             res = list()
@@ -148,7 +148,7 @@ class Timeseries():
                 if isinstance(timepoint, str):
                     res.append(self.__get_sample(to_datetime(timepoint)))
                 else:
-                    IndexError("Index types not supported. Give a tuple of datetimes (can be in string format).")
+                    raise IndexError("Index types not supported. Give a tuple of datetimes (can be in string format).")
             return tuple(res)
 
         raise IndexError("Index types not supported. Give a datetime (can be in string format), a slice or a tuple of those.")
