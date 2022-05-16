@@ -117,7 +117,7 @@ class Timeseries():
 
     @property
     def name(self):
-        return self.__name
+        return self.__name if self.__name != None else "No Name"
 
     @name.setter
     def name(self, name:str):
@@ -136,7 +136,7 @@ class Timeseries():
             initial = to_datetime(item.start) if isinstance(item.start, str) else self.initial_datetime if item.start is None else item.start
             final = to_datetime(item.stop) if isinstance(item.stop, str) else self.final_datetime if item.stop is None else item.stop
             if isinstance(initial, datetime) and isinstance(final, datetime):
-                return self.__get_samples(initial, final)
+                return Timeseries(self.__get_samples(initial, final), True, self.__sampling_frequency, self.__units, self.__name)
             else:
                 raise IndexError("Index types not supported. Give a slice of datetimes (can be in string format).")
 
@@ -145,7 +145,7 @@ class Timeseries():
             for timepoint in item:
                 if isinstance(timepoint, datetime):
                     res.append(self.__get_sample(timepoint))
-                if isinstance(timepoint, str):
+                elif isinstance(timepoint, str):
                     res.append(self.__get_sample(to_datetime(timepoint)))
                 else:
                     raise IndexError("Index types not supported. Give a tuple of datetimes (can be in string format).")
@@ -160,26 +160,30 @@ class Timeseries():
                 return segment[int((datetime - segment.initial_datetime).total_seconds() * self.sampling_frequency)]
         raise IndexError("Datetime given is in not defined in this Timeseries.")
 
-    def __get_samples(self, initial_datetime: datetime, final_datetime: datetime) -> array:
+    def __get_samples(self, initial_datetime: datetime, final_datetime: datetime) -> List[Segment]:
         '''Returns the samples between the given initial and end datetimes.'''
         self.__check_boundaries(initial_datetime)
         self.__check_boundaries(final_datetime)
-        res = []
+        res_segments = []
         for i in range(len(self.__segments)):  # finding the first Segment
             segment = self.__segments[i]
             if initial_datetime in segment:
                 if final_datetime <= segment.final_datetime:
-                    res += segment[int((initial_datetime - segment.initial_datetime).total_seconds()*self.sampling_frequency):int((final_datetime - segment.initial_datetime).total_seconds()*self.sampling_frequency)]
-                    return res
+                    samples = segment[int((initial_datetime - segment.initial_datetime).total_seconds()*self.sampling_frequency):int((final_datetime - segment.initial_datetime).total_seconds()*self.sampling_frequency)]
+                    res_segments.append(Timeseries.Segment(samples, initial_datetime, self.__sampling_frequency))
+                    return res_segments
                 else:
-                    res += segment[int((initial_datetime - segment.initial_datetime).total_seconds()*self.sampling_frequency):]
+                    samples = segment[int((initial_datetime - segment.initial_datetime).total_seconds()*self.sampling_frequency):]
+                    res_segments.append(Timeseries.Segment(samples, initial_datetime, self.__sampling_frequency))
                     for j in range(i+1, len(self.__segments)):  # adding the remaining samples, until the last Segment is found
                         segment = self.__segments[j]
                         if final_datetime <= segment.final_datetime:
-                            res += segment[:int((final_datetime - segment.initial_datetime).total_seconds()*self.sampling_frequency)]
-                            return res
+                            samples = segment[:int((final_datetime - segment.initial_datetime).total_seconds()*self.sampling_frequency)]
+                            res_segments.append(Timeseries.Segment(samples, segment.initial_datetime, self.__sampling_frequency))
+                            return res_segments
                         else:
-                            res += segment[:]
+                            samples = segment[:]
+                            res_segments.append(Timeseries.Segment(samples, segment.initial_datetime, self.__sampling_frequency))
 
     def __check_boundaries(self, datetime: datetime) -> None:
         if datetime < self.__initial_datetime or datetime > self.__final_datetime:

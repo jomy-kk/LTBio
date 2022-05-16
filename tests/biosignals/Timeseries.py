@@ -80,16 +80,19 @@ class TimeseriesTestCase(unittest.TestCase):
     def test_indexing_slices(self):
         ts = Timeseries([self.segment1, self.segment2], True, self.sf)
 
-        # Time point indexing
+        # Case A: Indexing on the same Segments
         self.assertEqual(
-            ts[self.initial1 + timedelta(seconds=0 / self.sf): self.initial1 + timedelta(seconds=3 / self.sf)],
+            ts[self.initial1 + timedelta(seconds=0 / self.sf): self.initial1 + timedelta(seconds=3 / self.sf)].segments[0][:],
             self.samples1[0:3])
         self.assertEqual(
-            ts[self.initial2 + timedelta(seconds=0 / self.sf): self.initial2 + timedelta(seconds=3 / self.sf)],
+            ts[self.initial2 + timedelta(seconds=0 / self.sf): self.initial2 + timedelta(seconds=3 / self.sf)].segments[0][:],
             self.samples2[0:3])
+
+        # Case B: Indexing in multiple Segments
+        x =  ts[self.initial1 + timedelta(seconds=0 / self.sf): self.initial2 + timedelta(seconds=3 / self.sf)]
         self.assertEqual(
-            ts[self.initial1 + timedelta(seconds=0 / self.sf): self.initial2 + timedelta(seconds=3 / self.sf)],
-            self.samples1 + self.samples2)  # TODO: Is this really the behaviour we want? To give it all together?
+            x.segments[0][:] + x.segments[1][:],
+            self.samples1 + self.samples2)
 
     def test_concatenate_two_timeseries(self):
         # With the same sampling frequency and units, and on the correct order
