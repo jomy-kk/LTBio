@@ -87,6 +87,7 @@ class Timeseries():
         self.__units = units
         self.__initial_datetime = self.__segments[0].initial_datetime  # Is the initial datetime of the first Segment.
         self.__final_datetime = self.__segments[-1].final_datetime  # Is the final datetime of the last Segment.
+
         self.__name = name
 
 
