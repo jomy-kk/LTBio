@@ -25,7 +25,7 @@ class BiosignalTestCase(unittest.TestCase):
         self.ts1 = Timeseries([Timeseries.Segment(self.samples1, self.initial1, self.sf), ], True, self.sf, Unit.V)
         self.ts2 = Timeseries([Timeseries.Segment(self.samples2, self.initial1, self.sf), ], True, self.sf, Unit.V)
         self.ts3 = Timeseries([Timeseries.Segment(self.samples3, self.initial1, self.sf), ], True, self.sf, Unit.V)
-        self.testpath = '../resources/HSM_EDF_tests'
+        self.testpath = 'resources/HSM_EDF_tests'
 
 
     def test_get_metadata(self):

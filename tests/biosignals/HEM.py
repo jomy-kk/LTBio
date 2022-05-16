@@ -13,7 +13,7 @@ class HEMTestCase(unittest.TestCase):
 
     def setUp(self):
         self.HEM = HEM.HEM() # HEM needs to be instantiated only to test _read and _write methods, for they are protected.
-        self.testpath = '../resources/HEM_TRC_tests/' # This is a test directory with TRC files in the HEM structure,
+        self.testpath = 'resources/HEM_TRC_tests/' # This is a test directory with TRC files in the HEM structure,
         self.channelx, self.channely = "ecg", "ECG" # containing ECG channels with these names,
 
         self.patient = Patient(101, "João Miguel Areias Saraiva", 23, (Epilepsy(),), tuple(), tuple())
