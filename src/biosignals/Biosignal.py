@@ -1,6 +1,7 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Tuple
+from dateutil.parser import parse as to_datetime, ParserError
 
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals.BiosignalSource import BiosignalSource
@@ -11,7 +12,7 @@ from src.clinical.Patient import Patient
 
 class Biosignal(ABC):
 
-    def __init__(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | datetime, source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None):
+    def __init__(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | Tuple[datetime], source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None):
         self.__name = name
         self.__source = source
         self.__acquisition_location = acquisition_location
@@ -22,27 +23,77 @@ class Biosignal(ABC):
             if source is None:
                 raise ValueError("To read a biosignal from a file, specify the biosignal source.")
             else:
-                self.__timeseries = self.source._read(path=timeseries, type=type(self))
+                self.__timeseries = self.source._read(dir=timeseries, type=type(self))
         if isinstance(timeseries, datetime): # this should be a time interval -> fetch from database
             pass # TODO
-        if isinstance(timeseries, dict): # this should be the {*: Timeseries} -> save samples directly
+        if isinstance(timeseries, dict): # this should be the {chanel name: Timeseries} -> save samples directly
             self.__timeseries = timeseries
+        pass
 
-        self.__n_channels = len(timeseries)
+
+    def __getitem__(self, item):
+        '''The built-in slicing and indexing operations.'''
+
+        if isinstance(item, datetime):
+            if len(self) != 1:
+                raise IndexError("This Biosignal has multiple channels. Index the channel before indexing the datetime.")
+            return self.__timeseries[self.channel_names[0]][item]
+
+        if isinstance(item, str):
+            if item in self.channel_names:
+                if len(self) == 1:
+                    raise IndexError("This Biosignal only has 1 channel. Index only the datetimes.")
+                ts = {item: self.__timeseries[item], }
+                return (type(self))(timeseries=ts, source=self.__source, acquisition_location=self.__acquisition_location,
+                                patient=self.__patient, name=self.__name)  # Patient should be the same object
+            else:
+                try:
+                    self.__timeseries[to_datetime(item)]
+                except:
+                    raise IndexError("Datetime in incorrect format or '{}' is not a channel of this Biosignal.".format(item))
+
+        if isinstance(item, slice):
+            if len(self) == 1:
+                channel_name = self.channel_names[0]
+                channel = self.__timeseries[channel_name]
+                return channel[item]
+            else:
+                ts = {}
+                for k in self.channel_names:
+                    ts[k] = self.__timeseries[k][item]
+                return (type(self))(ts, source=self.__source, acquisition_location=self.__acquisition_location,
+                                    patient=self.__patient, name=self.__name)  # Patient should be the same object
+
+        if isinstance(item, tuple):
+            if len(self) == 1:
+                res = list()
+                for k in item:
+                    if isinstance(k, datetime):
+                        res.append(self.__timeseries[k])
+                    if isinstance(k, str):
+                        try:
+                            res.append(self.__timeseries[to_datetime(k)])
+                        except ParserError:
+                            raise IndexError("String datetimes must be in a correct format.")
+                    else:
+                        raise IndexError("Index types not supported. Give a tuple of datetimes (can be in string format).")
+                return tuple(res)
+
+            else:
+                ts = {}
+                for k in item:
+                    if isinstance(k, datetime):
+                        raise IndexError("This Biosignal has multiple channels. Index the channel before indexing the datetimes.")
+                    if isinstance(k, str) and (k not in self.channel_names):
+                        raise IndexError("'{}' is not a channel of this Biosignal.".format(k))
+                    if not isinstance(k, str):
+                        raise IndexError("Index types not supported. Give a tuple of channel names (in str).")
+                    ts[k] = self.__timeseries[k]
+                return (type(self))(ts, source=self.__source, acquisition_location=self.__acquisition_location, patient=self.__patient, name=self.__name)  # Patient should be the same object
 
 
-    def __getitem__(self, channel):
-        '''The built-in slicing and indexing ([x:y]) operations.'''
-        try:
-            x = channel.stop
-            raise IndexError("Biosignals cannot be sliced. Only one channel may be indexed.")
-        except AttributeError: # attribute 'stop' should not exist
-            if self.n_channels == 1:
-                if isinstance(channel, (str, BodyLocation)):
-                    raise IndexError("{} has only 1 channel. No channel indexing needed. Access samples directly with [] operator.".format(self.__name if self.__name is not None else 'This biosignal'))
-                if type(channel) is int:
-                    return (self.__timeseries[self.channel_names[0]])[channel]
-            return self.__timeseries[channel]
+        raise IndexError("Index types not supported. Give a datetime (can be in string format), a slice or a tuple of those.")
+
 
     @property
     def channel_names(self):
@@ -58,11 +109,11 @@ class Biosignal(ABC):
 
     @property
     def patient_code(self):
-        return self.__patient.code
+        return self.__patient.code if self.__patient != None else None
 
     @property
     def patient_conditions(self) -> [MedicalCondition]:
-        return self.__patient.conditions
+        return self.__patient.conditions if self.__patient != None else None
 
     @property
     def acquisition_location(self):
@@ -73,15 +124,60 @@ class Biosignal(ABC):
         return self.__source
 
     @property
-    def type(self) -> str:
-        return type(self).__name__
+    def type(self):
+        return type(self)
 
     @property
-    def n_channels(self):
-        return self.__n_channels
+    def initial_datetime(self) -> datetime:
+        return min([ts.initial_datetime for ts in self.__timeseries.values()])
+
+    @property
+    def final_datetime(self) -> datetime:
+        return max([ts.final_datetime for ts in self.__timeseries.values()])
+
+    def __len__(self):
+        '''Returns the number of channels.'''
+        return len(self.__timeseries)
 
     def __str__(self):
         return "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nSource: {}".format(self.name, self.type, self.acquisition_location, self.n_channels, self.source)
+
+
+    def __add__(self, other):
+        # Check for possible arithmetic errors
+        if self.type != other.type:
+            raise TypeError("Cannot add a {0} to a {1}".format(other.type.__name__, self.type.__name__))
+        if set(self.channel_names) != set(other.channel_names):
+            raise ArithmeticError("Cannot add two Biosignals with a different number of channels or different channel names.")
+        if self.patient_code != other.patient_code:
+            raise ArithmeticError("Cannot add two Biosignals with different associated patient codes.")
+        if self.acquisition_location != other.acquisition_location:
+            raise ArithmeticError("Cannot add two Biosignals with different associated acquisition locations.")
+        if other.initial_datetime < self.final_datetime:
+            raise ArithmeticError("The second Biosignal comes before (in time) the first Biosignal.")
+
+
+        # Perform addition
+        res_timeseries = {}
+        for channel_name in self.channel_names:
+            res_timeseries[channel_name] = self.__timeseries[channel_name] + other[channel_name][:]
+
+        if self.source == other.source:
+            source = self.source
+        else:
+            answer = int(input("Sources are different. Which source is kept? (1) {0}; (2) {1}; (3) Mixed".format(str(self.source), str(other.source))))
+            if answer == 1:
+                source = self.source
+            elif answer == 2:
+                source = other.source
+            elif answer == 3:
+                pass  # TODO
+            else:
+                raise ValueError("Specify which source to keep associated with the result Biosignal.")
+
+        return type(self)(res_timeseries, source=source, patient=self.__patient, acquisition_location=self.acquisition_location, name=self.name + ' plus ' + other.name)
+
+
 
     #def filter(self, filter_design:Filter):
      #   pass # TODO

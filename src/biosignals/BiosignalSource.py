@@ -27,10 +27,10 @@ class BiosignalSource(ABC):
 
     @staticmethod
     @abstractmethod
-    def _read(path:str, type):
+    def _read(path:str, type, **options):
         pass
 
     @staticmethod
     @abstractmethod
-    def _write(path:str):
+    def _write(path:str, timeseries:dict):
         pass

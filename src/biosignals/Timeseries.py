@@ -1,23 +1,112 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+from dateutil.parser import parse as to_datetime
+from typing import List
+
 from numpy import array
 
 from src.biosignals.Unit import Unit
 
 class Timeseries():
-    def __init__(self, samples:dict, sampling_frequency:float, units:Unit, initial_datetime:datetime=None, name:str=None):
-        self.__samples = samples
-        self.__sampling_frequency = sampling_frequency,
-        self.__units = units,
-        self.__initial_datetime = initial_datetime
+
+    class Segment():
+        def __init__(self, samples:array, initial_datetime:datetime, sampling_frequency:float):
+            self.__samples = samples
+            self.__initial_datetime = initial_datetime
+            self.__final_datetime = self.initial_datetime + timedelta(seconds=len(samples)/sampling_frequency)
+            self.__raw_samples = None  # if some filter is applied to a Timeseries, the raw version of each Segment should be saved here
+
+        @property
+        def raw_samples(self) -> array:
+            return self.__raw_samples
+
+        @property
+        def initial_datetime(self) -> datetime:
+            return self.__initial_datetime
+
+        @property
+        def final_datetime(self) -> datetime:
+            return self.__final_datetime
+
+        @property
+        def duration(self) -> timedelta:
+            return self.__final_datetime - self.__initial_datetime
+
+        def __len__(self):
+            return len(self.__samples)
+
+        def __getitem__(self, position):
+            '''The built-in slicing and indexing (segment[x:y]) operations.'''
+            return self.__samples[position]
+
+        def __lt__(self, other):  # A Segment comes before other Segment if its end is less than the other's start.
+            return self.final_datetime < other.initial_datetime
+
+        def __le__(self, other):  # They're adjacent.
+            return self.final_datetime <= other.initial_datetime
+
+        def __gt__(self, other):  # A Segment comes after other Segment if its start is greater than the other's end.
+            return self.initial_datetime > other.final_datetime
+
+        def __ge__(self, other):  # They're adjacent.
+            return self.initial_datetime >= other.final_datetime
+
+        def __eq__(self, other):  # A Segment corresponds to the same time period than other Segment if their start and end are equal.
+            return self.initial_datetime == other.initial_datetime and self.final_datetime == other.final_datetime
+
+        def __ne__(self, other):
+            return not self.__eq__(other)
+
+        def __contains__(self, item):  # Operand 'in' === belongs to
+            if isinstance(item, datetime):
+                return self.initial_datetime <= item < self.final_datetime
+            if isinstance(item, Timeseries.Segment):
+                # A Segment contains other Segment if its start is less than the other's and its end is greater than the other's.
+                return self.initial_datetime < item.initial_datetime and self.final_datetime > item.final_datetime
+
+        def overlaps(self, other):  # A Segment overlaps other Segment if its end comes after the other's start, or its start comes before the others' end, or vice versa.
+            if self <= other:
+                return self.final_datetime > other.initial_datetime
+            else:
+                return self.initial_datetime < other.final_datetime
+
+
+
+    def __init__(self, segments: List[Segment], ordered:bool, sampling_frequency:float, units:Unit=None, name:str=None):
+        ''' Receives a list of non-overlapping Segments (overlaps will not be checked) and a sampling frequency common to all Segments.
+        If they are timely ordered, pass ordered=True, otherwise pass ordered=False.
+        Additionally, it can receive the sample units and a name, if needed.'''
+
+        # Order the Segments, if necessary
+        if not ordered:
+            self.__segments = sorted(segments)
+        else:
+            self.__segments = segments
+
+        # Save metadata
+        self.__sampling_frequency = sampling_frequency
+        self.__units = units
+        self.__initial_datetime = self.__segments[0].initial_datetime  # Is the initial datetime of the first Segment.
+        self.__final_datetime = self.__segments[-1].final_datetime  # Is the final datetime of the last Segment.
+
         self.__name = name
-        self.__raw_samples = None  # if some filter is applied to a biosignal, the raw version of each timeseries should be saved here
 
 
     # Getters and Setters
 
+    def __len__(self):
+        return sum([len(seg) for seg in self.__segments])
+
     @property
-    def n_samples(self):
-        return len(self.__samples)
+    def segments(self) -> list:
+        return self.__segments
+
+    @property
+    def initial_datetime(self) -> datetime:
+        return self.__initial_datetime
+
+    @property
+    def final_datetime(self) -> datetime:
+        return self.__final_datetime
 
     @property
     def sampling_frequency(self):
@@ -29,73 +118,112 @@ class Timeseries():
 
     @property
     def name(self):
-        return self.__name
+        return self.__name if self.__name != None else "No Name"
 
     @name.setter
     def name(self, name:str):
         self.__name = name
 
-    def get_raw_samples(self) -> array:
-        return self.__raw_samples
+    def __getitem__(self, item):
+        '''The built-in slicing and indexing ([x:y]) operations.'''
+        if isinstance(item, datetime):
+            return self.__get_sample(item)
+        if isinstance(item, str):
+            return self.__get_sample(to_datetime(item))
 
+        if isinstance(item, slice):
+            if item.step is not None:
+                raise IndexError("Indexing with step is not allowed for Timeseries. Try resampling it first.")
+            initial = to_datetime(item.start) if isinstance(item.start, str) else self.initial_datetime if item.start is None else item.start
+            final = to_datetime(item.stop) if isinstance(item.stop, str) else self.final_datetime if item.stop is None else item.stop
+            if isinstance(initial, datetime) and isinstance(final, datetime):
+                return Timeseries(self.__get_samples(initial, final), True, self.__sampling_frequency, self.__units, self.__name)
+            else:
+                raise IndexError("Index types not supported. Give a slice of datetimes (can be in string format).")
+
+        if isinstance(item, tuple):
+            res = list()
+            for timepoint in item:
+                if isinstance(timepoint, datetime):
+                    res.append(self.__get_sample(timepoint))
+                elif isinstance(timepoint, str):
+                    res.append(self.__get_sample(to_datetime(timepoint)))
+                else:
+                    raise IndexError("Index types not supported. Give a tuple of datetimes (can be in string format).")
+            return tuple(res)
+
+        raise IndexError("Index types not supported. Give a datetime (can be in string format), a slice or a tuple of those.")
+
+    def __get_sample(self, datetime: datetime) -> float:
+        self.__check_boundaries(datetime)
+        for segment in self.__segments:  # finding the first Segment
+            if datetime in segment:
+                return segment[int((datetime - segment.initial_datetime).total_seconds() * self.sampling_frequency)]
+        raise IndexError("Datetime given is in not defined in this Timeseries.")
+
+    def __get_samples(self, initial_datetime: datetime, final_datetime: datetime) -> List[Segment]:
+        '''Returns the samples between the given initial and end datetimes.'''
+        self.__check_boundaries(initial_datetime)
+        self.__check_boundaries(final_datetime)
+        res_segments = []
+        for i in range(len(self.__segments)):  # finding the first Segment
+            segment = self.__segments[i]
+            if initial_datetime in segment:
+                if final_datetime <= segment.final_datetime:
+                    samples = segment[int((initial_datetime - segment.initial_datetime).total_seconds()*self.sampling_frequency):int((final_datetime - segment.initial_datetime).total_seconds()*self.sampling_frequency)]
+                    res_segments.append(Timeseries.Segment(samples, initial_datetime, self.__sampling_frequency))
+                    return res_segments
+                else:
+                    samples = segment[int((initial_datetime - segment.initial_datetime).total_seconds()*self.sampling_frequency):]
+                    res_segments.append(Timeseries.Segment(samples, initial_datetime, self.__sampling_frequency))
+                    for j in range(i+1, len(self.__segments)):  # adding the remaining samples, until the last Segment is found
+                        segment = self.__segments[j]
+                        if final_datetime <= segment.final_datetime:
+                            samples = segment[:int((final_datetime - segment.initial_datetime).total_seconds()*self.sampling_frequency)]
+                            res_segments.append(Timeseries.Segment(samples, segment.initial_datetime, self.__sampling_frequency))
+                            return res_segments
+                        else:
+                            samples = segment[:]
+                            res_segments.append(Timeseries.Segment(samples, segment.initial_datetime, self.__sampling_frequency))
+
+    def __check_boundaries(self, datetime: datetime) -> None:
+        if datetime < self.__initial_datetime or datetime > self.__final_datetime:
+            raise IndexError("Datetime given is out of boundaries. This Timeseries begins at {} and ends at {}.".format(self.__initial_datetime, self.__final_datetime))
 
     # Operations to the samples
 
     def __iadd__(self, other):
-        '''The built-in increment operation (+=) increments one Timeseries to the end of another.'''
-        if type(other) is Timeseries:
-            self.__samples.append(other.get_samples())
+        '''The built-in increment operation (+=) concatenates one Timeseries to the end of another.'''
+        if isinstance(other, Timeseries):
+            if other.initial_datetime < self.__final_datetime:
+                raise ArithmeticError("The second Timeseries must start after the first one ends ({} + {}).".format(self.__initial_datetime, other.final_datetime))
+            if other.sampling_frequency != self.__sampling_frequency:
+                raise ArithmeticError("Both Timeseries must have the same sampling frequency ({} and {}).".format(self.__sampling_frequency, other.sampling_frequency))
+            if other.units is not None and self.__units is not None and other.units != self.__units:
+                raise ArithmeticError("Both Timeseries must have the same units ({} and {}).".format(self.__units, other.units))
+            self.__segments += other.segments # gets a list of all other's Segments and concatenates it to the self's one.
             return self
-        if type(other) is array:
-            self.__samples.append(other)
-            return self
-        raise TypeError("{0} is invalid. Only an np.array or a Timeseries can be incremented to another Timeseries.".format(other))
+
+        raise TypeError("Trying to concatenate an object of type {}. Expected type: Timeseries.".format(type(other)))
 
     def __add__(self, other):
         '''The built-in sum operation (+) adds two Timeseries.'''
-        if type(other) is Timeseries:
-            return self.__samples + other.get_samples()
-        if type(other) is array:
-            return self.__samples + other
-        raise TypeError("{0} is invalid. Only an np.array or a Timeseries can be added to another Timeseries.".format(other))
+        if isinstance(other, Timeseries):
+            if other.initial_datetime < self.__final_datetime:
+                raise ArithmeticError("The second Timeseries must start after the first one ends ({} + {}).".format(self.__initial_datetime, other.final_datetime))
+            if other.sampling_frequency != self.__sampling_frequency:
+                raise ArithmeticError("Both Timeseries must have the same sampling frequency ({} and {}).".format(self.__sampling_frequency, other.sampling_frequency))
+            if other.units is not None and self.__units is not None and other.units != self.__units:
+                raise ArithmeticError("Both Timeseries must have the same units ({} and {}).".format(self.__units, other.units))
+            new_segments = self.__segments + other.segments
+            x = Timeseries(new_segments, True, self.__sampling_frequency, self.units if self.__units is not None else other.units, self.name + ' plus ' + other.name)
+            return x
 
-    def __getitem__(self, item):
-        '''The built-in slicing and indexing ([x:y]) operations.'''
-        try:
-            if item.stop != None:
-                return self.__get_samples(item.start, item.stop)
-        except AttributeError: # when attribute 'stop' does not exist
-            if isinstance(item, str | datetime):
-                return self.__samples[int(item.timestamp() * self.__sampling_frequency)]
-            elif isinstance(item, int):
-                return self.__samples[item]
+        raise TypeError("Trying to concatenate an object of type {}. Expected type: Timeseries.".format(type(other)))
+
 
     def trim(self, initial_datetime: datetime, final_datetime: datetime):
-        '''Trims the samples of the Timeseries and deletes the remaining.'''
-        new_array = self.__get_samples(initial_datetime, final_datetime)
-        self.__samples = new_array
-        # FIXME: is it strings or datetimes the user has to give; or will we allow both and convert
-
-
-    # Get sample statistics
-
-    def get_mean(self) -> float:
-        return self.__samples.mean()
-
-    def get_variance(self) -> float:
-        return self.__samples.var()
-
-    def get_standard_deviation(self) -> float:
-        return self.__samples.std()
-
-
-    # Private Auxiliary Methods
-
-    def __get_samples(self, initial_datetime: datetime = None, final_datetime: datetime = None) -> array:
-        '''Returns the samples between the given initial and final datetimes, inclusively.'''
-        initial_sample = int(initial_datetime.timestamp() * self.__sampling_frequency)
-        final_sample = int(final_datetime.timestamp() * self.__sampling_frequency)
-        return self.__samples[initial_sample:final_sample+1]
+        pass # TODO
 
 
 
