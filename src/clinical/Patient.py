@@ -48,8 +48,10 @@ class Patient():
     def get_protected_info(self):
         """Returns a dictionary of the private/sensible information: Name, Age, Medications, and Surgical Procedures."""
         # TODO: implement digestion with an RSA key
-
+        pass
+        """
         password = input("Password: ")
         digest()
         if (not self.__locked):
             return
+        """
