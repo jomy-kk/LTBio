@@ -4,6 +4,7 @@ from typing import List
 
 from numpy import array
 
+from src.processing.Filter import Filter
 from src.biosignals.Unit import Unit
 
 class Timeseries():
@@ -13,7 +14,8 @@ class Timeseries():
             self.__samples = samples
             self.__initial_datetime = initial_datetime
             self.__final_datetime = self.initial_datetime + timedelta(seconds=len(samples)/sampling_frequency)
-            self.__raw_samples = None  # if some filter is applied to a Timeseries, the raw version of each Segment should be saved here
+            self.__raw_samples = samples  # if some filter is applied to a Timeseries, the raw version of each Segment should be saved here
+            self.__is_filtered = False
 
         @property
         def raw_samples(self) -> array:
@@ -30,6 +32,10 @@ class Timeseries():
         @property
         def duration(self) -> timedelta:
             return self.__final_datetime - self.__initial_datetime
+
+        @property
+        def is_filtered(self) -> bool:
+            return self.__is_filtered
 
         def __len__(self):
             return len(self.__samples)
@@ -68,6 +74,9 @@ class Timeseries():
                 return self.final_datetime > other.initial_datetime
             else:
                 return self.initial_datetime < other.final_datetime
+
+        def _accept_filtering(self, filter_design:Filter):
+            self.__samples = filter_design._visit(self.__samples)  # replace with filtered samples
 
 
 
@@ -225,5 +234,8 @@ class Timeseries():
     def trim(self, initial_datetime: datetime, final_datetime: datetime):
         pass # TODO
 
-
+    def _accept_filtering(self, filter_design:Filter):
+        filter_design._compute_coefficients(self.__sampling_frequency)
+        for segment in self.__segments:
+            segment._accept_filtering(filter_design)
 
