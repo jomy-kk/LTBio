@@ -179,6 +179,7 @@ class Biosignal(ABC):
         return type(self)(res_timeseries, source=source, patient=self.__patient, acquisition_location=self.acquisition_location, name=self.name + ' plus ' + other.name)
 
 
-    def filter(self, filter_design:Filter):
+    def filter(self, filter_design:Filter) -> int:
         for channel in self.__timeseries.values():
             channel._accept_filtering(filter_design)
+        return 0

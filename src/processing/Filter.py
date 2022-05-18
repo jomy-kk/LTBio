@@ -4,7 +4,7 @@
 
 # Package: processing
 # File: Filter
-# Description: Class representing a filter and its properties. It works with the design pattern 'Visitor' in order to apply itself to Biosignals.
+# Description: Class representing a filter, its design properties, and methods to apply itself to Biosignals.
 
 # Contributors: João Saraiva
 # Created: 17/05/2022
@@ -48,7 +48,7 @@ class Filter:
         - cutoff: The cutoff frequency at 3 dB (for lowpass and highpass) or a tuple of two cutoffs (for bandpass or bandstop) (in Hertz, float).
     """
 
-    def __init__(self, fresponse: FrequencyResponse, band_type: BandType, order: int, cutoff: float | Tuple[float]):
+    def __init__(self, fresponse: FrequencyResponse, band_type: BandType, cutoff: float | Tuple[float], order: int):
         # These properties can be changed as pleased:
         self.fresponse = fresponse
         self.band_type = band_type
@@ -57,6 +57,20 @@ class Filter:
         # These are private properties:
         self.__b, self.__a = None, None
         self.__exec = None
+
+    @property
+    def last_numerator_coefficients(self) -> array:
+        if self.__are_coefficients_computed():
+            return self.__b
+        else:
+            raise AttributeError('The H function coefficients depend on the sampling frequency. This filter has not been applied to any Biosignal yet, hence the coeeficients were not computed yet.')
+
+    @property
+    def last_denominator_coefficients(self) -> array:
+        if self.__are_coefficients_computed():
+            return self.__a
+        else:
+            raise AttributeError('The H function coefficients depend on the sampling frequency. This filter has not been applied to any Biosignal yet, hence the coeeficients were not computed yet.')
 
     def _compute_coefficients(self, sampling_frequency: float):
         """
