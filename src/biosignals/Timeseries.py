@@ -76,7 +76,15 @@ class Timeseries():
                 return self.initial_datetime < other.final_datetime
 
         def _accept_filtering(self, filter_design:Filter):
-            self.__samples = filter_design._visit(self.__samples)  # replace with filtered samples
+            res = filter_design._visit(self.__samples)  # replace with filtered samples
+            self.__samples = res
+            self.__is_filtered = True
+
+        def _restore_raw(self):
+            if self.is_filtered:
+                self.__samples = self.__raw_samples
+                self.__is_filtered = False
+
 
 
 
@@ -239,3 +247,6 @@ class Timeseries():
         for segment in self.__segments:
             segment._accept_filtering(filter_design)
 
+    def undo_filters(self):
+        for segment in self.__segments:
+            segment._restore_raw()

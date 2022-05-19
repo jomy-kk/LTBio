@@ -183,3 +183,7 @@ class Biosignal(ABC):
         for channel in self.__timeseries.values():
             channel._accept_filtering(filter_design)
         return 0
+
+    def undo_filters(self):
+        for channel in self.__timeseries.values():
+            channel.undo_filters()
