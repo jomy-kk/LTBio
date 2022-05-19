@@ -23,6 +23,14 @@ class Filter(ABC):
         self.name = name
 
     @abstractmethod
+    def _setup(self, sampling_frequency: float):
+        """
+        Implement this method to be called before visits.
+        Generally it gets some information from the sampling frequency of a Timeseries.
+        """
+        pass
+
+    @abstractmethod
     def _visit(self, samples: array) -> array:
         """
         Applies the Filter to a sequence of samples.

@@ -76,7 +76,7 @@ class FrequencyDomainFilter(Filter):
         else:
             raise AttributeError('The H function coefficients depend on the sampling frequency. This filter has not been applied to any Biosignal yet, hence the coeeficients were not computed yet.')
 
-    def _compute_coefficients(self, sampling_frequency: float):
+    def _setup(self, sampling_frequency: float):
         """
         Computes the coefficients of the H function.
         They are stored as 'b' and 'a', respectively, the numerator and denominator coefficients.
@@ -98,7 +98,7 @@ class FrequencyDomainFilter(Filter):
     def _visit(self, samples: array) -> array:
         """
         Applies the Filter to a sequence of samples.
-        It acts as the visit method of the Visitor Design Pattern.
+        It acts as the concrete visit method of the Visitor Design Pattern.
 
         :param samples: Sequence of samples to filter.
         :return: The filtered sequence of samples.

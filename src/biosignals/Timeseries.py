@@ -243,7 +243,7 @@ class Timeseries():
         pass # TODO
 
     def _accept_filtering(self, filter_design:Filter):
-        filter_design._compute_coefficients(self.__sampling_frequency)
+        filter_design._setup(self.__sampling_frequency)
         for segment in self.__segments:
             segment._accept_filtering(filter_design)
 
