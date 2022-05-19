@@ -50,8 +50,12 @@ class TimeDomainFilter(Filter):
         self.options = options
 
     def _setup(self, sampling_frequency: float):
-        self.window_length_in_samples = self.window_length.total_seconds() * sampling_frequency
-        self.overlap_length_in_samples = self.overlap_length.total_seconds() * sampling_frequency
+        self.__window_length_in_samples = int(self.window_length.total_seconds() * sampling_frequency)
+        self.__overlap_length_in_samples = int(self.overlap_length.total_seconds() * sampling_frequency)
+        if divmod(self.__window_length_in_samples, 2) == 0:
+            self.__window_length_in_samples+=1
+        if divmod(self.__overlap_length_in_samples, 2) == 0:
+            self.__overlap_length_in_samples+=1
 
     def _visit(self, samples: array) -> array:
         """
@@ -62,4 +66,4 @@ class TimeDomainFilter(Filter):
         :return: The filtered sequence of samples.
         """
 
-        return apply_convolution(samples, kernel=self.operation.name.lower(), size=self.window_length_in_samples)[0]
+        return apply_convolution(samples, kernel=self.operation.name.lower(), size=self.__window_length_in_samples)[0]
