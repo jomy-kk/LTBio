@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Dict, Tuple
 from dateutil.parser import parse as to_datetime, ParserError
 
-from src.processing.Filter import Filter
+from src.processing.FrequencyDomainFilter import Filter
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals.BiosignalSource import BiosignalSource
 from src.clinical.BodyLocation import BodyLocation

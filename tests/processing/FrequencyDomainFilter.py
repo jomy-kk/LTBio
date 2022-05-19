@@ -4,10 +4,10 @@ from numpy import array, allclose
 
 from src.biosignals.ECG import ECG
 from src.biosignals.HEM import HEM
-from src.processing.Filter import Filter, FrequencyResponse, BandType
+from src.processing.FrequencyDomainFilter import FrequencyDomainFilter, FrequencyResponse, BandType
 
 
-class FilterTestCase(unittest.TestCase):
+class FrequencyDomainFilterTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -44,7 +44,7 @@ class FilterTestCase(unittest.TestCase):
         cls.assertTrue(allclose(cls.design.last_numerator_coefficients, b))
 
     def test_create_filter(cls):
-        filter = Filter(FrequencyResponse.FIR, BandType.LOWPASS, cutoff=35, order=4)
+        filter = FrequencyDomainFilter(FrequencyResponse.FIR, BandType.LOWPASS, cutoff=35, order=4)
 
         cls.assertEquals(filter.fresponse, FrequencyResponse.FIR)
         cls.assertEquals(filter.band_type, BandType.LOWPASS)
@@ -58,13 +58,13 @@ class FilterTestCase(unittest.TestCase):
             x = filter.last_denominator_coefficients
 
     def test_undo_filters(cls):
-        design = Filter(FrequencyResponse.FIR, BandType.LOWPASS, cutoff=35, order=4)
+        design = FrequencyDomainFilter(FrequencyResponse.FIR, BandType.LOWPASS, cutoff=35, order=4)
         cls.biosignal.filter(design)
         cls.biosignal.undo_filters()
         cls.check_samples(cls.samplesx1, cls.samplesx2, cls.samplesy1, cls.samplesy2)
 
     def test_apply_lowpass(cls):
-        cls.design = Filter(FrequencyResponse.FIR, BandType.LOWPASS, cutoff=35, order=4)
+        cls.design = FrequencyDomainFilter(FrequencyResponse.FIR, BandType.LOWPASS, cutoff=35, order=4)
         cls.biosignal.filter(cls.design)
         filtered_samplesx1 = array([440.2343749999999, 325.19535959544606, 194.89333667491812, 64.73836768117471, -36.28205628108594, -87.50855522189507, -84.01783558745562, -36.415288228398865, 35.22188242718816, 110.61854433139622, 175.94711792327442, 226.88346297344302, 264.0660408359895, 284.7192184124254, 287.51595784241596, 279.03271635216885])
         filtered_samplesx2 = array([-90.52734374999999, -71.83667554401283, -36.18554850106002, 2.7680297058387096, 34.06492382448229, 84.56978782342406, 139.15108997753347, 133.27847367107123, 68.81408936597155, 15.34194893071686, 8.715746528594849, 1.5624584351862536, -53.22019591979858, -102.28014675208755, -82.83092293961636, -38.73462082560295])
@@ -79,7 +79,7 @@ class FilterTestCase(unittest.TestCase):
         cls.biosignal.undo_filters()
 
     def test_apply_highpass(cls):
-        cls.design = Filter(FrequencyResponse.FIR, BandType.HIGHPASS, cutoff=35, order=4)
+        cls.design = FrequencyDomainFilter(FrequencyResponse.FIR, BandType.HIGHPASS, cutoff=35, order=4)
         cls.biosignal.filter(cls.design)
         filtered_samplesx1 = array([92.60275277843985, 91.28829000917298, 36.818519425204734, 4.406778831424174, -27.529196890329423, -37.91913093415782, -34.285788382527436, -13.950675057813184, 7.409505153476878, 27.978214612829056, 45.451705623223035, 47.14528699203644, 61.14625493387997, 69.79861205288151, 63.63123341283505, 55.94450292247304])
         filtered_samplesx2 = array([-19.042314069568274, -26.266114826445353, -31.944425786264997, 54.28775344788265, -23.74202581025071, -30.179160991832646, 103.49514009937701, 54.81175531849776, 6.226774228110688, -45.876405049343, -5.405675794620724, 54.45303706785619, 31.423674662817465, -160.2457921064001, 40.10140395525448, 2.344019001831333])
@@ -94,7 +94,7 @@ class FilterTestCase(unittest.TestCase):
         cls.biosignal.undo_filters()
 
     def test_apply_bandpass(cls):
-        cls.design = Filter(FrequencyResponse.FIR, BandType.BANDPASS, cutoff=(5,35), order=4)
+        cls.design = FrequencyDomainFilter(FrequencyResponse.FIR, BandType.BANDPASS, cutoff=(5,35), order=4)
         cls.biosignal.filter(cls.design)
         filtered_samplesx1 = array([511.7986340153492, 378.56174491626234, 226.6092506308287, 74.48431264081334, -43.506148052528786, -103.18571394811204, -98.83712018964874, -42.951301490785596, 40.87048143292452, 128.88934017436787, 204.93544110189444, 264.10231179121786, 307.4203403051477, 331.491022039846, 334.54451151569964, 324.4791062304942])
         filtered_samplesx2 = array([-105.24341919525924, -84.06504460446884, -42.15362522760199, 3.5854950914590407, 38.95463404981099, 98.0083929438049, 163.57340904539572, 156.68286035680282, 79.60037436591982, 16.33878199044886, 10.13294380332879, 3.4151436203239323, -61.97159826391307, -121.09206361916416, -96.87670844976184, -44.4115353002712])
@@ -109,7 +109,7 @@ class FilterTestCase(unittest.TestCase):
         cls.biosignal.undo_filters()
 
     def test_apply_bandstop(cls):
-        cls.design = Filter(FrequencyResponse.FIR, BandType.BANDSTOP, cutoff=(5,35), order=4)
+        cls.design = FrequencyDomainFilter(FrequencyResponse.FIR, BandType.BANDSTOP, cutoff=(5,35), order=4)
         cls.biosignal.filter(cls.design)
         filtered_samplesx1 = array([440.2343749999999, 405.5671205035317, 181.405484527368, 28.485252571327493, -111.89163863526858, -162.73995074193448, -147.4814237795768, -61.59850870371859, 34.78729243383115, 128.46467654148972, 206.81555310328048, 227.15023050461008, 285.66483385690213, 321.28334470809784, 299.9977097195605, 270.34613270818625])
         filtered_samplesx2 = array([-90.52734374999996, -113.62991253108876, -117.80596227137889, 185.44019548376173, -74.32867083240272, -78.7641679918031, 400.3313491654663, 235.97596325840985, 37.7616304002299, -160.2433887260206, -15.72053408460598, 195.55029865206595, 88.12920796755944, -582.0798898559642, 105.13127545509255, 1.8478735063006475])
@@ -125,7 +125,7 @@ class FilterTestCase(unittest.TestCase):
 
 
     def test_apply_butterworth(cls):
-        cls.design = Filter(FrequencyResponse.BUTTER, BandType.LOWPASS, cutoff=35, order=4)
+        cls.design = FrequencyDomainFilter(FrequencyResponse.BUTTER, BandType.LOWPASS, cutoff=35, order=4)
         cls.biosignal.filter(cls.design)
         filtered_samplesx1 = array([440.21905152275974, 304.4795479867062, 169.94073917123427, 45.27776717920752, -52.75059616934851, -106.43780944783379, -106.7537391416006, -58.75266276416283, 20.365547901855702, 108.61305363037368, 187.22498086689149, 245.2991858088813, 280.0331208906721, 294.19980084493506, 293.15353765306344, 282.63632987786224])
         filtered_samplesx2 = array([-90.42799215125021, -72.44545332247914, -44.05716881847533, -0.7927782866013686, 52.26580820944758, 101.46126296462884, 130.49371234124786, 129.06533575718052, 98.56741470016361, 50.21733503294118, -1.9315067313839158, -46.04820630781686, -73.19545560674891, -78.19093822303068, -63.569792054971686, -41.65987147160983])
@@ -140,7 +140,7 @@ class FilterTestCase(unittest.TestCase):
         cls.biosignal.undo_filters()
 
     def test_apply_chebyshev1(cls):
-        cls.design = Filter(FrequencyResponse.CHEBY1, BandType.LOWPASS, rp=1, cutoff=35, order=4)
+        cls.design = FrequencyDomainFilter(FrequencyResponse.CHEBY1, BandType.LOWPASS, rp=1, cutoff=35, order=4)
         cls.biosignal.filter(cls.design)
         filtered_samplesx1 = array([349.93495118557433, 227.3033996299854, 103.71552384380104, -13.647009774296144, -108.3102208684852, -160.96327768161365, -159.72318302777919, -107.51866738076204, -21.926867574593594, 72.26593344930406, 153.18440715884267, 209.06281981119693, 239.40838470639747, 250.9064871599279, 251.51956915848908, 246.3436133547194])
         filtered_samplesx2 = array([-64.43258311538743, -49.56999415591678, -28.778508687123075, 5.569728462879141, 52.68015174606167, 102.06337105641155, 137.20354917549503, 142.90606701931281, 113.00714817399182, 54.620172884456345, -13.42586868530874, -67.77998168281401, -90.83499825495694, -79.65379024343886, -48.39038979359826, -21.01768685197116])
@@ -155,7 +155,7 @@ class FilterTestCase(unittest.TestCase):
         cls.biosignal.undo_filters()
 
     def test_apply_chebyshev2(cls):
-        cls.design = Filter(FrequencyResponse.CHEBY2, BandType.LOWPASS, rs=1, cutoff=35, order=4)
+        cls.design = FrequencyDomainFilter(FrequencyResponse.CHEBY2, BandType.LOWPASS, rs=1, cutoff=35, order=4)
         cls.biosignal.filter(cls.design)
         filtered_samplesx1 = array([440.033405206162, 330.2782769599933, 181.78420331499532, 48.11275963943034, -67.12559704761684, -116.90102876186685, -108.07184995943075, -53.85247398353445, 22.66642024993719, 108.10894835495458, 189.16446034688596, 244.25777408178723, 284.69210245831766, 299.3089828984628, 290.6697900819345, 272.60630850574995])
         filtered_samplesx2 = array([-72.38683782798307, -34.89230581185972, -62.575858591647744, -12.426432353508718, -6.814039621832812, 80.13054119711084, 220.01961141521105, 165.5892138635972, 87.36665365264099, -5.984071965532241, -31.965118118067025, -16.114962198054656, -12.08671890070342, -162.83770952708312, -40.285634951406045, -40.11966407843957])
@@ -170,7 +170,7 @@ class FilterTestCase(unittest.TestCase):
         cls.biosignal.undo_filters()
 
     def test_apply_elliptic(cls):
-        cls.design = Filter(FrequencyResponse.ELLIP, BandType.LOWPASS, cutoff=35, order=4, rp=1, rs=1)
+        cls.design = FrequencyDomainFilter(FrequencyResponse.ELLIP, BandType.LOWPASS, cutoff=35, order=4, rp=1, rs=1)
         cls.biosignal.filter(cls.design)
         filtered_samplesx1 = array([6942435.303953765, 11839058.188819114, 14257957.072291976, 13702663.715635203, 10308195.409267912, 4799936.503223982, -1671601.1676694218, -7776036.722063037, -12272915.60042842, -14253757.047427826, -13315781.794110822, -9640653.368733859, -3964936.0758584053, 2556860.061522986, 8578369.858478794, 12838133.028961767])
         filtered_samplesx2 = array([21272130.828110605, 24881232.309730154, 23380242.63134039, 16940863.159208547, 6822985.072412525, -4838830.355332321, -15504071.88118165, -22835498.999718793, -25268196.01423836, -22364874.038976733, -14863296.796856437, -4434111.037659023, 6742358.177103768, 16442129.280156318, 22800205.596144527, 24604017.551508356])
@@ -185,7 +185,7 @@ class FilterTestCase(unittest.TestCase):
         cls.biosignal.undo_filters()
 
     def test_apply_bessel(cls):
-        cls.design = Filter(FrequencyResponse.BESSEL, BandType.LOWPASS, cutoff=35, order=4)
+        cls.design = FrequencyDomainFilter(FrequencyResponse.BESSEL, BandType.LOWPASS, cutoff=35, order=4)
         cls.biosignal.filter(cls.design)
         filtered_samplesx1 = array([440.23388775112886, 315.68203960936205, 197.51020766840128, 94.29235015877767, 16.301442639341097, -27.81164289494302, -34.84487260031746, -8.796542921963649, 40.41099005819904, 100.27974256787292, 159.2864356869191, 209.14449238272667, 245.41000642206131, 266.99740097036965, 275.3139523693925, 273.31991074579486])
         filtered_samplesx2 = array([-90.52811430020633, -60.75711428638602, -28.348289026480344, 7.191077499320952, 42.92944943735487, 72.66066590708502, 89.08082908331613, 87.69400775072042, 69.77235294626135, 41.41057970766394, 9.678919464902062, -19.86974447692035, -42.7127071703568, -54.94253229594646, -55.28952273041838, -47.08135406603423])

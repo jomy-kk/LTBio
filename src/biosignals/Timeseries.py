@@ -4,7 +4,7 @@ from typing import List
 
 from numpy import array
 
-from src.processing.Filter import Filter
+from src.processing.FrequencyDomainFilter import Filter
 from src.biosignals.Unit import Unit
 
 class Timeseries():
