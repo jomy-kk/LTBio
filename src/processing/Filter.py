@@ -14,7 +14,7 @@
 from typing import Tuple
 from enum import unique, Enum
 
-from biosppy.signals.tools import get_filter as get_coefficients, OnlineFilter as FilterExec
+from biosppy.signals.tools import get_filter as get_coefficients, _filter_signal
 from numpy import array
 
 
@@ -48,12 +48,13 @@ class Filter:
         - cutoff: The cutoff frequency at 3 dB (for lowpass and highpass) or a tuple of two cutoffs (for bandpass or bandstop) (in Hertz, float).
     """
 
-    def __init__(self, fresponse: FrequencyResponse, band_type: BandType, cutoff: float | Tuple[float], order: int):
+    def __init__(self, fresponse: FrequencyResponse, band_type: BandType, cutoff: float | Tuple[float, float], order: int, **options):
         # These properties can be changed as pleased:
         self.fresponse = fresponse
         self.band_type = band_type
         self.order = order
         self.cutoff = cutoff
+        self.options = options
         # These are private properties:
         self.__b, self.__a = None, None
         self.__exec = None
@@ -81,16 +82,15 @@ class Filter:
         """
 
         # Digital filter coefficients (from Biosppy)
-        self.__b, self.__a = get_coefficients(ftype=self.fresponse.name.lower(), band=self.band_type.name.lower(),
+        self.__b, self.__a = get_coefficients(ftype=self.fresponse.name.lower() if self.fresponse != FrequencyResponse.FIR else self.fresponse.name, band=self.band_type.name.lower(),
                                           order=self.order,
-                                          frequency=self.cutoff, sampling_rate=sampling_frequency)
-        self.exex = FilterExec(b=self.__b, a=self.__a)
+                                          frequency=self.cutoff, sampling_rate=sampling_frequency, **self.options)
 
     def __are_coefficients_computed(self) -> bool:
         """
         :return: True if coefficients have already been computed, and the Filter is ready to be applied.
         """
-        return self.__exec is not None  # or (self.b is not None and self.a is not None)
+        return self.__b is not None and self.__a is not None
 
     def _visit(self, samples: array) -> array:
         """
@@ -100,5 +100,6 @@ class Filter:
         :param samples: Sequence of samples to filter.
         :return: The filtered sequence of samples.
         """
-        self.__exec.reset()
-        return self.__exec.filter(samples)['filtered']
+
+        x = _filter_signal(self.__b, self.__a, samples, check_phase=True)[0]
+        return x
