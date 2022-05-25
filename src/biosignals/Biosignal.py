@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Dict, Tuple
 from dateutil.parser import parse as to_datetime, ParserError
 
+from src.processing.FrequencyDomainFilter import Filter
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals.BiosignalSource import BiosignalSource
 from src.clinical.BodyLocation import BodyLocation
@@ -178,6 +179,11 @@ class Biosignal(ABC):
         return type(self)(res_timeseries, source=source, patient=self.__patient, acquisition_location=self.acquisition_location, name=self.name + ' plus ' + other.name)
 
 
+    def filter(self, filter_design:Filter) -> int:
+        for channel in self.__timeseries.values():
+            channel._accept_filtering(filter_design)
+        return 0
 
-    #def filter(self, filter_design:Filter):
-     #   pass # TODO
+    def undo_filters(self):
+        for channel in self.__timeseries.values():
+            channel.undo_filters()
