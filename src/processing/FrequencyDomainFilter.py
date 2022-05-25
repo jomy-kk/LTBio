@@ -15,7 +15,8 @@ from typing import Tuple
 from enum import unique, Enum
 
 from biosppy.signals.tools import get_filter as get_coefficients, _filter_signal
-from numpy import array
+from biosppy.plotting import _plot_filter as plot_bode_in_Hz, plot_filter
+from numpy import array, pi as PI
 
 from src.processing.Filter import Filter
 
@@ -88,6 +89,7 @@ class FrequencyDomainFilter(Filter):
         self.__b, self.__a = get_coefficients(ftype=self.fresponse.name.lower() if self.fresponse != FrequencyResponse.FIR else self.fresponse.name, band=self.band_type.name.lower(),
                                           order=self.order,
                                           frequency=self.cutoff, sampling_rate=sampling_frequency, **self.options)
+        self.__sampling_frequency_of_coefficients = sampling_frequency
 
     def __are_coefficients_computed(self) -> bool:
         """
@@ -106,3 +108,20 @@ class FrequencyDomainFilter(Filter):
 
         x = _filter_signal(self.__b, self.__a, samples, check_phase=True)[0]
         return x
+
+    def plot_bode(self, show:bool=True, save_to:str=None):
+        if self.__are_coefficients_computed():  # Plot with frequencies in Hz
+            # figure = plot_bode_in_Hz(self.__b, self.__a, sampling_rate=self.__sampling_frequency_of_coefficients) FIXME: use this function to not recompute b and a again
+            # Temporary solution below:
+            sampling_frequency = self.__sampling_frequency_of_coefficients
+        else:  # TODO: Plot with normalized frequencies
+            raise RuntimeError("Apply this filter to a Biosignal prior to trying to Bode plotting it. Plotting with normalized frequencies is not available yet.")
+
+        plot_filter(ftype=self.fresponse.name.lower() if self.fresponse != FrequencyResponse.FIR else self.fresponse.name,
+                    band=self.band_type.name.lower(),
+                    order=self.order,
+                    frequency=self.cutoff,
+                    sampling_rate=sampling_frequency,
+                    show=show,
+                    path=save_to,
+                    **self.options)
