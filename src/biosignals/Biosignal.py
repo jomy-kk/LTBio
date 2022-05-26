@@ -2,6 +2,7 @@ from abc import ABC
 from datetime import datetime
 from typing import Dict, Tuple
 from dateutil.parser import parse as to_datetime, ParserError
+import matplotlib.pyplot as plt
 
 from src.processing.FrequencyDomainFilter import Filter
 from src.biosignals.Timeseries import Timeseries
@@ -187,3 +188,19 @@ class Biosignal(ABC):
     def undo_filters(self):
         for channel in self.__timeseries.values():
             channel.undo_filters()
+
+    def plot_spectrum(self, show:bool=True, save_to:str=None):
+        fig = plt.figure()
+
+        for i, channel_name in zip(range(len(self)), self.channel_names):
+            ax = fig.add_subplot(len(self) * 100 + 10 + i + 1, title=channel_name, xlabel='Frequency (Hz)', ylabel='Power (dB)')
+            ax.grid()
+            ax.margins(x=0)
+            channel = self.__timeseries[channel_name]
+            channel.plot_spectrum()
+
+        fig.suptitle(self.name + ' Power Spectrum')
+        fig.tight_layout()
+        if save_to is not None:
+            fig.savefig(save_to)
+        plt.show() if show else plt.close()

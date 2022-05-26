@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 from dateutil.parser import parse as to_datetime
 from typing import List
-
 from numpy import array
+from biosppy.signals.tools import power_spectrum
+import matplotlib.pyplot as plt
 
 from src.processing.FrequencyDomainFilter import Filter
 from src.biosignals.Unit import Unit
@@ -16,6 +17,10 @@ class Timeseries():
             self.__final_datetime = self.initial_datetime + timedelta(seconds=len(samples)/sampling_frequency)
             self.__raw_samples = samples  # if some filter is applied to a Timeseries, the raw version of each Segment should be saved here
             self.__is_filtered = False
+
+        @property
+        def samples(self) -> array:
+            return self.__samples
 
         @property
         def raw_samples(self) -> array:
@@ -84,7 +89,6 @@ class Timeseries():
             if self.is_filtered:
                 self.__samples = self.__raw_samples
                 self.__is_filtered = False
-
 
 
 
@@ -250,3 +254,11 @@ class Timeseries():
     def undo_filters(self):
         for segment in self.__segments:
             segment._restore_raw()
+
+    def plot_spectrum(self, show:bool=True, save_to:str=None, title:str='', id:int=0):
+        colors = ('blue', 'green', 'red')
+        for i in range(len(self.__segments)):
+            segment = self.__segments[i]
+            frequency, power = power_spectrum(signal=segment.samples, sampling_rate=self.__sampling_frequency, pad=0, pow2=False, decibel=True)
+            plt.plot(frequency, power, color=colors[i], alpha=0.6, linewidth=0.5, label='From {0} to {1}'.format(segment.initial_datetime, segment.final_datetime))
+

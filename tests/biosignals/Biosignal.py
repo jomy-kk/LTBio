@@ -1,5 +1,6 @@
 import unittest
 from datetime import datetime, timedelta
+from os import remove
 
 from src.biosignals.EDA import EDA
 from src.biosignals.Biosignal import Biosignal
@@ -26,6 +27,7 @@ class BiosignalTestCase(unittest.TestCase):
         self.ts2 = Timeseries([Timeseries.Segment(self.samples2, self.initial1, self.sf), ], True, self.sf, Unit.V)
         self.ts3 = Timeseries([Timeseries.Segment(self.samples3, self.initial1, self.sf), ], True, self.sf, Unit.V)
         self.testpath = 'resources/HSM_EDF_tests'
+        self.images_testpath = 'resources/plots_tests'
 
 
     def test_get_metadata(self):
@@ -211,6 +213,14 @@ class BiosignalTestCase(unittest.TestCase):
         with self.assertRaises(ArithmeticError): # later + earlier
             ecg2 + ecg1
 
+    def test_plot_spectrum(self):
+        ecg = ECG(self.testpath, HSM)
+        test_image_path = self.images_testpath + "/testplot.png"
+        ecg.plot_spectrum(show=False, save_to=test_image_path)
+        with open(self.images_testpath + "/ecg_spectrum.png", 'rb') as target, open(test_image_path, 'rb') as test:
+            self.assertEquals(target.read(), test.read())
+
+        remove(test_image_path)
 
 if __name__ == '__main__':
     unittest.main()
