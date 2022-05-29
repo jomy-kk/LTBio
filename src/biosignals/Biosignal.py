@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Dict, Tuple
 from dateutil.parser import parse as to_datetime, ParserError
@@ -217,4 +217,6 @@ class Biosignal(ABC):
     def plot(self, show:bool=True, save_to:str=None):
         self.__draw_plot(Timeseries.plot, None, 'Time', 'Amplitude (n.d.)', False, show, save_to)
 
-
+    @abstractmethod
+    def plot_summary(self, show:bool=True, save_to:str=None):
+        pass  # Implemented in each type
