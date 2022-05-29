@@ -139,9 +139,9 @@ class BiosignalTestCase(unittest.TestCase):
         cls.assertEqual(ecg2.channel_names, x.channel_names)
 
         # It should be able to access these ...
-        cls.assertEqual(x["a"][a:b].segments[0][:], cls.samples1[2:5])
-        cls.assertEqual(x["b"][a:b].segments[0][:], cls.samples2[2:5])
-        cls.assertEqual(x["c"][a:b].segments[0][:], cls.samples3[2:5])
+        cls.assertEqual(x["a"][a:b].segments[0].samples, cls.samples1[2:5])
+        cls.assertEqual(x["b"][a:b].segments[0].samples, cls.samples2[2:5])
+        cls.assertEqual(x["c"][a:b].segments[0].samples, cls.samples3[2:5])
 
         # ... but not these
         with cls.assertRaises(IndexError):
