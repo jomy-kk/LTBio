@@ -217,10 +217,22 @@ class BiosignalTestCase(unittest.TestCase):
         ecg = ECG(self.testpath, HSM)
         test_image_path = self.images_testpath + "/testplot.png"
         ecg.plot_spectrum(show=False, save_to=test_image_path)
+
         with open(self.images_testpath + "/ecg_spectrum.png", 'rb') as target, open(test_image_path, 'rb') as test:
             self.assertEquals(target.read(), test.read())
 
         remove(test_image_path)
+
+    def test_plot(self):
+        ecg = ECG(self.testpath, HSM, patient=self.patient, name='Test Biosignal')
+        test_image_path = self.images_testpath + "/testplot.png"
+        ecg.plot(show=False, save_to=test_image_path)
+
+        with open(self.images_testpath + "/ecg_amplitude.png", 'rb') as target, open(test_image_path, 'rb') as test:
+            self.assertEquals(target.read(), test.read())
+
+        remove(test_image_path)
+
 
 if __name__ == '__main__':
     unittest.main()

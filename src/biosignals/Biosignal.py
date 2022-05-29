@@ -111,7 +111,7 @@ class Biosignal(ABC):
 
     @property
     def patient_code(self):
-        return self.__patient.code if self.__patient != None else None
+        return self.__patient.code if self.__patient != None else 'n.d.'
 
     @property
     def patient_conditions(self) -> [MedicalCondition]:
@@ -189,18 +189,36 @@ class Biosignal(ABC):
         for channel in self.__timeseries.values():
             channel.undo_filters()
 
-    def plot_spectrum(self, show:bool=True, save_to:str=None):
+    def __draw_plot(self, timeseries_plotting_method:str, title, xlabel, ylabel, show:bool=True, save_to:str=None):
         fig = plt.figure()
 
         for i, channel_name in zip(range(len(self)), self.channel_names):
-            ax = fig.add_subplot(len(self) * 100 + 10 + i + 1, title=channel_name, xlabel='Frequency (Hz)', ylabel='Power (dB)')
-            ax.grid()
-            ax.margins(x=0)
+            #ax = fig.add_subplot(len(self) * 100 + 10 + i + 1, title=channel_name, xlabel=xlabel,
+            #                     ylabel=ylabel)
+            #ax.grid()
+            #ax.margins(x=0)
             channel = self.__timeseries[channel_name]
-            channel.plot_spectrum()
+            getattr(channel, timeseries_plotting_method)(line=i+1)
 
-        fig.suptitle(self.name + ' Power Spectrum')
+        fig.suptitle(self.name + ' ' + title)
         fig.tight_layout()
         if save_to is not None:
             fig.savefig(save_to)
         plt.show() if show else plt.close()
+
+    def plot_spectrum(self, show:bool=True, save_to:str=None):
+        self.__draw_plot('plot_spectrum', 'Power Spectrum', 'Frequency (Hz)', 'Power (dB)', show, save_to)
+
+    def plot(self, show:bool=True, save_to:str=None):
+        fig = plt.figure()
+        for i, channel_name in zip(range(len(self)), self.channel_names):
+            ax = plt.subplot(100*(len(self))+10+i+1, title=channel_name)
+            ax.title.set_size(8)
+            self.__timeseries[channel_name].plot()
+        fig.suptitle(self.name + ' from patient ' + str(self.patient_code), fontsize=10)
+        fig.tight_layout()
+        if save_to is not None:
+            fig.savefig(save_to)
+        plt.show() if show else plt.close()
+
+
