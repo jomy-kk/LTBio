@@ -255,73 +255,30 @@ class Timeseries():
         for segment in self.__segments:
             segment._restore_raw()
 
-    def __current_axis_plot(self, command, **kwargs):
-        print("here for another channel")
+    def plot_spectrum(self):
         colors = ('blue', 'green', 'red')
         n_columns = len(self.__segments)
         for i in range(n_columns):
             segment = self.__segments[i]
-            if command is None:  # plot samples
-                ax = plt.subplot(100*kwargs['line']+n_columns*10+i+1, title='Segment ' + str(i + 1))
-                x, y = range(len(segment)), segment.samples
-                if i > 0:
-                    x = array(x) + (len(self.__segments[i - 1]))
-                    ax.tick_params(axis='y', which='both', left=False, labelleft=False)
-                if i == len(self.__segments)-1:
-                    ax.tick_params(axis='y', which='both', right=True, labelright=True)
-                ax.plot(x, y, linewidth=0.5)
-            else:
-                x, y = command(signal=segment.samples, **kwargs)
-                plt.xticks(2, (segment.initial_datetime, segment.final_datetime))
+            x, y = power_spectrum(signal=segment.samples)
             plt.plot(x, y, color=colors[i], alpha=0.6, linewidth=0.5,
                      label='From {0} to {1}'.format(segment.initial_datetime, segment.final_datetime))
 
-    def __axis_plot(self, axis):
-        try:
-            getattr(self, '__plotting_segment')
-        except AttributeError:
-            print('mete a zero -- reset')
-            self.__plotting_segment = 0
-
-        segment = self.__segments[self.__plotting_segment]
-        x, y = range(len(segment)), segment.samples
-
-        if self.__plotting_segment > 0:
-            x = array(x) + (len(self.__segments[self.__plotting_segment - 1]))
-
-        if axis is None:
-            axis = plt
-
-        axis.plot(x, y, linewidth=0.5)
-        print(x)
-
-        if self.__plotting_segment == len(self.__segments):
-            print('apaga')
-            del self.__plotting_segment
-        else:
-            self.__plotting_segment += 1
-            print('incrementa; i =', self.__plotting_segment)
-
-    def plot_spectrum(self):
-        self.__current_axis_plot(power_spectrum, sampling_rate=self.__sampling_frequency, pad=0, pow2=False, decibel=True)
-
     def plot(self):
-        xticks, xticks_labels = [], []
-        SPACE = int(self.__sampling_frequency) * 2
+        xticks, xticks_labels = [], []  # to store the initial and final ticks of each Segment
+        SPACE = int(self.__sampling_frequency) * 2  # the empy space between each Segment
 
         for i in range(len(self.__segments)):
             segment = self.__segments[i]
             x, y = range(len(segment)), segment.samples
-            if i > 0:
-                x = array(x) + (len(self.__segments[i - 1]) + SPACE)
-                plt.gca().axvspan(x[0]-SPACE, x[0], alpha=0.05, color='black')
+            if i > 0:  # except for the first Segment
+                x = array(x) + (len(self.__segments[i - 1]) + SPACE)  # shift right in time
+                plt.gca().axvspan(x[0]-SPACE, x[0], alpha=0.05, color='black')  # add empy space in between Segments
             plt.gca().plot(x, y, linewidth=0.5)
-            xticks += [x[0], x[-1]]
-            xticks_labels += [str(segment.initial_datetime), str(segment.final_datetime)]
-        plt.gca().set_xticks(xticks, xticks_labels, rotation=0, fontsize=6)
-        plt.yticks(fontsize=6)
+            xticks += [x[0], x[-1]]  # add positions of the first and last samples of this Segment
+            xticks_labels += [str(segment.initial_datetime), str(segment.final_datetime)]  # add datetimes of the first and last samples of this Segemnt
+        plt.gca().set_xticks(xticks, xticks_labels)
         plt.tick_params(axis='x', direction='in')
-        #plt.gca().grid()
-        plt.gca().margins(x=0)
-        plt.gca().set_xlabel("Time", fontsize=6, rotation=0, loc="right")
-        plt.gca().set_ylabel("Amplitude ({})".format(self.units.name if self.units is not None else 'n.d.'), fontsize=6, rotation=90, loc="top")
+
+        if self.units is not None:  # override ylabel
+            plt.gca().set_ylabel("Amplitude ({})".format(self.units.name))
