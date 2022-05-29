@@ -10,6 +10,7 @@ from src.biosignals import (HSM, ECG)
 
 class HSMTestCase(unittest.TestCase):
 
+    @classmethod
     def setUpClass(cls):
         cls.HSM = HSM.HSM()  # Have to instantiate to directly test _read and _write methods.
         cls.testpath = 'resources/HSM_EDF_tests/' # This is a test directory with EDF files in the HSM structure,

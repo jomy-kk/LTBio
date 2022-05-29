@@ -15,6 +15,7 @@ from src.biosignals.HSM import HSM
 
 class BiosignalTestCase(unittest.TestCase):
 
+    @classmethod
     def setUpClass(cls):
         cls.condition = Epilepsy()
         cls.patient = Patient(101, "João Miguel Areias Saraiva", 23, (cls.condition,), tuple(), tuple())

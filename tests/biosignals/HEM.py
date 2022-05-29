@@ -11,6 +11,7 @@ from src.biosignals import (HEM, ECG)
 
 class HEMTestCase(unittest.TestCase):
 
+    @classmethod
     def setUpClass(cls):
         cls.HEM = HEM.HEM() # HEM needs to be instantiated only to test _read and _write methods, for they are protected.
         cls.testpath = 'resources/HEM_TRC_tests/' # This is a test directory with TRC files in the HEM structure,

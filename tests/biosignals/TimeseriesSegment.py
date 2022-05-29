@@ -6,6 +6,7 @@ from src.biosignals.Timeseries import Timeseries
 
 class TimeseriesSegmentTestCase(unittest.TestCase):
 
+    @classmethod
     def setUpClass(cls):
         cls.samples1, cls.samples2 = [0.34, 2.12, 3.75], [1.34, 3.12, 4.75],
         cls.initial1, cls.initial2 = datetime(2022, 1, 1, 16, 0), datetime(2022, 1, 3, 9, 0)  # 1/1/2022 4PM and 3/1/2022 9AM
