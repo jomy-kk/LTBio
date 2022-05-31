@@ -13,6 +13,7 @@ class BodyLocation(str, Enum):
     LA = "Left arm (LA) lead"
     RL = "Right leg (RL) lead"
     LL = "Left leg (LL) lead"
+    MLII = 'Modified Limb Lead II'
 
     ABDOMEN = "Abdomen"
     WRIST_L = "Left Wrist"
