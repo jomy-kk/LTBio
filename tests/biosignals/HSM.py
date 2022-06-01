@@ -12,7 +12,7 @@ class HSMTestCase(unittest.TestCase):
 
     def setUp(self):
         self.HSM = HSM.HSM()  # Have to instantiate to directly test _read and _write methods.
-        self.testpath = 'resources/HSM_EDF_tests/' # This is a test directory with EDF files in the HSM structure,
+        self.testpath = 'resources/HSM_EDF_tests/' # This is a test directory with EDF files in the MITDB structure,
         self.patient = Patient(101, "João Miguel Areias Saraiva", 23, (Epilepsy(),), tuple(), tuple())
 
         self.samplesx1, self.samplesx2, self.samplesy1, self.samplesy2 = [0.00023582690935384015, 0.00023582690935384015,
@@ -74,10 +74,10 @@ class HSMTestCase(unittest.TestCase):
         # Try to write to a temporary path with no exceptions
         temp_path = self.testpath + '_temp'
         mkdir(temp_path)
-        self.HSM._write(temp_path, x)
+        self.MITDB._write(temp_path, x)
 
         # Read and verify data
-        x = self.HSM._read(temp_path, ECG.ECG)
+        x = self.MITDB._read(temp_path, ECG.ECG)
         self.verify_data(x)
 
         # Delete temporary path
