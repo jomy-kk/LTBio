@@ -11,29 +11,18 @@ class MITDBTestCase(unittest.TestCase):
         self.MITDB = MITDB.MITDB()  # Have to instantiate to directly test _read and _write methods.
         self.testpath = 'resources/MITDB_DAT_tests/' # This is a test directory with DAT files in the MIT-DB structure,
 
-        self.samplesx1, self.samplesx2, self.samplesy1, self.samplesy2 = [0.00023582690935384015, 0.00023582690935384015,
-                                                                          0.00023582690935384015], \
-                                                                         [0.0001709850882900646, 0.0001709850882900646,
-                                                                          0.0001709850882900646], \
-                                                                         [0.00023582690935384015, 0.00023582690935384015,
-                                                                          0.00023582690935384015], \
-                                                                         [0.0001709850882900646, 0.0001709850882900646,
-                                                                          0.0001709850882900646]
-        self.initial1, self.initial2 = datetime(2019, 2, 28, 8, 7, 16), datetime(2019, 2, 28, 10, 7, 31)  # 1/1/2022 4PM and 3/1/2022 9AM
-        self.sf = 1000
-        self.segmentx1, self.segmentx2 = Timeseries.Segment(self.samplesx1, self.initial1, self.sf), \
-                                         Timeseries.Segment(self.samplesx2, self.initial2, self.sf)
-        self.segmenty1, self.segmenty2 = Timeseries.Segment(self.samplesy1, self.initial1, self.sf), \
-                                         Timeseries.Segment(self.samplesy2, self.initial2, self.sf)
+        self.samplesy, self.samplesx = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.215, 0.235, 0.24, 0.24, 0.245, 0.265], [-0.15, -0.15, -0.15, -0.15, -0.15, -0.15, -0.15, -0.15, -0.145, -0.135, -0.11, -0.08, -0.04, 0.0, 0.125]
+        self.initial = datetime(2000, 1, 1, 0, 0, 0)  # 1/1/2000 0 AM
+        self.sf = 360
+        self.segmentx, self.segmenty = Timeseries.Segment(self.samplesx, self.initial, self.sf), \
+                                    Timeseries.Segment(self.samplesy, self.initial, self.sf)
         self.units = Unit.V
 
-        self.n_samplesx = 12000
-        self.n_samplesy = 12000
+        self.n_samplesx = 650000
+        self.n_samplesy = 650000
 
+        self.channelx, self.channely = "V5", "V2"
 
-        self.channelx, self.channely = "POL Ecg", "POL  ECG-"
-        self.tsx = Timeseries([self.segmentx1, self.segmentx2], True, self.sf, self.units)
-        self.tsy = Timeseries([self.segmenty1, self.segmenty2], True, self.sf, self.units)
 
 
     def verify_data(self, x):
@@ -49,36 +38,19 @@ class MITDBTestCase(unittest.TestCase):
         # And all these properties should match:
         self.assertEqual(x[self.channelx].sampling_frequency, self.sf)
         self.assertEqual(len(x[self.channelx]), self.n_samplesx)
-        #self.assertEqual(x[self.channelx].units, self.units)
+        self.assertEqual(x[self.channelx].units, self.units)
         self.assertEqual(x[self.channely].sampling_frequency, self.sf)
         self.assertEqual(len(x[self.channely]), self.n_samplesy)
-        #self.assertEqual(x[self.channely].units, self.units)
+        self.assertEqual(x[self.channely].units, self.units)
         # Also, checking the first samples
-        self.assertEqual((x[self.channelx])[self.initial1], self.samplesx1[0])
-        self.assertEqual((x[self.channely])[self.initial1], self.samplesy1[0])
+        self.assertEqual((x[self.channelx])[self.initial], self.samplesx[0])
+        self.assertEqual((x[self.channelx]).segments[0].samples.tolist()[:15], self.samplesx)
+        self.assertEqual((x[self.channely])[self.initial], self.samplesy[0])
+        self.assertEqual((x[self.channely]).segments[0].samples.tolist()[:15], self.samplesy)
 
     def test_read_ECG(self):
         x = self.MITDB._read(self.testpath, ECG.ECG)
         self.verify_data(x)
-
-    # TODO
-    """
-    def test_write_ECG(self):
-        x = {self.channelx: self.tsx,
-             self.channely: self.tsy}
-
-        # Try to write to a temporary path with no exceptions
-        temp_path = self.testpath + '_temp'
-        mkdir(temp_path)
-        self.MITDB._write(temp_path, x)
-
-        # Read and verify data
-        x = self.MITDB._read(temp_path, ECG.ECG)
-        self.verify_data(x)
-
-        # Delete temporary path
-        rmdir(temp_path)
-    """
 
 
 if __name__ == '__main__':

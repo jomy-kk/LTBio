@@ -100,6 +100,12 @@ class MITDB(BiosignalSource):
     def _write(path:str, timeseries: dict):
         pass
 
-path_ = 'G:\\Public Databases\\mitdb\\1.0.0'
+path_ = "resources/MITDB_DAT_tests"
 
 files = MITDB._read(path_, ECG)
+print(files['V2'].sampling_frequency)
+print(files['V2'].units)
+
+#ecg = ECG(path_, MITDB)
+#print(ecg.channel_names)
+#print(ecg['MLII'][:].segments[0].samples)
