@@ -10,12 +10,16 @@ from src.biosignals.Unit import Unit
 class Timeseries():
 
     class Segment():
-        def __init__(self, samples:array, initial_datetime:datetime, sampling_frequency:float):
+        def __init__(self, samples:array, initial_datetime:datetime, sampling_frequency:float, is_filtered:bool=False):
             self.__samples = samples
             self.__initial_datetime = initial_datetime
             self.__final_datetime = self.initial_datetime + timedelta(seconds=len(samples)/sampling_frequency)
             self.__raw_samples = samples  # if some filter is applied to a Timeseries, the raw version of each Segment should be saved here
-            self.__is_filtered = False
+            self.__is_filtered = is_filtered
+
+        @property
+        def samples(self) -> array:
+            return self.__samples
 
         @property
         def raw_samples(self) -> array:

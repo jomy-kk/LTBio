@@ -1,19 +1,15 @@
 import unittest
 from datetime import datetime
-from os import rmdir, mkdir
 
-from src.clinical.Epilepsy import Epilepsy
-from src.clinical.Patient import Patient
 from src.biosignals.Unit import Unit
 from src.biosignals.Timeseries import Timeseries
-from src.biosignals import (HSM, ECG)
+from src.biosignals import (MITDB, ECG)
 
-class HSMTestCase(unittest.TestCase):
+class MITDBTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.HSM = HSM.HSM()  # Have to instantiate to directly test _read and _write methods.
-        self.testpath = 'resources/HSM_EDF_tests/' # This is a test directory with EDF files in the MITDB structure,
-        self.patient = Patient(101, "João Miguel Areias Saraiva", 23, (Epilepsy(),), tuple(), tuple())
+        self.MITDB = MITDB.MITDB()  # Have to instantiate to directly test _read and _write methods.
+        self.testpath = 'resources/MITDB_DAT_tests/' # This is a test directory with DAT files in the MIT-DB structure,
 
         self.samplesx1, self.samplesx2, self.samplesy1, self.samplesy2 = [0.00023582690935384015, 0.00023582690935384015,
                                                                           0.00023582690935384015], \
@@ -62,7 +58,7 @@ class HSMTestCase(unittest.TestCase):
         self.assertEqual((x[self.channely])[self.initial1], self.samplesy1[0])
 
     def test_read_ECG(self):
-        x = self.HSM._read(self.testpath, ECG.ECG)
+        x = self.MITDB._read(self.testpath, ECG.ECG)
         self.verify_data(x)
 
     # TODO
