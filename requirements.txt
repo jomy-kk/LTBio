@@ -27,6 +27,7 @@ neo==0.10.2
 numpy==1.22.3
 opencv-python==4.5.5.64
 packaging==21.3
+pandas==1.4.2
 Pillow==9.1.0
 platformdirs==2.5.2
 pluggy==1.0.0
@@ -36,6 +37,7 @@ pylint==2.13.9
 pyparsing==3.0.8
 pytest==7.1.2
 python-dateutil==2.8.2
+pytz==2022.1
 quantities==0.13.0
 requests==2.27.1
 scikit-learn==1.1.0
@@ -47,4 +49,5 @@ threadpoolctl==3.1.0
 tomli==2.0.1
 tqdm==4.64.0
 urllib3==1.26.9
+wfdb==3.4.1
 wrapt==1.14.1
