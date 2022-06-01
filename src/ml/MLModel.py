@@ -18,8 +18,8 @@ from src.biosignals.Biosignal import Biosignal
 
 class MLModel(ABC):
 
-    def __init__(self, representation, name:str=None, version:int=None):
-        self.model = representation
+    def __init__(self, design, name:str=None, version:int=None):
+        self.model = design
         self.name = name
         self.version = version
 
@@ -32,17 +32,7 @@ class MLModel(ABC):
         pass
 
 
-class NeuralNetwork(MLModel):
 
-    def __init__(self):
-
-
-
-
-
-class ConvolutionalAutoencoder(NeuralNetwork, nn.Module):
-
-    def __init__(self):
 
 
 
