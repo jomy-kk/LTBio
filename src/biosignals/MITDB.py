@@ -86,7 +86,7 @@ class MITDB(BiosignalSource):
         all_edf = list(map(MITDB.__read_dat, all_files))
         new_dict = {}
         for ch in range(len(channels)):
-            segments = [Timeseries.Segment(edf_data[0][ch], initial_datetime=edf_data[1], sampling_frequency=sfreq)
+            segments = [Timeseries.Segment(edf_data[0][:, ch], initial_datetime=edf_data[1], sampling_frequency=sfreq)
                         for edf_data in all_edf]
             unit = Unit.V if 'V' in units[ch] else ''
             name = BodyLocation.MLII if channels[ch].strip() == 'MLII' else BodyLocation.V5 if channels[ch].strip() == 'V5' else channels[ch]
