@@ -1,6 +1,7 @@
 import unittest
 from datetime import datetime, timedelta
 from numpy import array, allclose
+from os import remove
 
 from src.biosignals.ECG import ECG
 from src.biosignals.HEM import HEM
@@ -26,6 +27,7 @@ class FrequencyDomainFilterTestCase(unittest.TestCase):
         cls.channelx, cls.channely = "ecg", "ECG"
 
         cls.testpath = 'resources/HEM_TRC_tests'
+        cls.images_testpath = 'resources/FrequencyFilter_tests'
         cls.biosignal = ECG(cls.testpath, HEM)
 
     def check_samples(cls, targetx1, targetx2, targety1, targety2):
@@ -198,6 +200,18 @@ class FrequencyDomainFilterTestCase(unittest.TestCase):
         cls.check_samples(filtered_samplesx1, filtered_samplesx2, filtered_samplesy1, filtered_samplesy2)
 
         cls.biosignal.undo_filters()
+
+    def test_plot_bode(cls):
+        cls.design = FrequencyDomainFilter(FrequencyResponse.BESSEL, BandType.LOWPASS, cutoff=35, order=4)
+        cls.biosignal.filter(cls.design)
+        test_image_path = cls.images_testpath + "/testplot.png"
+        cls.design.plot_bode(show=False, save_to=test_image_path)
+
+        #with open(cls.images_testpath + "/bode_bessel_lowpass_25Hz_4th_256Hz.png", 'rb') as target, open(test_image_path, 'rb') as test:
+        #    cls.assertEquals(target.read(), test.read())
+
+        remove(test_image_path)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,7 +1,8 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Dict, Tuple
 from dateutil.parser import parse as to_datetime, ParserError
+import matplotlib.pyplot as plt
 
 from src.processing.FrequencyDomainFilter import Filter
 from src.biosignals.Timeseries import Timeseries
@@ -110,7 +111,7 @@ class Biosignal(ABC):
 
     @property
     def patient_code(self):
-        return self.__patient.code if self.__patient != None else None
+        return self.__patient.code if self.__patient != None else 'n.d.'
 
     @property
     def patient_conditions(self) -> [MedicalCondition]:
@@ -187,3 +188,35 @@ class Biosignal(ABC):
     def undo_filters(self):
         for channel in self.__timeseries.values():
             channel.undo_filters()
+
+    def __draw_plot(self, timeseries_plotting_method, title, xlabel, ylabel, grid_on:bool, show:bool=True, save_to:str=None):
+        fig = plt.figure()
+
+        for i, channel_name in zip(range(len(self)), self.channel_names):
+            channel = self.__timeseries[channel_name]
+            ax = plt.subplot(100 * (len(self)) + 10 + i + 1, title=channel_name)
+            ax.title.set_size(8)
+            ax.margins(x=0)
+            ax.set_xlabel(xlabel, fontsize=6, rotation=0, loc="right")
+            ax.set_ylabel(ylabel, fontsize=6, rotation=90, loc="top")
+            plt.xticks(fontsize=6)
+            plt.yticks(fontsize=6)
+            if grid_on:
+                ax.grid()
+            timeseries_plotting_method(self=channel)
+
+        fig.suptitle((title + ' ' if title is not None else '') + self.name + ' from patient ' + str(self.patient_code), fontsize=10)
+        fig.tight_layout()
+        if save_to is not None:
+            fig.savefig(save_to)
+        plt.show() if show else plt.close()
+
+    def plot_spectrum(self, show:bool=True, save_to:str=None):
+        self.__draw_plot(Timeseries.plot_spectrum, 'Power Spectrum of', 'Frequency (Hz)', 'Power (dB)', True, show, save_to)
+
+    def plot(self, show:bool=True, save_to:str=None):
+        self.__draw_plot(Timeseries.plot, None, 'Time', 'Amplitude (n.d.)', False, show, save_to)
+
+    @abstractmethod
+    def plot_summary(self, show:bool=True, save_to:str=None):
+        pass  # Implemented in each type
