@@ -32,17 +32,18 @@ class SegmenterTestCase(unittest.TestCase):
         ecg = ECG(self.testpath, MITDB)
         segmenter = Segmeter(timedelta(milliseconds=10))
 
-        ecg_segmented = segmenter.segment(ecg)
-        x,y = ecg_segmented._Biosignal__timeseries[self.channelx], ecg_segmented._Biosignal__timeseries[self.channely]
+        x,y = ecg._Biosignal__timeseries[self.channelx], ecg._Biosignal__timeseries[self.channely]
+        x_segmented = segmenter.apply(x)
+        y_segmented = segmenter.apply(y)
 
-        self.assertEqual(len(x), 649998)
-        self.assertEqual(len(y), 649998)
+        self.assertEqual(len(x_segmented), 649998)
+        self.assertEqual(len(y_segmented), 649998)
 
         segment_length = int(0.01*self.sf)  # each segment should have 3 samples
-        for segment in x.segments:
-            self.assertEqual(len(segment), segment_length)
 
-        for i, segmentx, segmenty in zip(range(0, len(self.samplesx), segment_length), x, y):
+        for i, segmentx, segmenty in zip(range(0, len(self.samplesx), segment_length), x_segmented, y_segmented):
+            self.assertEqual(len(segmentx), segment_length)
+            self.assertEqual(len(segmenty), segment_length)
             self.assertEqual(segmentx.samples.tolist(), self.samplesx[i:i+segment_length])
             self.assertEqual(segmenty.samples.tolist(), self.samplesy[i:i+segment_length])
 
@@ -51,20 +52,21 @@ class SegmenterTestCase(unittest.TestCase):
         ecg = ECG(self.testpath, MITDB)
         segmenter = Segmeter(timedelta(milliseconds=10), timedelta(milliseconds=3))
 
-        ecg_segmented = segmenter.segment(ecg)
-        x,y = ecg_segmented._Biosignal__timeseries[self.channelx], ecg_segmented._Biosignal__timeseries[self.channely]
+        x, y = ecg._Biosignal__timeseries[self.channelx], ecg._Biosignal__timeseries[self.channely]
+        x_segmented = segmenter.apply(x)
+        y_segmented = segmenter.apply(y)
 
-        self.assertEqual(len(x), 1949994)
-        self.assertEqual(len(y), 1949994)
+        self.assertEqual(len(x_segmented), 1949994)
+        self.assertEqual(len(y_segmented), 1949994)
 
         segment_length = int(0.01*self.sf)  # each segment should have 3 samples
-        for segment in x.segments:
-            self.assertEqual(len(segment), segment_length)
-
         n_samples_overlap = int(0.003*self.sf)  # 1 sample of overlap
-        for i, segmentx, segmenty in zip(range(0, len(self.samplesx), segment_length-n_samples_overlap), x, y):
-            self.assertEqual(segmentx.samples.tolist(), self.samplesx[i:i+segment_length])
-            self.assertEqual(segmenty.samples.tolist(), self.samplesy[i:i+segment_length])
+
+        for i, segmentx, segmenty in zip(range(0, len(self.samplesx), segment_length-n_samples_overlap), x_segmented, y_segmented):
+            self.assertEqual(len(segmentx), segment_length)
+            self.assertEqual(len(segmenty), segment_length)
+            self.assertEqual(segmentx.samples.tolist(), self.samplesx[i:i + segment_length])
+            self.assertEqual(segmenty.samples.tolist(), self.samplesy[i:i + segment_length])
 
 
 if __name__ == '__main__':
