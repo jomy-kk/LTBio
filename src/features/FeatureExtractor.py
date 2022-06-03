@@ -1,48 +1,41 @@
-from abc import ABC, abstractmethod
-from typing import List, Iterable, Dict
-import numpy as np
+###################################
 
+# IT - PreEpiSeizures
+
+# Package: features
+# File: FeatureExtractor
+# Description: Class to extract features from a Timeseries
+
+# Contributors: João Saraiva
+# Created: 03/06/2022
+
+###################################
+
+from typing import Iterable, Tuple
+
+from src.features.Features import Features
+from src.pipeline.PipelineUnit import PipelineUnit
 from src.biosignals.Timeseries import Timeseries
 
 
-class FeatureExtractor(ABC):
+class FeatureExtractor(PipelineUnit):
 
-    __extracted:Dict[str, Iterable[float]]
+    def __init__(self, feature_functions: Tuple, name:str=None):
+        super().__init__(name)
+        self.__feature_functions = feature_functions
 
-    def __init__(self):
-        self.__extracted = dict()
+    def apply(self, timeseries:Timeseries) -> Features:
 
-    @property
-    def extracted(self):
-        return self.__extracted
+        assert timeseries.is_equally_segmented  # we're assuming all Segments have the same duration
+        segment_duration = timeseries.segments[0].duration.total_seconds()
 
-    def __getitem__(self, item:str):
-        return self.__extracted
+        features = Features(original_timeseries=timeseries)
 
-    def __extract(self, segments:Iterable[Timeseries.Segment], operation, name):
-        """
-        Extracts a list of the result of applying 'operation' to each segment in 'segments'.
-        Users can get it by doing x[name], where x is the concrete extractor.
-        """
-        self.__extracted[name] = [operation(segment.samples) for segment in segments]
+        for feature_function in self.__feature_functions:
+            extracted_values = []
+            for segment in timeseries.segments:
+                value = feature_function(segment)
+                extracted_values.append(value)
+            features.__setattr__(feature_function.__name__, Timeseries([Timeseries.Segment(extracted_values, timeseries.initial_datetime, 1/segment_duration), ], True, 1/segment_duration, feature_function.__name__ + " - " + timeseries.name, equally_segmented=True))
 
-    def extract_all(self, segments:Iterable[Timeseries.Segment]):
-        """
-        Extracts all features defined by the concrete extractor.
-        Users can get them by doing x.extracted, where x is the concrete extractor.
-        """
-        for method in [method for method in dir(self) if method.startswith('extract_')]:
-            getattr(self, method)(segments)
-
-
-class TimeFeatureExtractor(FeatureExtractor):
-
-    def extract_mean(self, segments):
-        self._FeatureExtractor__extract(segments, np.mean, 'mean')
-
-    def extract_variance(self, segments):
-        self._FeatureExtractor__extract(segments, np.var, 'variance')
-
-    def extract_deviation(self, segments):
-        self._FeatureExtractor__extract(segments, np.std, 'standard deviation')
-
+        return features
