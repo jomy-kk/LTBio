@@ -27,14 +27,15 @@ class SegmenterTestCase(unittest.TestCase):
 
         cls.channelx, cls.channely = "V5", "V2"
 
+        cls.ecg = ECG(cls.testpath, MITDB)
+        cls.x, cls.y = cls.ecg._Biosignal__timeseries[cls.channelx], cls.ecg._Biosignal__timeseries[cls.channely]
+
 
     def test_segment_without_overlap(self):
-        ecg = ECG(self.testpath, MITDB)
         segmenter = Segmeter(timedelta(milliseconds=10))
 
-        x,y = ecg._Biosignal__timeseries[self.channelx], ecg._Biosignal__timeseries[self.channely]
-        x_segmented = segmenter.apply(x)
-        y_segmented = segmenter.apply(y)
+        x_segmented = segmenter.apply(self.x)
+        y_segmented = segmenter.apply(self.y)
 
         self.assertEqual(len(x_segmented), 649998)
         self.assertEqual(len(y_segmented), 649998)
@@ -49,12 +50,10 @@ class SegmenterTestCase(unittest.TestCase):
 
 
     def test_segment_with_overlap(self):
-        ecg = ECG(self.testpath, MITDB)
         segmenter = Segmeter(timedelta(milliseconds=10), timedelta(milliseconds=3))
 
-        x, y = ecg._Biosignal__timeseries[self.channelx], ecg._Biosignal__timeseries[self.channely]
-        x_segmented = segmenter.apply(x)
-        y_segmented = segmenter.apply(y)
+        x_segmented = segmenter.apply(self.x)
+        y_segmented = segmenter.apply(self.y)
 
         self.assertEqual(len(x_segmented), 1949994)
         self.assertEqual(len(y_segmented), 1949994)
@@ -67,6 +66,17 @@ class SegmenterTestCase(unittest.TestCase):
             self.assertEqual(len(segmenty), segment_length)
             self.assertEqual(segmentx.samples.tolist(), self.samplesx[i:i + segment_length])
             self.assertEqual(segmenty.samples.tolist(), self.samplesy[i:i + segment_length])
+
+
+    def test_timeseries_not_with_adjecent_segments_gives_error(self):
+        segmenter = Segmeter(timedelta(milliseconds=10))
+
+        ts_with_gaps = Timeseries([Timeseries.Segment(list(), self.initial, self.sf),
+                                   Timeseries.Segment(list(), self.initial+timedelta(days=1), self.sf)],
+                                  True, self.sf)
+
+        with self.assertRaises(AssertionError):
+            segmenter.apply(ts_with_gaps)
 
 
 if __name__ == '__main__':

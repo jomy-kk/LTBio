@@ -27,6 +27,11 @@ class Segmeter(PipelineUnit):
         self.overlap_length = overlap_length
 
     def apply(self, timeseries:Timeseries) -> Timeseries:
+        # Assert it only has one Segment or that all Segments are adjacent
+        if len(timeseries.segments) > 0:
+            for i in range(1, len(timeseries.segments)):
+                assert timeseries.segments[i-1].adjacent(timeseries.segments[i])  # assert they're adjacent
+
         sf = timeseries.sampling_frequency
         n_window_length = int(self.window_length.total_seconds()*sf)
         n_overlap_length = int(self.overlap_length.total_seconds()*sf) if self.overlap_length is not None else None
@@ -39,5 +44,6 @@ class Segmeter(PipelineUnit):
             trimmed_segments = [Timeseries.Segment(values[i], start_datetimes[i], sf, segment.is_filtered) for i in range(len(values))]
             res_trimmed_segments += trimmed_segments
 
-        return Timeseries(res_trimmed_segments, True, sf, timeseries.units, timeseries.name + " segmented " + str(self.window_length) + " +/- " + str(self.overlap_length))
+        return Timeseries(res_trimmed_segments, True, sf, timeseries.units, equally_segmented=True,
+                          name=timeseries.name + " segmented " + str(self.window_length) + " +/- " + str(self.overlap_length))
 
