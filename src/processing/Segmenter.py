@@ -2,9 +2,9 @@
 
 # IT - PreEpiSeizures
 
-# Package: ml
+# Package: processing
 # File: Segmenter
-# Description: Class to segment Biosignals
+# Description: Class to segment Timeseries
 
 # Contributors: João Saraiva
 # Created: 01/06/2022
@@ -14,10 +14,13 @@
 from datetime import timedelta
 from biosppy.signals.tools import windower
 
-from src.biosignals.Biosignal import Biosignal
+from src.pipeline.PipelineUnit import PipelineUnit
 from src.biosignals.Timeseries import Timeseries
 
-class Segmeter():
+class Segmeter(PipelineUnit):
+    """
+    This PipelineUnit can segment one Timeseries at a time.
+    """
 
     def __init__(self, window_length:timedelta, overlap_length:timedelta=None):
         self.window_length = window_length
