@@ -47,16 +47,6 @@ class FeatureSelectorTestCase(unittest.TestCase):
         self.assertEqual(selected_features['variance'].segments[0].samples, self.samples[1])
         self.assertEqual(selected_features['deviation'].segments[0].samples, self.samples[2])
 
-    def test_timeseries_not_equally_segmented_gives_error(self):
-        """Equally segmented means the Timeseries as been processed by a Segmenter.
-        This is a requirement for the FeatureExtractor needs to compute a new sampling frequency for the features Timeseries.
-        The user can instantiate a Timeseries with equally_segmented=True even though it is not, so they should be aware of what they're doing in that case."""
-
-        ts = Timeseries([Timeseries.Segment(list(), self.initial1, self.sf), ], True, self.sf, equally_segmented=False)
-        extractor = FeatureSelector((TimeFeatures.mean,))
-
-        with self.assertRaises(AssertionError):
-            features = extractor.apply(ts)
 
 
 if __name__ == '__main__':
