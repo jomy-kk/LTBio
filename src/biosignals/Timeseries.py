@@ -160,6 +160,9 @@ class Timeseries():
     def is_equally_segmented(self) -> bool:
         return self.__is_equally_segmented
 
+    def __iter__(self) -> List[Segment]:
+        return self.__segments
+
     def __getitem__(self, item):
         '''The built-in slicing and indexing ([x:y]) operations.'''
         if isinstance(item, datetime):
