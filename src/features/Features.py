@@ -12,6 +12,8 @@
 ###################################
 
 from abc import ABC
+from typing import Dict
+
 import numpy as np
 
 from src.biosignals.Timeseries import Timeseries
@@ -24,10 +26,23 @@ class Features():
 
     def __init__(self, original_timeseries:Timeseries):
         self.__original_timeseries = original_timeseries
+        self.__features = dict()
 
     @property
     def original_timeseries(self) -> Timeseries:
         return self.__original_timeseries
+
+    def __setitem__(self, key:str, value:Timeseries):
+        self.__features[key] = value
+
+    def __getitem__(self, key:str):
+        return self.__features[key]
+
+    def __iter__(self):
+        return self.__features
+
+
+
 
 
 class TimeFeatures(ABC):

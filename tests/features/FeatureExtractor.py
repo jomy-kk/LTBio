@@ -29,11 +29,11 @@ class FeatureExtractorTestCase(unittest.TestCase):
         features = extractor.apply(self.ts)
 
         self.assertIsInstance(features, Features)
-        self.assertEqual(features.mean.initial_datetime, self.initial1)
-        self.assertEqual(features.mean.final_datetime, self.final)
+        self.assertEqual(features['mean'].initial_datetime, self.initial1)
+        self.assertEqual(features['mean'].final_datetime, self.final)
         for i in range(self.n_segments):
-            print(features.mean[self.initials[i]])
-            self.assertEqual(features.mean[self.initials[i]], mean(self.samples[i]))
+            print(features['mean'][self.initials[i]])
+            self.assertEqual(features['mean'][self.initials[i]], mean(self.samples[i]))
 
     def test_timeseries_not_equally_segmented_gives_error(self):
         """Equally segmented means the Timeseries as been processed by a Segmenter.

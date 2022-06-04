@@ -11,7 +11,7 @@
 
 ###################################
 
-from typing import Iterable, Tuple
+from typing import Tuple
 
 from src.features.Features import Features
 from src.pipeline.PipelineUnit import PipelineUnit
@@ -36,6 +36,6 @@ class FeatureExtractor(PipelineUnit):
             for segment in timeseries.segments:
                 value = feature_function(segment)
                 extracted_values.append(value)
-            features.__setattr__(feature_function.__name__, Timeseries([Timeseries.Segment(extracted_values, timeseries.initial_datetime, 1/segment_duration), ], True, 1/segment_duration, feature_function.__name__ + " - " + timeseries.name, equally_segmented=True))
+            features[feature_function.__name__] = Timeseries([Timeseries.Segment(extracted_values, timeseries.initial_datetime, 1/segment_duration), ], True, 1/segment_duration, feature_function.__name__ + " - " + timeseries.name, equally_segmented=True)
 
         return features
