@@ -25,6 +25,9 @@ class Features():
     def __init__(self, original_timeseries:Timeseries):
         self.__original_timeseries = original_timeseries
 
+    @property
+    def original_timeseries(self) -> Timeseries:
+        return self.__original_timeseries
 
 
 class TimeFeatures(ABC):
