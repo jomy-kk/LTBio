@@ -24,7 +24,7 @@ class Features():
     Class that stores extracted features of a Timeseries.
     """
 
-    def __init__(self, original_timeseries:Timeseries):
+    def __init__(self, original_timeseries:Timeseries=None):
         self.__original_timeseries = original_timeseries
         self.__features = dict()
 
@@ -39,10 +39,10 @@ class Features():
         return self.__features[key]
 
     def __iter__(self):
-        return self.__features
+        return self.__features.__iter__()
 
-
-
+    def __len__(self):
+        return len(self.__features)
 
 
 class TimeFeatures(ABC):
