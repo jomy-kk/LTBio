@@ -3,7 +3,7 @@
 # IT - PreEpiSeizures
 
 # Package: ml
-# File: MLModel
+# File: SupervisedModel
 # Description: Abstract Class representing a generic machine learning model.
 
 # Contributors: João Saraiva
@@ -13,27 +13,30 @@
 
 from abc import ABC, abstractmethod
 
-from src.biosignals.Biosignal import Biosignal
+from src.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
 
 
-class MLModel(ABC):
+class SupervisedModel(ABC):
 
     def __init__(self, design, name:str=None, version:int=None):
-        self.model = design
+        self.design = design
         self.name = name
         self.version = version
 
     @abstractmethod
-    def train(self, object:Biosignal, target:MLTarget):
+    def setup(self, train_conditions:SupervisedTrainConditions, **kwargs):
         pass
 
     @abstractmethod
-    def test(self, object:Biosignal, target:MLTarget):
+    def train(self, object, target):
         pass
 
+    @abstractmethod
+    def test(self, object, target=None):
+        pass
 
-
-
-
-
+    @property
+    @abstractmethod
+    def trainable_parameters(self):
+        pass
 
