@@ -305,4 +305,10 @@ class Timeseries():
         for segment in self.__segments:
             segment._apply_operation(operation)
 
+    def to_array(self):
+        '''
+        Allows to convert Timeseries to numpy.array, only if it contains just one Segment.
+        '''
+        assert len(self.__segments) == 1
+        return array(self.__segments[0].samples)
 
