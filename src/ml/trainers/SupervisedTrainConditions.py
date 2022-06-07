@@ -34,3 +34,9 @@ class SupervisedTrainConditions():
     @property
     def parameters(self):
         return self.__conditions
+
+    def __str__(self):
+        res = ''
+        for label in self.__conditions:
+            res += '{0} = {1}\n'.format(label, self.__conditions[label])
+        return res
