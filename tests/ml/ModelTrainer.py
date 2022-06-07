@@ -29,12 +29,12 @@ class ModelTrainerTestCase(unittest.TestCase):
         model = SkLearnModel(design)
 
         # Define 1 set of training conditions
-        conditions = SupervisedTrainConditions(loss='squared_error', learning_rate=0.02,
-                                               test_size=0.2, shuffle=False)
-
+        conditions1 = SupervisedTrainConditions(loss='squared_error', learning_rate=0.02, test_size=0.2, shuffle=False)
+        conditions2 = SupervisedTrainConditions(loss='squared_error', learning_rate=0.5, test_size=0.2, shuffle=False)
+        conditions3 = SupervisedTrainConditions(loss='squared_error', learning_rate=0.01, test_size=0.2, shuffle=True)
 
         # Create a Trainer to train the model
-        trainer = SupervisingTrainer(model, (conditions, ))
+        trainer = SupervisingTrainer(model, [conditions1, conditions2, conditions3, ])
 
         # Let's get an example of Diabetes
         X, y = load_diabetes(return_X_y=True)
