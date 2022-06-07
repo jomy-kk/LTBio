@@ -35,8 +35,16 @@ class SupervisedModel(ABC):
     def test(self, object, target=None):
         pass
 
-    @property
     @abstractmethod
-    def trainable_parameters(self):
+    def report(self, reporter, show, save_to):
         pass
 
+    @property
+    @abstractmethod
+    def trained_parameters(self):
+        pass
+
+    @property
+    @abstractmethod
+    def non_trainable_parameters(self):
+        pass

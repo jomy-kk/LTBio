@@ -12,10 +12,9 @@
 ###################################
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Iterable
 
 from biosignals.Timeseries import Timeseries
-
 
 class PipelineUnit(ABC):
 
@@ -23,6 +22,5 @@ class PipelineUnit(ABC):
         self.name = name
 
     @abstractmethod
-    def apply(self, timeseries:Timeseries | List[Timeseries]):
+    def apply(self, timeseries:Iterable[Timeseries], target:Timeseries):
         pass
-
