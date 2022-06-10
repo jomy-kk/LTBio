@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from dateutil.parser import parse as to_datetime
-from typing import List
+from typing import List, Iterable
 from numpy import array
 from biosppy.signals.tools import power_spectrum
 import matplotlib.pyplot as plt
@@ -52,13 +52,13 @@ class Timeseries():
         def __lt__(self, other):  # A Segment comes before other Segment if its end is less than the other's start.
             return self.final_datetime < other.initial_datetime
 
-        def __le__(self, other):  # They're adjacent.
+        def __le__(self, other):
             return self.final_datetime <= other.initial_datetime
 
         def __gt__(self, other):  # A Segment comes after other Segment if its start is greater than the other's end.
             return self.initial_datetime > other.final_datetime
 
-        def __ge__(self, other):  # They're adjacent.
+        def __ge__(self, other):
             return self.initial_datetime >= other.final_datetime
 
         def __eq__(self, other):  # A Segment corresponds to the same time period than other Segment if their start and end are equal.
@@ -80,6 +80,13 @@ class Timeseries():
             else:
                 return self.initial_datetime < other.final_datetime
 
+        def adjacent(self, other):
+            '''
+            Returns True if the Segments' start or end touch.
+            '''
+            return self.final_datetime == other.initial_datetime or self.initial_datetime == other.final_datetime
+
+
         def _accept_filtering(self, filter_design:Filter):
             res = filter_design._visit(self.__samples)  # replace with filtered samples
             self.__samples = res
@@ -90,9 +97,11 @@ class Timeseries():
                 self.__samples = self.__raw_samples
                 self.__is_filtered = False
 
+        def _apply_operation(self, operation):
+            self.__samples = operation(self.__samples)
 
 
-    def __init__(self, segments: List[Segment], ordered:bool, sampling_frequency:float, units:Unit=None, name:str=None):
+    def __init__(self, segments: List[Segment], ordered:bool, sampling_frequency:float, units:Unit=None, name:str=None, equally_segmented=False):
         ''' Receives a list of non-overlapping Segments (overlaps will not be checked) and a sampling frequency common to all Segments.
         If they are timely ordered, pass ordered=True, otherwise pass ordered=False.
         Additionally, it can receive the sample units and a name, if needed.'''
@@ -110,6 +119,8 @@ class Timeseries():
         self.__final_datetime = self.__segments[-1].final_datetime  # Is the final datetime of the last Segment.
 
         self.__name = name
+
+        self.__is_equally_segmented = equally_segmented
 
 
     # Getters and Setters
@@ -144,6 +155,13 @@ class Timeseries():
     @name.setter
     def name(self, name:str):
         self.__name = name
+
+    @property
+    def is_equally_segmented(self) -> bool:
+        return self.__is_equally_segmented
+
+    def __iter__(self) -> Iterable:
+        return self.__segments.__iter__()
 
     def __getitem__(self, item):
         '''The built-in slicing and indexing ([x:y]) operations.'''
@@ -282,3 +300,15 @@ class Timeseries():
 
         if self.units is not None:  # override ylabel
             plt.gca().set_ylabel("Amplitude ({})".format(self.units.name))
+
+    def _apply_operation(self, operation):
+        for segment in self.__segments:
+            segment._apply_operation(operation)
+
+    def to_array(self):
+        '''
+        Allows to convert Timeseries to numpy.array, only if it contains just one Segment.
+        '''
+        assert len(self.__segments) == 1
+        return array(self.__segments[0].samples)
+
