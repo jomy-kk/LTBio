@@ -14,7 +14,7 @@
 from abc import ABC, abstractmethod
 from typing import Iterable
 
-from biosignals.Timeseries import Timeseries
+from src.biosignals.Timeseries import Timeseries
 
 class PipelineUnit(ABC):
 

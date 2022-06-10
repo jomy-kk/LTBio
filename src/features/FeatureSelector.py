@@ -13,7 +13,7 @@
 
 from typing import Callable
 
-from biosignals.Timeseries import Timeseries
+from src.biosignals.Timeseries import Timeseries
 from src.features.Features import Features
 from src.pipeline.PipelineUnit import PipelineUnit
 
