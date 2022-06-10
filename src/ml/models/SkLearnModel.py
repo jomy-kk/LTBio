@@ -48,13 +48,16 @@ class SkLearnModel(SupervisedModel):
     def report(self, reporter, show:bool=True, save_to:str=None):
         mse = mean_squared_error(self.__last_results.target, self.__last_results.predicted)
         reporter.print_textual_results(mse=mse)
-        file_names = (save_to + '_loss.png', save_to + '_importance.png', save_to + '_permutation.png')
-        self.__plot_train_and_test_loss(show=show, save_to=file_names[0])
-        self.__plot_timeseries_importance(show=show, save_to=file_names[1])
-        self.__plot_timeseries_permutation_importance(show=show, save_to=file_names[2])
+        if save_to is not None:
+            file_names = (save_to + '_loss.png', save_to + '_importance.png', save_to + '_permutation.png')
+            self.__plot_train_and_test_loss(show=show, save_to=file_names[0])
+            self.__plot_timeseries_importance(show=show, save_to=file_names[1])
+            self.__plot_timeseries_permutation_importance(show=show, save_to=file_names[2])
 
-        reporter.print_loss_plot(file_names[0])
-        reporter.print_small_plots(file_names[1:])
+            reporter.print_loss_plot(file_names[0])
+            reporter.print_small_plots(file_names[1:])
+
+        return mse
 
 
     @property
