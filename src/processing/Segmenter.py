@@ -34,11 +34,15 @@ class Segmeter(PipelineUnit):
 
         sf = timeseries.sampling_frequency
         n_window_length = int(self.window_length.total_seconds()*sf)
-        n_overlap_length = int(self.overlap_length.total_seconds()*sf) if self.overlap_length is not None else None
+        if self.overlap_length is not None:
+            n_overlap_length = int(self.overlap_length.total_seconds()*sf)
+            n_step = n_window_length - n_overlap_length
+        else:
+            n_step = None
 
         res_trimmed_segments = []
         for segment in timeseries.segments:
-            indexes, values = windower(segment.samples, n_window_length, n_overlap_length, fcn=lambda x:x)  # funcao identidade
+            indexes, values = windower(segment.samples, n_window_length, n_step, fcn=lambda x:x)  # funcao identidade
             assert len(indexes) == len(values)
             start_datetimes = [timedelta(seconds=index/sf) + segment.initial_datetime for index in indexes]
             trimmed_segments = [Timeseries.Segment(values[i], start_datetimes[i], sf, segment.is_filtered) for i in range(len(values))]

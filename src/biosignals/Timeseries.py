@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from dateutil.parser import parse as to_datetime
-from typing import List
+from typing import List, Iterable
 from numpy import array
 from biosppy.signals.tools import power_spectrum
 import matplotlib.pyplot as plt
@@ -160,8 +160,8 @@ class Timeseries():
     def is_equally_segmented(self) -> bool:
         return self.__is_equally_segmented
 
-    def __iter__(self) -> List[Segment]:
-        return self.__segments
+    def __iter__(self) -> Iterable:
+        return self.__segments.__iter__()
 
     def __getitem__(self, item):
         '''The built-in slicing and indexing ([x:y]) operations.'''

@@ -12,6 +12,7 @@ class SegmenterTestCase(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.testpath = 'resources/MITDB_DAT_tests/'  # This is a test directory with DAT files in the MIT-DB structure,
 
+        # these samples are just the beginning
         cls.samplesy = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.215, 0.235, 0.24, 0.24, 0.245,
                                         0.265]
         cls.samplesx = [-0.15, -0.15, -0.15, -0.15, -0.15, -0.15, -0.15, -0.15, -0.145, -0.135,
@@ -55,17 +56,18 @@ class SegmenterTestCase(unittest.TestCase):
         x_segmented = segmenter.apply(self.x)
         y_segmented = segmenter.apply(self.y)
 
-        self.assertEqual(len(x_segmented), 1949994)
-        self.assertEqual(len(y_segmented), 1949994)
+        self.assertEqual(len(x_segmented), 974997)
+        self.assertEqual(len(y_segmented), 974997)
 
         segment_length = int(0.01*self.sf)  # each segment should have 3 samples
         n_samples_overlap = int(0.003*self.sf)  # 1 sample of overlap
 
-        for i, segmentx, segmenty in zip(range(0, len(self.samplesx), segment_length-n_samples_overlap), x_segmented, y_segmented):
+        for i, segmentx, segmenty in zip(range(0, 7), x_segmented, y_segmented):
             self.assertEqual(len(segmentx), segment_length)
             self.assertEqual(len(segmenty), segment_length)
-            self.assertEqual(segmentx.samples.tolist(), self.samplesx[i:i + segment_length])
-            self.assertEqual(segmenty.samples.tolist(), self.samplesy[i:i + segment_length])
+            j = i * (segment_length - n_samples_overlap)
+            self.assertEqual(segmentx.samples.tolist(), self.samplesx[j:j + segment_length])
+            self.assertEqual(segmenty.samples.tolist(), self.samplesy[j:j + segment_length])
 
 
     def test_timeseries_not_with_adjecent_segments_gives_error(self):
