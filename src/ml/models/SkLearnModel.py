@@ -15,7 +15,7 @@ from numpy import zeros, arange, argsort, array
 from matplotlib import pyplot as plt
 from sklearn.metrics import mean_squared_error
 
-from ml.trainers.SupervisedTrainResults import SupervisedTrainResults
+from src.ml.trainers.SupervisedTrainResults import SupervisedTrainResults
 from src.ml.models.SupervisedModel import SupervisedModel
 from src.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
 
