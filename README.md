@@ -2,7 +2,8 @@
 
 [![Test Biosignals Package](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-biosignals-package.yml/badge.svg?branch=main&event=push)](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-biosignals-package.yml)
  [![Test Processing Package](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-processing-package.yml/badge.svg)](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-processing-package.yml)
-
+[![Features](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-features-package.yml/badge.svg)](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-features-package.yml)
+[![Machine Learning](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-ml-package.yml/badge.svg)](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-ml-package.yml)
 
 #### Description
 Computer Software towards the Denosing, Detection, Prediction and Forecasting of Epileptic Seizures. Based in Lisbon at Instituto de Telecomunicações (IT).
