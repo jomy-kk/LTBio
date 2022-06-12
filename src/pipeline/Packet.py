@@ -34,7 +34,7 @@ class Packet():
         
         self.__who_packed = stack()[1][3]  # FIX ME: this gets the function name that called this one; we want the object pointer
 
-    def __getitem__(self, item: str):
+    def __getitem__(self, item:str):
         return self.__load[item]
 
     @property
@@ -72,3 +72,9 @@ class Packet():
     @property
     def who_packed(self):
         return self.__who_packed
+
+    def __len__(self):
+        return len(self.__load)
+
+    def __contains__(self, item):
+        return item in self.__load
