@@ -13,12 +13,14 @@
 
 from typing import Collection, Dict, Callable
 
-from src.features.Features import Features
 from src.pipeline.PipelineUnit import PipelineUnit
 from src.biosignals.Timeseries import Timeseries
 
 
 class FeatureExtractor(PipelineUnit):
+
+    PIPELINE_INPUT_LABELS = {'timeseries': 'timeseries'}
+    PIPELINE_OUTPUT_LABELS = {'features': 'timeseries'}
 
     def __init__(self, feature_functions: Collection[Callable], name:str=None):
         super().__init__(name)

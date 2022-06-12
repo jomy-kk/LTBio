@@ -22,7 +22,11 @@ class Segmeter(PipelineUnit):
     This PipelineUnit can segment one Timeseries at a time.
     """
 
-    def __init__(self, window_length:timedelta, overlap_length:timedelta=None):
+    PIPELINE_INPUT_LABELS = {'timeseries': 'timeseries'}
+    PIPELINE_OUTPUT_LABELS = {'timeseries': 'timeseries'}
+
+    def __init__(self, window_length: timedelta, overlap_length: timedelta = None, name=None):
+        super().__init__(name)
         self.window_length = window_length
         self.overlap_length = overlap_length
 
