@@ -1,10 +1,9 @@
 import unittest
 from datetime import datetime
-from random import randint
 from statistics import mean
+from typing import Dict
 
 from src.features.FeatureSelector import FeatureSelector
-from src.features.Features import TimeFeatures, Features
 from src.biosignals.Timeseries import Timeseries
 
 
@@ -22,7 +21,7 @@ class FeatureSelectorTestCase(unittest.TestCase):
 
         cls.avg = [mean(cls.samples[0]), mean(cls.samples[1]), mean(cls.samples[2])]
 
-        cls.features = Features()
+        cls.features = {}
         cls.feature_names = ('mean', 'variance', 'deviation')
         for i in range(cls.n_features):
             f = Timeseries([Timeseries.Segment(cls.samples[i], cls.initial, cls.sf), ], True, cls.sf)
@@ -40,7 +39,7 @@ class FeatureSelectorTestCase(unittest.TestCase):
         selected_features = extractor.apply(self.features)
         print(self.avg)
 
-        self.assertIsInstance(selected_features, Features)
+        self.assertIsInstance(selected_features, Dict)
         self.assertEqual(len(selected_features), 2)
         self.assertTrue('variance' in selected_features)
         self.assertTrue('deviation' in selected_features)
