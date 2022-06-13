@@ -17,7 +17,7 @@ from biosppy.signals.tools import windower
 from src.pipeline.PipelineUnit import PipelineUnit
 from src.biosignals.Timeseries import Timeseries
 
-class Segmeter(PipelineUnit):
+class Segmenter(PipelineUnit):
     """
     This PipelineUnit can segment one Timeseries at a time.
     """
