@@ -144,6 +144,8 @@ class Biosignal(ABC):
     def __str__(self):
         return "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nSource: {}".format(self.name, self.type, self.acquisition_location, self.n_channels, self.source)
 
+    def _to_dict(self) -> Dict[str|BodyLocation, Timeseries]:
+        return self.__timeseries
 
     def __add__(self, other):
         # Check for possible arithmetic errors
