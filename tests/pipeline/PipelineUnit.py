@@ -8,7 +8,7 @@ from src.features.FeatureExtractor import FeatureExtractor
 from src.features.FeatureSelector import FeatureSelector
 from src.biosignals.Timeseries import Timeseries
 from src.pipeline.Packet import Packet
-from src.processing.Segmenter import Segmeter
+from src.processing.Segmenter import Segmenter
 
 
 class PipelineUnitTestCase(unittest.TestCase):
@@ -33,7 +33,7 @@ class PipelineUnitTestCase(unittest.TestCase):
     def test_apply_with_packet_1_to_1_timeseries(self):
         # Segmeters are a good example of taking 1 Timeseries and outputting 1 Timeseries.
         # There is coherence between Packet and parameters needed.
-        unit = Segmeter(timedelta(seconds=1))
+        unit = Segmenter(timedelta(seconds=1))
         result_packet = unit._apply(self.packetA)
         self.assertTrue(isinstance(result_packet.single_timeseries, Timeseries))
         self.assertEqual(len(result_packet), 1)
