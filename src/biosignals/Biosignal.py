@@ -137,6 +137,14 @@ class Biosignal(ABC):
     def final_datetime(self) -> datetime:
         return max([ts.final_datetime for ts in self.__timeseries.values()])
 
+    @property
+    def sampling_frequency(self) -> float:
+        if len(self) == 1:
+            return self.__timeseries[self.channel_names[0]].sampling_frequency
+        else:
+            raise AttributeError("Biosignal contains 2+ channel, each of which with a corresponding sampling frequency.")
+
+
     def __len__(self):
         '''Returns the number of channels.'''
         return len(self.__timeseries)
