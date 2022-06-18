@@ -3,6 +3,7 @@ from dateutil.parser import parse as to_datetime
 from typing import List, Iterable
 from numpy import array
 from biosppy.signals.tools import power_spectrum
+from scipy.signal import resample
 import matplotlib.pyplot as plt
 
 from src.processing.FrequencyDomainFilter import Filter
@@ -97,8 +98,14 @@ class Timeseries():
                 self.__samples = self.__raw_samples
                 self.__is_filtered = False
 
-        def _apply_operation(self, operation):
-            self.__samples = operation(self.__samples)
+        def _resample(self, old_frequency, new_frequency):
+            n_samples = int(new_frequency * len(self) / old_frequency)
+            self.__samples = resample(self.__samples, num=n_samples)
+            self.__final_datetime = self.initial_datetime + timedelta(seconds=len(self) / new_frequency)
+
+        def _apply_operation(self, operation, **kwargs):
+            self.__samples = operation(self.__samples, **kwargs)
+
 
 
     def __init__(self, segments: List[Segment], ordered:bool, sampling_frequency:float, units:Unit=None, name:str=None, equally_segmented=False):
@@ -273,6 +280,11 @@ class Timeseries():
         for segment in self.__segments:
             segment._restore_raw()
 
+    def _resample(self, frequency:float):
+        for segment in self.__segments:
+            segment._resample(old_frequency=self.sampling_frequency, new_frequency=frequency)
+        self.__sampling_frequency = frequency
+
     def plot_spectrum(self):
         colors = ('blue', 'green', 'red')
         n_columns = len(self.__segments)
@@ -301,9 +313,9 @@ class Timeseries():
         if self.units is not None:  # override ylabel
             plt.gca().set_ylabel("Amplitude ({})".format(self.units.name))
 
-    def _apply_operation(self, operation):
+    def _apply_operation(self, operation, **kwargs):
         for segment in self.__segments:
-            segment._apply_operation(operation)
+            segment._apply_operation(operation, **kwargs)
 
     def to_array(self):
         '''
