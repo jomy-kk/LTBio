@@ -63,7 +63,7 @@ class PipelineUnit(ABC):
             #    input[parameter_name] = packet[packet_label]
             #else:
                 # If there's a collection instead of a single element for this label, then apply once for each collection's element
-            if type(packet[packet_label]) is Collection[parameter_type]:
+            if isinstance(packet[packet_label], Collection):
                 APPLY_FOR_ALL = (packet_label, parameter_name)
             else:
                 input[parameter_name] = packet[packet_label]
@@ -74,10 +74,17 @@ class PipelineUnit(ABC):
         if APPLY_FOR_ALL is False:
             output = self.apply(**input)
         else:
-            output = []
-            for element in packet[APPLY_FOR_ALL[0]]:
-                input[APPLY_FOR_ALL[1]] = element
-                output.append(self.apply(**input))
+
+            if isinstance(packet[APPLY_FOR_ALL[0]], dict):
+                output = {}
+                for label in packet[APPLY_FOR_ALL[0]]:
+                    input[APPLY_FOR_ALL[1]] = packet[APPLY_FOR_ALL[0]][label]
+                    output[label] = self.apply(**input)
+            else:
+                output = []
+                for element in packet[APPLY_FOR_ALL[0]]:
+                    input[APPLY_FOR_ALL[1]] = element
+                    output.append(self.apply(**input))
 
         # Prepare load for Packet
         load = {}

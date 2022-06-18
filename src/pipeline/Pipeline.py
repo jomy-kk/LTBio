@@ -52,6 +52,12 @@ class Pipeline():
             self.__check_completeness(unit)
         self.__steps.append(unit)
 
+    def load(self, biosignals: Biosignal | Collection[Biosignal]):
+        if isinstance(biosignals, Biosignal):
+            self.__biosignals = (biosignals, )
+        else:
+            self.__biosignals = biosignals
+
     def next(self):
         if self.__current_step == 0:  # if starting
             self.__create_first_packet()
@@ -60,13 +66,14 @@ class Pipeline():
         self.__current_packet = self.__steps[self.__current_step]._apply(self.__current_packet)
         self.__current_step += 1
 
-        if self.__current_step == len(self) - 1:  # if ending
-            return self.__current_packet
+        return self.__current_packet
 
-    def applyAll(self):
+    def applyAll(self, biosignals: Biosignal | Collection[Biosignal]):
+        self.load(biosignals)
         N_STEPS = len(self)
         while self.__current_step < N_STEPS:
             self.next()
+        return self.__unpack_last_packet()
 
     def __create_first_packet(self):
         assert self.__biosignals is not None  # Check if Biosignals were loaded
@@ -75,7 +82,11 @@ class Pipeline():
             timeseries = biosignal._to_dict()
             assert tuple(timeseries.keys()) not in all_timeseries  # Ensure there are no repeated keys
             all_timeseries.update(timeseries)
+
         self.__current_packet = Packet(timeseries=all_timeseries)
+
+    def __unpack_last_packet(self) -> Biosignal | Collection[Biosignal]:
+        return self.__current_packet  #._to_dict()
 
     def __check_completeness(self, new_unit:PipelineUnit):
         load_that_will_be_available = {}
@@ -101,6 +112,8 @@ class Pipeline():
             else:
                 raise AssertionError('{} input label of the new unit does not match to any output label of the last unit.'.format(
                         input_label))
+
+
 
 
 
