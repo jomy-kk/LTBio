@@ -78,3 +78,6 @@ class Packet():
 
     def __contains__(self, item):
         return item in self.__load
+
+    def _to_dict(self):
+        return self.__load
