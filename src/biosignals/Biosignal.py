@@ -118,7 +118,7 @@ class Biosignal(ABC):
 
 
     @property
-    def channel_names(self) -> Collection[str]:
+    def channel_names(self) -> Tuple[str | BodyLocation]:
         '''Returns a tuple with the labels associated to every channel.'''
         return tuple(self.__timeseries.keys())
 
@@ -165,6 +165,19 @@ class Biosignal(ABC):
     def final_datetime(self) -> datetime:
         '''Returns the final datetime of the channel that ends the latest.'''
         return max([ts.final_datetime for ts in self.__timeseries.values()])
+
+    @property
+    def sampling_frequency(self) -> float:
+        '''Returns the sampling frequency of every channel (if equal), or raises an error if they are not equal.'''
+        if len(self) == 1:
+            return self.__timeseries[self.channel_names[0]].sampling_frequency
+        else:
+            common_sf = self.__timeseries[self.channel_names[0]].sampling_frequency
+            for i in range(1, len(self)):
+                if self.__timeseries[self.channel_names[i]].sampling_frequency != common_sf:
+                    raise AttributeError("Biosignal contains 2+ channels, all not necessarly with the same sampling frequency.")
+            return common_sf
+
 
     def __len__(self):
         '''Returns the number of channels.'''
@@ -229,6 +242,14 @@ class Biosignal(ABC):
         '''
         for channel in self.__timeseries.values():
             channel.undo_filters()
+
+    def resample(self, frequency:float):
+        '''
+        Resamples every channel to the new sampling frequency given, using Fourier method.
+        @param frequency: New sampling frequency (in Hertz).
+        '''
+        for channel in self.__timeseries.values():
+            channel._resample(frequency)
 
     def __draw_plot(self, timeseries_plotting_method, title, xlabel, ylabel, grid_on:bool, show:bool=True, save_to:str=None):
         '''

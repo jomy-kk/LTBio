@@ -234,6 +234,16 @@ class BiosignalTestCase(unittest.TestCase):
 
         remove(test_image_path)
 
+    def test_resample(self):
+        ecg = ECG(self.testpath, HSM)
+        self.assertEqual(ecg.sampling_frequency, 1000.0)  # 1000 Hz
+        self.assertEqual(len(ecg._Biosignal__timeseries["POL Ecg"]), 12000)
+        self.assertEqual(len(ecg._Biosignal__timeseries["POL  ECG-"]), 12000)
+
+        ecg.resample(150.0)  # resample to 150 Hz
+        self.assertEqual(ecg.sampling_frequency, 150.0)
+        self.assertEqual(len(ecg._Biosignal__timeseries["POL Ecg"]), 1800)  # 15% of samples
+        self.assertEqual(len(ecg._Biosignal__timeseries["POL  ECG-"]), 1800)
 
 if __name__ == '__main__':
     unittest.main()
