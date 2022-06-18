@@ -1,4 +1,4 @@
-# IT-PreEpiSeizures
+# IT - Long Term Biosignals
 
 [![Test Biosignals Package](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-biosignals-package.yml/badge.svg?branch=main&event=push)](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-biosignals-package.yml)
  [![Test Processing Package](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-processing-package.yml/badge.svg)](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-processing-package.yml)
