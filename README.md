@@ -7,7 +7,7 @@
 [![Decision](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-decision-package.yml/badge.svg)](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-decision-package.yml)
 
 #### Description
-Computer Software towards the Denosing, Detection, Prediction and Forecasting of Epileptic Seizures. Based in Lisbon at Instituto de Telecomunicações (IT).
+Python library for easy managing and processing of large Long-Term Biosignals.
 
 #### Language and Dependencies
 Developed and tested on Python 3.10.4. See dependencies in `requirements.txt`.
