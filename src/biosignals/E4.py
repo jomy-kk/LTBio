@@ -42,7 +42,7 @@ class E4(BiosignalSource):
         super().__init__()
 
     def __str__(self):
-        return "Seer Epilepsy Database"
+        return "E4 Empatica files"
 
     def __aux_date(date):
         """ Receives a string that contains a unix timestamp in UTC
