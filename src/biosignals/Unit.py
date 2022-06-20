@@ -4,6 +4,9 @@ from enum import unique, Enum
 class Unit(str, Enum):
     V = "Volt"
     G = "G"
+    uS = "Micro-Siemens"
+    BPM = "Beats per Minute"
+    C = "Degree Celsius"
 
 """
 FOR A FUTURE VERSION

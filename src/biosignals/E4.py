@@ -3,20 +3,21 @@
 # IT - PreEpiSeizures
 
 # Package: biosignals
-# File: Seer
-# Description: Procedures to read and write datafiles from Seer.
+# File: E4
+# Description: Procedures to read and write datafiles from Empatica E4 wristband.
 # URL: oneDrive
 
-# Contributors: João Saraiva, Mariana Abreu
-# Last update: 2/06/2022
+# Contributors: Mariana Abreu
+# Last update: 20/06/2022
 
 ###################################
 import csv
 from datetime import datetime
-from os import listdir, path
+from os import listdir, path, sep
 
 from numpy import vstack
 
+from src.biosignals.Unit import Unit
 from src.biosignals.ACC import ACC
 from src.biosignals.BiosignalSource import BiosignalSource
 from src.biosignals.EDA import EDA
@@ -36,6 +37,7 @@ class E4(BiosignalSource):
     def __str__(self):
         return "Empatica E4 - Epilepsy Wristband"
 
+    @staticmethod
     def __aux_date(date):
         """ Receives a string that contains a unix timestamp in UTC
         Returns a datetime after convertion
@@ -60,12 +62,12 @@ class E4(BiosignalSource):
             reader = csv.reader(f, dialect=csv.excel_tab, delimiter=',')
             a = list(reader)
         if metadata:
-            channel = dirfile.split('\\')[-1].split('.csv')[0]
+            channel = dirfile.split(sep)[-1].split('.csv')[0]
             channel_list = [channel] if len(a[0]) == 1 else [channel + a for a in ['X', 'Y', 'Z']]
             # initial datetime
             sfreq = float(a[1][0])
-            units = 'g' if channel == 'ACC' else 'uS' if channel == 'EDA' else 'bpm' if channel == 'HR' else 'ºC' if \
-                channel == 'TEMP' else ''
+            units = Unit.G if channel == 'ACC' else Unit.uS if channel == 'EDA' else Unit.BPM if channel == 'HR' else Unit.C if \
+                channel == 'TEMP' else None
             return channel_list, sfreq, units
         # structure of signal is two arrays, one array for each channel
         # float32 or float64?
@@ -80,7 +82,7 @@ class E4(BiosignalSource):
             dir (str): directory that contains E4 files in csv format
             type (Biosignal): type of biosignal to extract can be one of HR, EDA, PPG and ACC
         '''
-        sensor = 'EDA' if type is EDA else 'BVP' if type is PPG else 'ACC' if type is ACC else 'HR' if HR else 'TEMP' \
+        sensor = 'EDA' if type is EDA else 'BVP' if type is PPG else 'ACC' if type is ACC else 'HR' if type is HR else 'TEMP' \
             if type is TEMP else ''
         if sensor == '':
             raise IOError(f'Type {type} does not have label associated, please insert one')
@@ -98,8 +100,8 @@ class E4(BiosignalSource):
                         for csv_data in all_csv]
             unit = units
             name = f'{channels[ch]} from {sensor=} from {type=}'
-            dict_key = f'{channels[ch].upper()}'
-            print(f'{ch} channel: {name}')
+            dict_key = f'{channels[ch]}'.lower()
+            #(f'{ch} channel: {name}')
             new_timeseries = Timeseries(segments, sampling_frequency=sfreq, name=name, units=unit, ordered=True)
             new_dict[dict_key] = new_timeseries
         return new_dict
