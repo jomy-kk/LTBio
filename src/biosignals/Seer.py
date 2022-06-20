@@ -11,24 +11,19 @@
 # Last update: 2/06/2022
 
 ###################################
-from datetime import datetime
 from os import listdir, path
-from dateutil.parser import parse as to_datetime
-from pyedflib import EdfReader
+
 from mne.io import read_raw_edf
 
-
 from src.biosignals.ACC import ACC
+from src.biosignals.BiosignalSource import BiosignalSource
 from src.biosignals.ECG import ECG
 from src.biosignals.EDA import EDA
 from src.biosignals.EMG import EMG
 from src.biosignals.HR import HR
 from src.biosignals.PPG import PPG
 from src.biosignals.RESP import RESP
-from src.biosignals.Unit import Unit
-from src.biosignals.BiosignalSource import BiosignalSource
 from src.biosignals.Timeseries import Timeseries
-from src.clinical.BodyLocation import BodyLocation
 
 
 class Seer(BiosignalSource):

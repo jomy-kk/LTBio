@@ -1,20 +1,18 @@
 import ast
-from datetime import datetime
-
-from dateutil.parser import parse as to_datetime
 from json import load, dump
 from os import listdir, path, getcwd, access, R_OK
 
 import numpy as np
+from dateutil.parser import parse as to_datetime
 
+from src.biosignals.ACC import ACC
 from src.biosignals.BiosignalSource import BiosignalSource
-from src.biosignals.Timeseries import Timeseries
 from src.biosignals.ECG import ECG
 from src.biosignals.EDA import EDA
-from src.biosignals.ACC import ACC
+from src.biosignals.EMG import EMG
 from src.biosignals.PPG import PPG
 from src.biosignals.RESP import RESP
-from src.biosignals.EMG import EMG
+from src.biosignals.Timeseries import Timeseries
 
 
 class Sense(BiosignalSource):

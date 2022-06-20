@@ -14,24 +14,16 @@
 import csv
 from datetime import datetime
 from os import listdir, path
-from dateutil.parser import parse as to_datetime
-from numpy import vstack
-from pyedflib import EdfReader
-from mne.io import read_raw_edf
 
+from numpy import vstack
 
 from src.biosignals.ACC import ACC
-from src.biosignals.ECG import ECG
+from src.biosignals.BiosignalSource import BiosignalSource
 from src.biosignals.EDA import EDA
-from src.biosignals.EMG import EMG
 from src.biosignals.HR import HR
 from src.biosignals.PPG import PPG
-from src.biosignals.RESP import RESP
 from src.biosignals.TEMP import TEMP
-from src.biosignals.Unit import Unit
-from src.biosignals.BiosignalSource import BiosignalSource
 from src.biosignals.Timeseries import Timeseries
-from src.clinical.BodyLocation import BodyLocation
 
 
 class E4(BiosignalSource):
@@ -42,7 +34,7 @@ class E4(BiosignalSource):
         super().__init__()
 
     def __str__(self):
-        return "E4 Empatica files"
+        return "Empatica E4 - Epilepsy Wristband"
 
     def __aux_date(date):
         """ Receives a string that contains a unix timestamp in UTC

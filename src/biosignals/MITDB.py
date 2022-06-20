@@ -12,15 +12,16 @@
 
 ###################################
 from datetime import datetime
-from os import listdir, path, getcwd, makedirs
-from dateutil.parser import parse as to_datetime
+from os import listdir, path, makedirs
+
 import wfdb
 import wget
+from dateutil.parser import parse as to_datetime
 
-from src.biosignals.ECG import ECG
-from src.biosignals.Unit import Unit
 from src.biosignals.BiosignalSource import BiosignalSource
+from src.biosignals.ECG import ECG
 from src.biosignals.Timeseries import Timeseries
+from src.biosignals.Unit import Unit
 from src.clinical.BodyLocation import BodyLocation
 
 
