@@ -1,40 +1,59 @@
-import ast
-from json import load, dump
-from os import listdir, path, getcwd, access, R_OK
+# -*- encoding: utf-8 -*-
+
+# ===================================
+
+# IT - PreEpiSeizures
+
+# Package: biosignal
+# File: Sense
+# Description: Procedures to read and write datafiles from ScientISST Sense boards.
+
+# Contributors: Mariana Abreu, João Saraiva
+# Created: 19/06/2022
+# Last Updated: 23/06/2022
+
+# ===================================
+
+from ast import literal_eval
+from json import load
+from os import listdir, path, access, R_OK
 
 import numpy as np
 from dateutil.parser import parse as to_datetime
 
-from src.biosignals.ACC import ACC
 from src.biosignals.BiosignalSource import BiosignalSource
-from src.biosignals.ECG import ECG
-from src.biosignals.EDA import EDA
-from src.biosignals.EMG import EMG
-from src.biosignals.PPG import PPG
-from src.biosignals.RESP import RESP
 from src.biosignals.Timeseries import Timeseries
 
 
 class Sense(BiosignalSource):
+
+    # Sense Defaults files use these keys:
+    MODALITIES = 'modalities'
+    CHANNEL_LABELS = 'labels'
+    BODY_LOCATION = 'location'
+
+    # Sense csv data files use these keys:
+    KEY_CH_LABELS_IN_HEADER = 'Channel Labels'
+    KEY_HZ_IN_HEADER = 'Sampling rate (Hz)'
+    KEY_TIME_IN_HEADER = 'ISO 8601'
+    ANALOGUE_LABELS_FORMAT = 'AI{0}_raw'
+
+
     def __init__(self):
         super().__init__()
 
     def __str__(self):
         return "ScientISST Sense"
 
-    def __aux_date(header):
-        """
-        Get starting time from header
-        """
-        try:
-            return to_datetime(header['ISO 8601'])
-        except Exception as e:
-            print(e)
 
+    @staticmethod
+    def __aux_date(header):
+        """ Get starting time from header. """
+        return to_datetime(header[Sense.KEY_TIME_IN_HEADER], ignoretz=True)
+
+    @staticmethod
     def __check_empty(len_, type=''):
-        """
-        Confirm if the length is acceptable and return the desired output
-        """
+        """ Confirm if the length is acceptable and return the desired output. """
         if type == 'file_size':
             if len_ <= 50:
                 return True
@@ -43,92 +62,130 @@ class Sense(BiosignalSource):
                 return True
         return False
 
-    def __change_sens_list(sens, channels):
+    @staticmethod
+    def __get_mapping(header, biosignal_type, defaults_path, device_id):
         """
-        Confirm if the list of sensors has only RAW as labels, and ask the user for new labels in that case.
-        """
-        if list(set([ss[:2] for ss in sens])) == ['AI']:
-            print(f'Please update sens according to the sensors used:')
-            analogs = channels[-len(sens):]
-            for se in range(len(sens)):
-                new_se = str(input(f'{sens[se]} -- {analogs[se]}')).upper()
-                sens[se] = new_se
-        return sens
+        Given a header, find all indexes that correspond to biosignal modality of interest.
+        It REQUIRES a default mapping to be specified in a JSON file, otherwise a mapping will be requested on the stdin and saved for future use.
 
-    def __analog_idx(header, sensor, **options):
+        @param header: A list of strings corresponding to column names.
+        @param biosignal_type: Biosignal subclass indicating which modality is of interest.
+        @param defaults_path: The path to the JSON file containing the mapping in the correct syntax.
+
+        @rtype: tuple
+        @return: A tuple with:
+            a) A dictionary with the indexes corresponding to the biosignal modality of interest mapped to a channel label. Optionally, it can have a key Sense.BODY_LOCATION mapped to some body location.
+            E.g.: {1: 'Label of channel 1', 3: 'Label of channel 3'}
+            b) A body location (in str) or None
         """
-        From a header choose analog sensor key idx that correspond to a specific sensor.
-        This also runs read json to save configurations to facilitate implementation
-        This function leads with several devices and it returns a list that may contain one or several integers
-        """
-        sensor_idx, sensor_names, json_bool, chosen_device = [], [], False, ''
-        # if options and json key, get json to calculate
-        if options:
-            if 'json' in options.keys():
-                json_bool = options['json']
-                json_dir = options['json_dir'] if 'json_dir' in options.keys() \
-                    else path.join(getcwd(), 'sense.json')
-        len_ch = 0
-        if json_bool:
-            sens, ch, location = Sense.__read_json(json_dir, header)
+
+        mapping = {}
+
+        modalities_available, channel_labels, body_location = Sense.__get_defaults(defaults_path, header, device_id)
+
+        if biosignal_type.__name__ in str(modalities_available):
+            for index in modalities_available[biosignal_type.__name__]:
+                # Map each analogue channel of interest to a label
+                mapping[index] = channel_labels[str(index)]
         else:
-            sens = header[
-                str(input(f'What is the header key of sensor names? {header}\n '))]
-            ch = header[
-                str(input(f'What is the header key for analog channels? {header}\n '))]
-            location = str(input(f'What is the body location of this device? \n'))
-            sens = Sense.__change_sens_list(sens, ch)
-        analogs = ch[-len(sens):]
+            raise IOError(f"There are no analogue channels associated with {biosignal_type.__name__}")
 
-        if sensor in str(sens):
-            # add other column devices as offset to the column to retrieve
-            location_bool = True
-            if 'location' in options.keys():
-                if location.lower() not in options['location'].lower():
-                    location_bool = False
-            sens_id = [lab + '_' + location for lab in sens if sensor in lab.upper() and location_bool]
-            sensor_idx += [ch.index(analogs[sens.index(sid.split('_'+location)[0])]) for sid in sens_id]
+        return mapping, body_location
 
-        sensor_names += sens_id
-        return sensor_idx, sensor_names
+    @staticmethod
+    def __get_defaults(defaults_path, header, device_id):
+        """
+        Gets the default mapping of channels for a device.
 
-    def __read_json(dir_, header):
-        # check if bitalino json exists and returns the channels and labels and location
-        if path.isfile(dir_) and access(dir_, R_OK):
-            # checks if file exists
-            with open(dir_, 'r') as json_file:
+        @param defaults_path: The path to the JSON file containing the mapping in the correct syntax.
+        @param header: A list of strings corresponding to column names that are in the signal data file.
+        @param device_id: A string associated with a unique Sense device mapping of channels. This should be found in the defaults file.
+
+        @return: A tuple with
+                a) modalities: A dictionary mapping biosignal modalities to column indexes;
+                b) channel_labels: A dictionary mapping each column index to a meaningful channel label;
+                c) body_location: A string associated with a body location.
+        @rtype: tuple of size 3
+        """
+
+        # Check if file exists and it is readable
+        if path.isfile(defaults_path) and access(defaults_path, R_OK):
+
+            # OPTION A: Use the mapping in the json file
+            with open(defaults_path, 'r') as json_file:
                 json_string = load(json_file)
-        else:
-            print("Either file is missing or is not readable, creating file...")
-            json_string = {}
-        if 'device connection' in header.keys():
-            device = header['device connection']
-        else:
-            device = input('Enter device id (string): ')
-        if device not in json_string.keys():
-            json_string[device] = {}
 
-        for key in ['Channels labels', 'Header', 'Resolution (bits)', 'Sampling rate (Hz)', 'location']:
-            if key not in json_string[device].keys():
-                if key in header.keys():
-                    json_string[device][key] = header[key]
+                # Get mapping of modalities
+                if Sense.MODALITIES in json_string[device_id]:
+                    modalities = json_string[device_id][Sense.MODALITIES]
                 else:
-                    print(device, header['Channels labels'])
-                    new_info = str(input(f'{key}: ')).lower()
-                    json_string[device][key] = new_info
-            if key == 'Channels labels':
-                sens = Sense.__change_sens_list(json_string[device]['Channels labels'], header['Header'])
-                json_string[device][key] = sens
-        with open(dir_, 'w') as db_file:
-            dump(json_string, db_file, indent=2)
-        return json_string[device]['Channels labels'], json_string[device]['Header'], json_string[device]['location']
+                    raise IOError(f"Key {Sense.MODALITIES} is mandatory for each device default mapping.")
 
-    # @staticmethod
-    def __read_file(list_, metadata=False, sensor_idx=[], sensor_names=[], **options):
+                # Get mapping of channel labels, if any
+                if Sense.CHANNEL_LABELS in json_string[device_id]:
+                    channel_labels = json_string[device_id][Sense.CHANNEL_LABELS]
+                else:
+                    channel_labels = header[Sense.KEY_CH_LABELS_IN_HEADER] # use default labels in csv
+
+                # Get body location, if any
+                if Sense.BODY_LOCATION in json_string[device_id]:
+                    body_location = json_string[device_id][Sense.BODY_LOCATION]
+                else:
+                    body_location = None
+
+                return modalities, channel_labels, body_location
+
+        # File does not exist; creates one
+        else:
+            print("Either Sense defaults file is missing or it is not readable. Creating new defaults...")
+            # OPTION B: Ask and save a new mapping
+            json_string = {}
+            json_string[device_id] = {}  # Create a new object for a new device mapping
+            # B1. Input modalities
+            # B2. Input Channel labels
+            # B3. Input Body Location
+            # TODO: Use stdin to ask for default, save it, and return it
+
+    @staticmethod
+    def __get_header(file_path):
         """
-        Reads one edf file
+        Auxiliary procedure to find the header (1st line) and column names (2nd line) of the file in the given path.
+        @param file_path: The path of the file to look for a header.
+        @return: A tuple with:
+            a) header: A dictionary with the header metadata.
+            b) column_names: A list of the column names.
+        @raise:
+            IOError: If the given file path does not exist.
+        """
+        with open(file_path) as fh:
+            header = next(fh)[1:]  # Read first line
+            header = literal_eval(header)  # Get a dictionary of the header metadata
+            column_names = next(fh)[1:]  # Read second line
+            column_names = column_names.split()  # Get a list of the column names
+            return header, column_names
+
+    @staticmethod
+    def __get_samples(file_path):
+        """
+        Auxiliary procedure to find the samples (> 3rd line) of the file in the given path.
+        @param file_path: The path of the file to look for a header.
+        @return: A np.array of the data.
+        @raise:
+            IOError: If the given file path does not exist.
+        """
+        with open(file_path) as fh:
+            # Dismiss header (it is in the first line)
+            header = next(fh)[1:]
+            next(fh)
+            # Get the remaining data, i.e., the samples
+            return np.array([line.strip().split() for line in fh], float)
+
+    @staticmethod
+    def __read_file(file_path, type, defaults_path, device_id):
+        """
+        Reads one csv file
         Args:
-            list_ (list): contains the file path in index 0 and sensor label in index 1
+            list_ (list): contains the file path
             metadata (bool): defines whether only metadata or actual timeseries values should be returned
             sensor_idx (list): list of indexes that correspond to the columns of sensor to extract
             sensor_names (list): list of names that correspond to the sensor label
@@ -137,99 +194,89 @@ class Sense(BiosignalSource):
             device (str): device MacAddress, this is used to get the specific header, specially when using 2 devices
             **options (dict): equal to _read arg
 
-        Returns:
-            if metadata: sensor_idx (list), sensor_names (list), device (str), header (dict)
-            else: sensor_data (array): 2-dimensional array of time over sensors columns
-                  date (datetime): initial datetime of array
+        @return: A tuple with:
+            a) sensor_data (np.array): 2-dimensional array of time over sensors columns.
+            b) date (datetime): initial datetime of samples.
+            c) body_location (str): A string associated with the body location.
+            d) sampling_frequency (float): The sampling frequency, in Hertz, of the read samples.
 
-        Raises:
+        @raise:
             IOError: if sensor_names is empty, meaning no channels could be retrieved for chosen sensor
         """
-        dirfile = list_[0]
-        sensor = list_[1]
-        # size of bitalino file
-        file_size = path.getsize(dirfile)
-        if file_size <= 50:
-            if metadata:
-                return {}
-            else:
-                return '', []
-        with open(dirfile) as fh:
-            # header is in the first line
-            header = next(fh)[1:]
-            next(fh)
-            # signal
-            data = np.array([line.strip().split() for line in fh], float)
-        # if file is empty, return
-        if Sense.__check_empty(len(data)):
-            return None
 
-        header = ast.literal_eval(header)
-        if len(sensor_idx) < 1:
-            sensor_idx, sensor_names = Sense.__analog_idx(header, sensor, **options)
-        if metadata:
-            return sensor_idx, sensor_names, header
-        if len(sensor_names) > 0:
-            sensor_data = data[:, sensor_idx]
-            date = Sense.__aux_date(header)
-            return sensor_data, date
-        else:
-            raise IOError(f"Sensor {sensor} was not found in this acquisition, please insert another")
+        # STEP 1
+        # Get header
+        header, column_names = Sense.__get_header(file_path)
+
+        # STEP 2
+        # Get all samples
+        all_samples = Sense.__get_samples(file_path)
+
+        # STEP 3
+        # Raise Error if file is empty
+        if Sense.__check_empty(len(all_samples)):
+            raise IOError(f'Empty file: {file_path}.')
+
+        # STEP 4
+        # Get analogue channels of interest, mapped to labels, and a body location (if any associated)
+        mapping, body_location = Sense.__get_mapping(header, type, defaults_path, device_id)
+
+        # STEP 5
+        # Filtering only the samples of the channels of interest
+        samples_of_interest = {}
+        for ix in mapping:
+            label = mapping[ix]
+            samples_of_interest[label] = all_samples[:, column_names.index(Sense.ANALOGUE_LABELS_FORMAT.format(str(ix)))]
+        date = Sense.__aux_date(header)
+
+        # return dict, start date, str of body location, sampling frequency
+        return samples_of_interest, date, body_location, header[Sense.KEY_HZ_IN_HEADER]
 
     @staticmethod
-    def _read(dir, type, startkey='', **options):
+    def _read(dir, type, **options):
         """Reads multiple csv files on the directory 'path' and returns a Biosignal associated with a Patient.
-        Args:
-            dir (str): directory that contains bitalino files in txt format
-            type (Biosignal): type of biosignal to extract can be one of ECG, EDA, PPG, RESP, ACC and EMG
-            startkey (str): default is A20. the key that appears in all bitalino file names to extract from directory
-            **options (dict): only the keys json, json_dir and location are being evaluated.
-                options[json] (bool): if the user wants to use a json to save and load bitalino configurations
-                options[json_dir] (str): directory to json file. If not defined, a default will be set automatically
-                options[location] (str): if given, only the devices with that body location will be retrieved
+        @param dir (str): directory that contains Sense files in csv format
+        @param type (subclass of Biosignal): type of biosignal to extract can be one of ECG, EDA, PPG, RESP, ACC and EMG
+        @param **options (dict):
+            defaults_path (str): if the user wants to use a json to save and load bitalino configurations
+            device_id (str): directory to json file. If not defined, a default will be set automatically
 
-        Returns:
-            dict: A dictionary where keys are the sensors associated to the Biosignal with a Timeseries to each key
+        @return: A typical dictionary like {str: Timeseries}.
 
-        Raises:
-            IOError: if the Biosignal is not one of the ones mentioned
-            IOError: if the list of bitalino files from dir returns empty
-            IOError: if header is still empty after going through all Bitalino files
+        @raise:
+            IOError: If there are no Sense files in the given directory.
+            IOError: If Sense files have no header.
         """
-        sensor = 'ECG' if type is ECG else 'EDA' if type is EDA else 'PPG' if type is PPG else 'ACC' \
-            if type is ACC else 'PZT' if type is RESP else 'EMG' if type is EMG else ''
-        if sensor == '':
-            raise IOError(f'Type {type} does not have label associated, please insert one')
-        # first a list is created with all the filenames that end in .edf and are inside the chosen dir
-        # this is a list of lists where the second column is the type of channel to extract
-        all_files = sorted([[path.join(dir, file), sensor] for file in listdir(dir) if startkey in file])
-        # get header and sensor positions by running the bitalino files until a header is found
+
+        # STEP 1 - Get files
+        # A list is created with all the filenames that end with '.csv' inside the given directory.
+        # E.g. [ file1.csv, file.2.csv, ... ]
+        all_files = [path.join(dir, file) for file in listdir(dir) if file.endswith('.csv')]
         if not all_files:
-            raise IOError(f'No files in dir="{dir}" that start with {startkey}')
-        header, h = {}, 0
-        while len(header) < 1:
-            ch_idx, channels, header = Sense.__read_file(all_files[h], metadata=True, **options)
-            h += 1
-        if header == {}:
-            raise IOError(f'The files in {dir} did not contain a bitalino type {header}')
-        new_dict = {}
-        segments = [Sense.__read_file(file, sensor_idx=ch_idx, sensor_names=channels, **options)
-                    for file in all_files[h - 1:]]
-        for ch, channel in enumerate(channels):
-            samples = [Timeseries.Segment(segment[0][:, ch], initial_datetime=segment[1],
-                                          sampling_frequency=header['Sampling rate (Hz)'])
-                       for segment in segments if segment]
-            new_timeseries = Timeseries(samples, sampling_frequency=header['Sampling rate (Hz)'], ordered=True)
-            new_dict[channel] = new_timeseries
-        return new_dict
+            raise IOError(f"No files in {dir}.")
+
+        # STEP 2 - Read files
+        # Get samples of analogue channels of interest from each file
+        data = [Sense.__read_file(file, type, options['defaults_path'], options['device_id']) for file in all_files]
+        # E.g.: data = samples_of_interest, start_date, body_location, sampling_frequency
+
+        # STEP 3 - Restructuring
+        # Listing all Segments of the same channel together, labelled to the same channel label.
+        res = {}
+        segments = {}
+        for samples, date, _, sf in data:
+            for channel in samples:
+                segment = Timeseries.Segment(samples[channel], initial_datetime=date, sampling_frequency=sf)
+                segments[channel] = [segment, ] if channel not in res else segments[channel] + [segment, ]  # instantiating or appending
+                res[channel] = sf  # save sampling frequency here to be used on the next loop
+
+        # Encapsulating the list of Segments of the same channel in a Timeseries
+        for channel in segments:
+            res[channel] = Timeseries(segments[channel], sampling_frequency=res[channel], ordered=False)
+            # ordered = False since this code is not guaranting any order when reading the files. Like this they will be ordered on the initializer of Timeseries.
+
+        return res
 
     @staticmethod
     def _write(dir, timeseries):
-        '''Writes multiple TXT files on the directory 'path' so they can be opened in Opensignals.'''
-        # TODO
-
-
-# example: choose directory, json and type of biosignal to extract
-# path_ = 'C:\\Users\\Mariana\\PycharmProjects\\IT-PreEpiSeizures\\resources\\Sense_tests\\sense2'
-# dict_ = {'json': True}
-# files = Sense._read(path_, type=PPG, startkey='', **dict_)
+        pass  # TODO
