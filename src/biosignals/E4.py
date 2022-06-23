@@ -135,3 +135,6 @@ class E4(BiosignalSource):
     def _write(path:str, timeseries: dict):
         pass
 
+    @staticmethod
+    def _transfer(samples, to_unit):
+        pass

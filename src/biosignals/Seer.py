@@ -118,6 +118,10 @@ class Seer(BiosignalSource):
     def _write(path:str, timeseries: dict):
         pass
 
+    @staticmethod
+    def _transfer(samples, to_unit):
+        pass
+
 
 # path_ = 'C:\\Users\\Mariana\\OneDrive - Universidade de Lisboa\\PreEpiseizures\\BD-SEER'
 # files = Seer._fetch(path_, type=EMG, patient_code="172")

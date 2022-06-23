@@ -280,3 +280,8 @@ class Sense(BiosignalSource):
     @staticmethod
     def _write(dir, timeseries):
         pass  # TODO
+
+    @staticmethod
+    def _transfer(samples, to_unit):
+        pass
+

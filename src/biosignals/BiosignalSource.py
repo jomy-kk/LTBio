@@ -12,6 +12,10 @@
 ###################################
 
 from abc import ABC, abstractmethod
+from numpy import array
+
+from src.biosignals.Unit import Unit
+
 
 class BiosignalSource(ABC):
 
@@ -33,4 +37,9 @@ class BiosignalSource(ABC):
     @staticmethod
     @abstractmethod
     def _write(path:str, timeseries:dict):
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def _transfer(samples:array, to_unit: Unit) -> array:
         pass
