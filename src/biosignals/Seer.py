@@ -14,6 +14,7 @@
 from os import listdir, path
 
 from mne.io import read_raw_edf
+from datetime import datetime
 
 from src.biosignals.ACC import ACC
 from src.biosignals.BiosignalSource import BiosignalSource
@@ -51,10 +52,10 @@ class Seer(BiosignalSource):
         channel_list = edf.ch_names
         # initial datetime
         if metadata:
-            return channel_list, edf.info['sfreq'], ''
+            return channel_list, edf.info['sfreq'], None
         # structure of signal is two arrays, one array for each channel
         signal = edf.get_data()
-        date = edf.info['meas_date']
+        date = edf.info['meas_date'].replace(tzinfo=None)
         edf.close()
         return signal, date
 
