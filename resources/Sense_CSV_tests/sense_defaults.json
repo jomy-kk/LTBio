@@ -1,0 +1,35 @@
+{
+  "run_chest":
+    {
+      "modalities": {
+        "ECG": [1, 3],
+        "RESP": [2],
+        "ACC": [4, 5, 6]
+      },
+      "labels": {
+        "1": "Gel",
+        "2": "Resp Band",
+        "3":  "Band",
+        "4": "x",
+        "5": "y",
+        "6": "z"
+      },
+      "location": "Chest"
+    },
+
+  "run_arm":
+    {
+      "modalities": {
+        "EMG": [2],
+        "EDA": [3],
+        "PPG": [4]
+      },
+      "labels": {
+        "Bicep": 2,
+        "Wrist": 3,
+        "Index finger": 4
+      },
+      "location": "Left arm"
+    }
+}
+

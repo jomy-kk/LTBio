@@ -234,3 +234,6 @@ class Bitalino(BiosignalSource):
         '''Writes multiple TXT files on the directory 'path' so they can be opened in Opensignals.'''
         # TODO
 
+    @staticmethod
+    def _transfer(samples, to_unit):
+        pass
