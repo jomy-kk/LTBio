@@ -16,7 +16,6 @@ from numpy import array
 
 from src.biosignals.Unit import Unit
 
-
 class BiosignalSource(ABC):
 
     def __init__(self):
@@ -41,5 +40,5 @@ class BiosignalSource(ABC):
 
     @staticmethod
     @abstractmethod
-    def _transfer(samples:array, to_unit: Unit) -> array:
+    def _transfer(samples:array, type) -> array:
         pass
