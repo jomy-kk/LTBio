@@ -39,12 +39,19 @@ class Unit(ABC):
     def __init__(self, multiplier:Multiplier):
         self.__multiplier = multiplier
 
+    def __eq__(self, other):
+        return type(self) == type(other) and self.__multiplier == other.multiplier
+
+    @property
+    def multiplier(self) -> Multiplier:
+        return self.__multiplier
+
     @property
     def prefix(self) -> str:
-        return self.__multiplier.__name__
+        return self.__multiplier.name
 
-    @abstractmethod
     @property
+    @abstractmethod
     def short(self) -> str:
         """
         Subclasses should return the conventional shorter version of writing a unit. Perhaps one-three letters.
@@ -52,7 +59,7 @@ class Unit(ABC):
         pass
 
     def __str__(self):
-       return self.prefix + self.short
+       return str(self.prefix) + str(self.short)
 
     @abstractmethod
     def convert_to(self, unit:type) -> Callable[[array], array]:

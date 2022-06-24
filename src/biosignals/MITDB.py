@@ -21,7 +21,7 @@ from dateutil.parser import parse as to_datetime
 from src.biosignals.BiosignalSource import BiosignalSource
 from src.biosignals.ECG import ECG
 from src.biosignals.Timeseries import Timeseries
-from src.biosignals.Unit import Unit
+from src.biosignals.Unit import *
 from src.clinical.BodyLocation import BodyLocation
 
 
@@ -88,7 +88,7 @@ class MITDB(BiosignalSource):
         for ch in range(len(channels)):
             segments = [Timeseries.Segment(edf_data[0][:, ch], initial_datetime=edf_data[1], sampling_frequency=sfreq)
                         for edf_data in all_edf]
-            unit = Unit.V if 'V' in units[ch] else ''
+            unit = Volt(Multiplier.m) if 'mV' in units[ch] else None
             name = BodyLocation.MLII if channels[ch].strip() == 'MLII' else BodyLocation.V5 if channels[ch].strip() == 'V5' else channels[ch]
             print(f'{ch} channel: {name}')
             new_timeseries = Timeseries(segments, sampling_frequency=sfreq, name=channels[ch], units=unit, ordered=True)

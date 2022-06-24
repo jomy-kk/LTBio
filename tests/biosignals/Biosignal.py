@@ -5,7 +5,7 @@ from os import remove
 from src.biosignals.EDA import EDA
 from src.biosignals.Biosignal import Biosignal
 from src.biosignals.Timeseries import Timeseries
-from src.biosignals.Unit import Unit
+from src.biosignals.Unit import *
 from src.clinical.BodyLocation import BodyLocation
 from src.clinical.Epilepsy import Epilepsy
 from src.clinical.Patient import Patient
@@ -24,9 +24,9 @@ class BiosignalTestCase(unittest.TestCase):
         cls.samples1 = [506.0, 501.0, 497.0, 374.5, 383.4, 294.2]
         cls.samples2 = [502.0, 505.0, 505.0, 924.3, 293.4, 383.5]
         cls.samples3 = [527.0, 525.0, 525.0, 849.2, 519.5, 103.4]
-        cls.ts1 = Timeseries([Timeseries.Segment(cls.samples1, cls.initial1, cls.sf), ], True, cls.sf, Unit.V)
-        cls.ts2 = Timeseries([Timeseries.Segment(cls.samples2, cls.initial1, cls.sf), ], True, cls.sf, Unit.V)
-        cls.ts3 = Timeseries([Timeseries.Segment(cls.samples3, cls.initial1, cls.sf), ], True, cls.sf, Unit.V)
+        cls.ts1 = Timeseries([Timeseries.Segment(cls.samples1, cls.initial1, cls.sf), ], True, cls.sf, Volt(Multiplier.m))
+        cls.ts2 = Timeseries([Timeseries.Segment(cls.samples2, cls.initial1, cls.sf), ], True, cls.sf, Volt(Multiplier.m))
+        cls.ts3 = Timeseries([Timeseries.Segment(cls.samples3, cls.initial1, cls.sf), ], True, cls.sf, Volt(Multiplier.m))
         cls.testpath = 'resources/HSM_EDF_tests'
         cls.images_testpath = 'resources/plots_tests'
 
@@ -185,8 +185,8 @@ class BiosignalTestCase(unittest.TestCase):
 
     def test_concatenate_two_biosignals(cls):
         initial2 = cls.initial1+timedelta(days=1)
-        ts4 = Timeseries([Timeseries.Segment(cls.samples3, initial2, cls.sf), ], True, cls.sf, Unit.V)
-        ts5 = Timeseries([Timeseries.Segment(cls.samples1, initial2, cls.sf), ], True, cls.sf, Unit.V)
+        ts4 = Timeseries([Timeseries.Segment(cls.samples3, initial2, cls.sf), ], True, cls.sf, Volt(Multiplier.m))
+        ts5 = Timeseries([Timeseries.Segment(cls.samples1, initial2, cls.sf), ], True, cls.sf, Volt(Multiplier.m))
         ecg1 = ECG({"a": cls.ts1, "b": cls.ts2}, patient=cls.patient, acquisition_location=BodyLocation.V1)
         ecg2 = ECG({"a": ts4, "b": ts5}, patient=cls.patient, acquisition_location=BodyLocation.V1)
 

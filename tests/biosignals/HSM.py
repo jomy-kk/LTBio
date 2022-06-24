@@ -4,7 +4,7 @@ from os import rmdir, mkdir
 
 from src.clinical.Epilepsy import Epilepsy
 from src.clinical.Patient import Patient
-from src.biosignals.Unit import Unit
+from src.biosignals.Unit import *
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals import (HSM, ECG)
 
@@ -30,7 +30,7 @@ class HSMTestCase(unittest.TestCase):
                                          Timeseries.Segment(cls.samplesx2, cls.initial2, cls.sf)
         cls.segmenty1, cls.segmenty2 = Timeseries.Segment(cls.samplesy1, cls.initial1, cls.sf), \
                                          Timeseries.Segment(cls.samplesy2, cls.initial2, cls.sf)
-        cls.units = Unit.V
+        cls.units = Volt(Multiplier.m)
 
         cls.n_samplesx = 12000
         cls.n_samplesy = 12000

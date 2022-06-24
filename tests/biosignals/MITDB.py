@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from src.biosignals.Unit import Unit
+from src.biosignals.Unit import *
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals import (MITDB, ECG)
 
@@ -16,7 +16,7 @@ class MITDBTestCase(unittest.TestCase):
         self.sf = 360
         self.segmentx, self.segmenty = Timeseries.Segment(self.samplesx, self.initial, self.sf), \
                                     Timeseries.Segment(self.samplesy, self.initial, self.sf)
-        self.units = Unit.V
+        self.units = Volt(Multiplier.m)
 
         self.n_samplesx = 650000
         self.n_samplesy = 650000

@@ -5,7 +5,7 @@ from os import rmdir, mkdir
 from src.clinical.BodyLocation import BodyLocation
 from src.clinical.Epilepsy import Epilepsy
 from src.clinical.Patient import Patient
-from src.biosignals.Unit import Unit
+from src.biosignals.Unit import *
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals import (HEM, ECG)
 
@@ -27,7 +27,7 @@ class HEMTestCase(unittest.TestCase):
         cls.sf = 256.
         cls.segmentx1, cls.segmentx2 = Timeseries.Segment(cls.samplesx1, cls.initial1, cls.sf), Timeseries.Segment(cls.samplesx2, cls.initial2, cls.sf)
         cls.segmenty1, cls.segmenty2 = Timeseries.Segment(cls.samplesy1, cls.initial1, cls.sf), Timeseries.Segment(cls.samplesy2, cls.initial2, cls.sf)
-        cls.units = Unit.V
+        cls.units = Volt(Multiplier.m)
 
         cls.tsx = Timeseries([cls.segmentx1, cls.segmentx2], True, cls.sf, cls.units)
         cls.tsy = Timeseries([cls.segmenty1, cls.segmenty2], True, cls.sf, cls.units)
