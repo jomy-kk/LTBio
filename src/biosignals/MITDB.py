@@ -3,11 +3,11 @@
 # IT - PreEpiSeizures
 
 # Package: biosignals
-# File: Seer
-# Description: Procedures to read and write datafiles from Seer.
+# File: MITDB
+# Description: Procedures to read and write datafiles from MIT-BIH Arrhythmia Database.
 # URL: https://physionet.org/content/mitdb/1.0.0/
 
-# Contributors: João Saraiva, Mariana Abreu
+# Contributors: Mariana Abreu, João Saraiva
 # Last update: 31/05/2022
 
 ###################################
@@ -91,7 +91,6 @@ class MITDB(BiosignalSource):
             unit = Unit.V if 'V' in units[ch] else ''
             name = BodyLocation.MLII if channels[ch].strip() == 'MLII' else BodyLocation.V5 if channels[ch].strip() == 'V5' else channels[ch]
             print(f'{ch} channel: {name}')
-
             new_timeseries = Timeseries(segments, sampling_frequency=sfreq, name=channels[ch], units=unit, ordered=True)
             new_dict[channels[ch]] = new_timeseries
         return new_dict
@@ -125,5 +124,5 @@ class MITDB(BiosignalSource):
     def _transfer(samples, to_unit):
         pass
 
-
-# files = MITDB._fetch('ECG', 100)
+    def _write(path:str, timeseries: dict):
+        pass

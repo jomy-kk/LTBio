@@ -1,6 +1,6 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 
-name: Biosignals
+name: Machine Learning
 
 on:
   push:
@@ -36,4 +36,4 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        python -m pytest tests/biosignals/*
+        python -m pytest tests/ml/*

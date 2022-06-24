@@ -3,7 +3,7 @@
 # IT - PreEpiSeizures
 
 # Package: biosignals
-# File: HSM
+# File: MITDB
 # Description: Procedures to read and write datafiles from Hospital de Santa Maria.
 
 # Contributors: João Saraiva, Mariana Abreu
