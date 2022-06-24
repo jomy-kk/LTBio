@@ -14,6 +14,7 @@
 import csv
 from datetime import datetime
 from os import listdir, path, sep
+from ast import literal_eval
 
 from numpy import vstack
 
