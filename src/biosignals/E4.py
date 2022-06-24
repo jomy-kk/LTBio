@@ -47,64 +47,96 @@ class E4(BiosignalSource):
         return datetime.utcfromtimestamp(ts)
 
     @staticmethod
-    def __read_file(dirfile, metadata=False):
+    def __get_header(file_path):
         """
-        Reads one dat file
-        param: dirfile (str) path to one file that ends in dat
-        param: sensor (str) name of the channel to extract (ex: ECG)
-        If metadata is True - returns list of channels and sampling frequency and initial datetime
-        Else return arrays one for each channel
+        Auxiliary procedure to find the initial datetimes (1st line) and sampling frequencies (2nd line) of the file in the given path.
+        @param file_path: The path of the file to look for a header.
+        @return: A tuple with:
+            a) channel_labels: A dictionary with the header metadata.
+            b) column_names: A list of the column names.
+        @raise:
+            IOError: If the given file path does not exist.
         """
-        # get csv data
-        # first row of csv is the time and the second row is the sampling frequency
-        # the third row and after are the sensor values
-        with open(dirfile, 'r') as f:
+        with open(file_path) as fh:
+            header = next(fh)[1:]  # Read first line
+            header = literal_eval(header)  # Get a dictionary of the header metadata
+            column_names = next(fh)[1:]  # Read second line
+            column_names = column_names.split()  # Get a list of the column names
+            return header, column_names
+
+    @staticmethod
+    def __read_file(file_path):
+        """
+        Reads one csv file.
+        @param: file_path (str) path to one csv file
+        @return: A tuple with:
+            a) A dictionary with arrays of samples associated with channel labels (like {'label': [...], })
+            b) The initial datetime (in datetime)
+            c) The sampling frequency (in float)
+
+        """
+        with open(file_path, 'r') as f:
             reader = csv.reader(f, dialect=csv.excel_tab, delimiter=',')
             a = list(reader)
-        if metadata:
-            channel = dirfile.split(sep)[-1].split('.csv')[0]
-            channel_list = [channel] if len(a[0]) == 1 else [channel + a for a in ['X', 'Y', 'Z']]
-            # initial datetime
-            sfreq = float(a[1][0])
-            units = Unit.G if channel == 'ACC' else Unit.uS if channel == 'EDA' else Unit.BPM if channel == 'HR' else Unit.C if \
-                channel == 'TEMP' else None
-            return channel_list, sfreq, units
-        # structure of signal is two arrays, one array for each channel
-        # float32 or float64?
-        signal = vstack(a[2:]).astype('float32').T
-        date = E4.__aux_date(a[0][0])
-        return signal, date
+
+            # Channel label comes from the file name, or (x, y, z) in case of ACC
+            channel_labels = file_path.split(sep)[-1].split('.csv')[0].lower()
+            channel_labels = (channel_labels, ) if len(a[0]) == 1 else ('x', 'y', 'z')
+
+            # First row is the initial datetime
+            datetime = E4.__aux_date(a[0][0])
+
+            # Second row is sampling frequency
+            sampling_frequency = float(a[1][0])
+
+            # Form third row and on are the sample values
+            samples = vstack(a[2:]).astype('float32').T
+
+            return {label: samples[i] for i, label in enumerate(channel_labels)}, datetime, sampling_frequency
 
     @staticmethod
     def _read(dir, type, **options):
-        '''Reads multiple CSV files on the directory 'path' and returns a Biosignal associated with a Patient.
+        '''
+        Reads multiple CSV files on multiple subdirectories of 'path' and returns a Biosignal associated with a Patient.
         Args:
-            dir (str): directory that contains E4 files in csv format
+            dir (str): directory that contains subdirectories of E4 files in csv format
             type (Biosignal): type of biosignal to extract can be one of HR, EDA, PPG and ACC
         '''
         sensor = 'EDA' if type is EDA else 'BVP' if type is PPG else 'ACC' if type is ACC else 'HR' if type is HR else 'TEMP' \
             if type is TEMP else ''
         if sensor == '':
             raise IOError(f'Type {type} does not have label associated, please insert one')
-        # first a list is created with all the filenames that end in .dat and are inside the chosen dir
-        all_files = sorted(list(set([path.join(dir, di) for di in sorted(listdir(dir)) if sensor in di.upper()])))
 
-        # run the dat read function for all files in list all_files
-        new_dict = {}
-        if not all_files:
-            raise IOError(f'Files were not found in path {dir} for {sensor=} ')
-        channels, sfreq, units = E4.__read_file(all_files[0], metadata=True)
-        all_csv = list(map(E4.__read_file, all_files))
-        for ch in range(len(channels)):
-            segments = [Timeseries.Segment(csv_data[0][ch], initial_datetime=csv_data[1], sampling_frequency=sfreq)
-                        for csv_data in all_csv]
-            unit = units
-            name = f'{channels[ch]} from {sensor=} from {type=}'
-            dict_key = f'{channels[ch]}'.lower()
-            #(f'{ch} channel: {name}')
-            new_timeseries = Timeseries(segments, sampling_frequency=sfreq, name=name, units=unit, ordered=True)
-            new_dict[dict_key] = new_timeseries
-        return new_dict
+        # STEP 1
+        # Get list of subdirectories
+        all_subdirectories = list([path.join(dir, d) for d in listdir(dir)])
+
+        res = {}
+        segments = {}
+        # STEP 2
+        # Get list of files of interest, i.e., the ones corresponding to the modality of interest
+        for subdir in all_subdirectories:
+            file = list([path.join(subdir, file) for file in listdir(subdir) if sensor in file])[0]
+            if not file:
+                raise IOError(f'Files were not found in path {subdir} for {sensor=} ')
+
+            # STEP 3
+            # Read each file
+            samples, datetime, sf = E4.__read_file(file)
+
+            # STEP 4 - Restructuring
+            # Listing all Segments of the same channel together, labelled to the same channel label.
+            for channel_label in samples:
+                segment = Timeseries.Segment(samples[channel_label], initial_datetime=datetime, sampling_frequency=sf)
+                segments[channel_label] = [segment, ] if channel_label not in res else segments[channel_label] + [segment, ]  # instantiating or appending
+                res[channel_label] = sf  # save sampling frequency here to be used on the next loop
+
+        # Encapsulating the list of Segments of the same channel in a Timeseries
+        for channel in segments:
+            res[channel] = Timeseries(segments[channel], sampling_frequency=res[channel], ordered=False)
+            # ordered = False since this code is not guaranting any order when reading the files. Like this they will be ordered on the initializer of Timeseries.
+
+        return res
 
     @staticmethod
     def _onsets(dir, file_key='tag'):
