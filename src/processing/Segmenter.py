@@ -17,12 +17,13 @@ from biosppy.signals.tools import windower
 from src.pipeline.PipelineUnit import PipelineUnit
 from src.biosignals.Timeseries import Timeseries
 
-class Segmeter(PipelineUnit):
+class Segmenter(PipelineUnit):
     """
     This PipelineUnit can segment one Timeseries at a time.
     """
 
-    def __init__(self, window_length:timedelta, overlap_length:timedelta=None):
+    def __init__(self, window_length: timedelta, overlap_length: timedelta = None, name: str = None):
+        super().__init__(name)
         self.window_length = window_length
         self.overlap_length = overlap_length
 

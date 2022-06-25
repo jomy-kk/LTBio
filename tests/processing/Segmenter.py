@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from src.biosignals.MITDB import MITDB
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals.ECG import ECG
-from src.processing.Segmenter import Segmeter
+from src.processing.Segmenter import Segmenter
 
 class SegmenterTestCase(unittest.TestCase):
 
@@ -33,7 +33,7 @@ class SegmenterTestCase(unittest.TestCase):
 
 
     def test_segment_without_overlap(self):
-        segmenter = Segmeter(timedelta(milliseconds=10))
+        segmenter = Segmenter(timedelta(milliseconds=10))
 
         x_segmented = segmenter.apply(self.x)
         y_segmented = segmenter.apply(self.y)
@@ -51,7 +51,7 @@ class SegmenterTestCase(unittest.TestCase):
 
 
     def test_segment_with_overlap(self):
-        segmenter = Segmeter(timedelta(milliseconds=10), timedelta(milliseconds=3))
+        segmenter = Segmenter(timedelta(milliseconds=10), timedelta(milliseconds=3))
 
         x_segmented = segmenter.apply(self.x)
         y_segmented = segmenter.apply(self.y)
@@ -71,7 +71,7 @@ class SegmenterTestCase(unittest.TestCase):
 
 
     def test_timeseries_not_with_adjecent_segments_gives_error(self):
-        segmenter = Segmeter(timedelta(milliseconds=10))
+        segmenter = Segmenter(timedelta(milliseconds=10))
 
         ts_with_gaps = Timeseries([Timeseries.Segment(list(), self.initial, self.sf),
                                    Timeseries.Segment(list(), self.initial+timedelta(days=1), self.sf)],
