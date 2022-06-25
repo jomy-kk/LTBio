@@ -291,7 +291,7 @@ class Timeseries():
         for i in range(n_columns):
             segment = self.__segments[i]
             x, y = power_spectrum(signal=segment.samples)
-            plt.plot(x, y, color=colors[i], alpha=0.6, linewidth=0.5,
+            plt.plot(x, y, alpha=0.6, linewidth=0.5,
                      label='From {0} to {1}'.format(segment.initial_datetime, segment.final_datetime))
 
     def plot(self):
