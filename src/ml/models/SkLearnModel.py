@@ -25,13 +25,7 @@ class SkLearnModel(SupervisedModel):
         super().__init__(design, name, version)
 
     def setup(self, train_conditions:SupervisedTrainConditions, **kwargs):
-        params = train_conditions.parameters
-        if 'train_size' in params:
-            del params['train_size']
-        if 'test_size' in params:
-            del params['test_size']
-        if 'shuffle' in params:
-            del params['shuffle']
+        params = {key: value for key, value in train_conditions.parameters.items() if key not in ('train_size', 'test_size', 'shuffle')}
         self.design.set_params(**params)
 
     def train(self, object, target):

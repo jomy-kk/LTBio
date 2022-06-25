@@ -11,7 +11,7 @@
 
 ###################################
 
-from typing import Tuple, Iterable
+from typing import Collection
 from sklearn.model_selection import train_test_split
 from numpy import array
 
@@ -23,7 +23,10 @@ from src.biosignals.Timeseries import Timeseries
 
 class SupervisingTrainer(PipelineUnit):
 
-    def __init__(self, model:SupervisedModel, train_conditions:Iterable[SupervisedTrainConditions], name:str=None):
+    PIPELINE_INPUT_LABELS = {'object': 'timeseries', 'target': 'target'}
+    PIPELINE_OUTPUT_LABELS = {'results': 'results'}
+
+    def __init__(self, model:SupervisedModel, train_conditions:Collection[SupervisedTrainConditions], name:str=None):
         super().__init__(name)
         self.__model = model
         self.train_conditions = train_conditions
@@ -31,16 +34,14 @@ class SupervisingTrainer(PipelineUnit):
         if len(train_conditions) == 0:
             raise AttributeError("Give at least one SupervisedTrainConditions to 'train_conditions'.")
 
+
+    def apply(self, object:Collection[Timeseries], target:Timeseries, ):
         self.reporter = SupervisedTrainReport()
         self.reporter.print_successful_instantiation()
-
-
-    def apply(self, object:Iterable[Timeseries], target:Timeseries, ):
-
         self.reporter.print_model_description(self.__model, **self.__model.non_trainable_parameters)
 
-        # Convert to object and target to arrays
-        X = array([ts.to_array() for ts in object]).T # Assertion that every Timeseries only contains one Segment is guaranteed by 'to_array' conversion.
+        # Convert object and target to arrays
+        X = array([ts.to_array() for ts in (object.values() if isinstance(object, dict) else object)]).T # Assertion that every Timeseries only contains one Segment is guaranteed by 'to_array' conversion.
         y = target.to_array()
 
         results = []
@@ -64,10 +65,10 @@ class SupervisingTrainer(PipelineUnit):
 
             # Produce report
             #self.__model.report(self.reporter, show=False, save_to='resources/reports_tests/my_test'+str(i+1))
-            result = self.__model.report(self.reporter, show=False)
+            result = self.__model.report(self.reporter, show=False, save_to='reports/my_test'+str(i+1))
             results.append(result)
 
         self.reporter.print_end_of_trains(len(self.train_conditions))
-        #self.reporter.output('Report.pdf', 'F')
+        self.reporter.output('Report.pdf')
 
         return results

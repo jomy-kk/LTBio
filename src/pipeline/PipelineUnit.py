@@ -87,9 +87,8 @@ class PipelineUnit(ABC):
                     output.append(self.apply(**input))
 
         # Prepare load for Packet
-        load = {}
+        load = packet._to_dict()  # start with the contents already in the previous packet
         packet_label = tuple(self.PIPELINE_OUTPUT_LABELS.values())[0]
-        load[packet_label] = output.to_dict() if isinstance(output, Features) else output  # FIXME: Do we really want a Features object?
-        # FIXME As it is, apply methods can only return one object
+        load[packet_label] = output  # replace or add
 
         return Packet(**load)

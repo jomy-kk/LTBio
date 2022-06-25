@@ -93,7 +93,7 @@ class Pipeline():
         for unit in self.__steps:
             # Get output label and type  # FIXME: Currently assuming only 1 output for PipelineUnit(s)
             output_label = tuple(unit.PIPELINE_OUTPUT_LABELS.values())[0]
-            output_type = signature(new_unit.apply).return_annotation
+            output_type = signature(unit.apply).return_annotation
             load_that_will_be_available[output_label] = output_type  # If it's the case, it replaces type of same labels, as it should
 
         new_unit_parameters = tuple(signature(new_unit.apply).parameters.values())
@@ -104,11 +104,11 @@ class Pipeline():
             input_label = new_unit.PIPELINE_INPUT_LABELS[parameter_name]  # Map to the label in Packet
 
             if input_label in load_that_will_be_available:
-                if parameter_type == load_that_will_be_available[input_label]:
+                if isinstance(parameter_type, type(load_that_will_be_available[input_label])):
                     continue
                 else:
-                    raise AssertionError('Input type, {}, of {} of the new unit does not match the output type, {}, of the last unit.'.format(
-                            parameter_type, parameter_name, load_that_will_be_available[input_label]))
+                    raise AssertionError('Input type, {}, of the new unit does not match the output type, {}, of the last unit.'.format(
+                            parameter_type, load_that_will_be_available[input_label]))
             else:
                 raise AssertionError('{} input label of the new unit does not match to any output label of the last unit.'.format(
                         input_label))
