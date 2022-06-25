@@ -296,22 +296,30 @@ class Timeseries():
 
     def plot(self):
         xticks, xticks_labels = [], []  # to store the initial and final ticks of each Segment
-        SPACE = int(self.__sampling_frequency) * 2  # the empy space between each Segment
+        SPACE = int(self.__sampling_frequency) * 2  # the empty space between each Segment
 
         for i in range(len(self.__segments)):
             segment = self.__segments[i]
             x, y = range(len(segment)), segment.samples
             if i > 0:  # except for the first Segment
-                x = array(x) + (len(self.__segments[i - 1]) + SPACE)  # shift right in time
-                plt.gca().axvspan(x[0]-SPACE, x[0], alpha=0.05, color='black')  # add empy space in between Segments
+                x = array(x) + (xticks[-1] + SPACE)  # shift right in time
+                plt.gca().axvspan(x[0]-SPACE, x[0], alpha=0.05, color='black')  # add empty space in between Segments
             plt.gca().plot(x, y, linewidth=0.5)
+
             xticks += [x[0], x[-1]]  # add positions of the first and last samples of this Segment
-            xticks_labels += [str(segment.initial_datetime), str(segment.final_datetime)]  # add datetimes of the first and last samples of this Segemnt
+
+            # add datetimes of the first and last samples of this Segment
+            if segment.duration > timedelta(days=1):  # if greater that a day, include dates
+                time_format = "%d-%m-%Y %H:%M:%S"
+            else:  # otherwise, just the time
+                time_format = "%H:%M:%S"
+            xticks_labels += [segment.initial_datetime.strftime(time_format), segment.final_datetime.strftime(time_format)]
+
         plt.gca().set_xticks(xticks, xticks_labels)
         plt.tick_params(axis='x', direction='in')
 
         if self.units is not None:  # override ylabel
-            plt.gca().set_ylabel("Amplitude ({})".format(self.units.name))
+            plt.gca().set_ylabel("Amplitude ({})".format(self.units))
 
     def _apply_operation(self, operation, **kwargs):
         for segment in self.__segments:
