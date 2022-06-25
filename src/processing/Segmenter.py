@@ -33,8 +33,16 @@ class Segmenter(PipelineUnit):
     def apply(self, timeseries:Timeseries) -> Timeseries:
         # Assert it only has one Segment or that all Segments are adjacent
         if len(timeseries.segments) > 0:
+            adjacent = True
             for i in range(1, len(timeseries.segments)):
-                assert timeseries.segments[i-1].adjacent(timeseries.segments[i])  # assert they're adjacent
+                if not timeseries.segments[i-1].adjacent(timeseries.segments[i]):  # assert they're adjacent
+                    adjacent = False
+                    break
+            if not adjacent:
+                if input(f"Segments of {timeseries.name} are not adjacent. Join them? (y/n) ").lower() == 'y':
+                    pass  # go ahead
+                else:
+                    raise AssertionError('Framework does not support segmenting non-adjacent segments, unless you want to join them. Try indexing the time period of interest first.')
 
         sf = timeseries.sampling_frequency
         n_window_length = int(self.window_length.total_seconds()*sf)
