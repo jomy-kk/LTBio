@@ -45,7 +45,12 @@ class Biosignal(ABC):
             if source is None:
                 raise ValueError("To read a biosignal from a file, specify the biosignal source.")
             else:
-                self.__timeseries = self.source._read(dir=timeseries, type=type(self))
+                read_data = self.source._read(dir=timeseries, type=type(self))
+                if isinstance(read_data, dict):
+                    self.__timeseries = read_data
+                elif isinstance(read_data, tuple):
+                    self.__timeseries = read_data[0]
+                    self.__acquisition_location = read_data[1]
         if isinstance(timeseries, datetime): # this should be a time interval -> fetch from database
             pass # TODO
         if isinstance(timeseries, dict): # this should be the {chanel name: Timeseries} -> save samples directly
@@ -185,7 +190,7 @@ class Biosignal(ABC):
 
     def __str__(self):
         '''Returns a textual description of the Biosignal.'''
-        return "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nSource: {}".format(self.name, self.type, self.acquisition_location, len(self), self.source)
+        return "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nSource: {}".format(self.name, self.type.__name__, self.acquisition_location, len(self), self.source)
 
 
     def __add__(self, other):

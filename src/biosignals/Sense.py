@@ -17,6 +17,7 @@
 from ast import literal_eval
 from json import load
 from os import listdir, path, access, R_OK
+import configparser
 
 import numpy as np
 from dateutil.parser import parse as to_datetime
@@ -38,9 +39,23 @@ class Sense(BiosignalSource):
     KEY_TIME_IN_HEADER = 'ISO 8601'
     ANALOGUE_LABELS_FORMAT = 'AI{0}_raw'
 
+    # These are needed to map channels to biosignal modalities
+    DEFAULTS_PATH: str
+    DEVICE_ID: str
 
-    def __init__(self):
+    def __init__(self, device_id:str, defaults_path:str=None):
         super().__init__()
+        Sense.DEVICE_ID = device_id
+        if defaults_path is not None:
+            Sense.DEFAULTS_PATH = defaults_path
+        else:
+           #try:
+            config = configparser.ConfigParser()
+            config.read('config.ini')
+            Sense.DEFAULTS_PATH = config['defaults']['Sense']
+            print(f"Getting default mapping from {Sense.DEFAULTS_PATH}")
+            #except:
+            #    raise FileNotFoundError('No defaults file for Sense devices was provided, nor a config.ini was found.')
 
     def __str__(self):
         return "ScientISST Sense"
@@ -63,7 +78,7 @@ class Sense(BiosignalSource):
         return False
 
     @staticmethod
-    def __get_mapping(header, biosignal_type, defaults_path, device_id):
+    def __get_mapping(biosignal_type, channel_labels, modalities_available):
         """
         Given a header, find all indexes that correspond to biosignal modality of interest.
         It REQUIRES a default mapping to be specified in a JSON file, otherwise a mapping will be requested on the stdin and saved for future use.
@@ -81,8 +96,6 @@ class Sense(BiosignalSource):
 
         mapping = {}
 
-        modalities_available, channel_labels, body_location = Sense.__get_defaults(defaults_path, header, device_id)
-
         if biosignal_type.__name__ in str(modalities_available):
             for index in modalities_available[biosignal_type.__name__]:
                 # Map each analogue channel of interest to a label
@@ -90,16 +103,12 @@ class Sense(BiosignalSource):
         else:
             raise IOError(f"There are no analogue channels associated with {biosignal_type.__name__}")
 
-        return mapping, body_location
+        return mapping
 
     @staticmethod
-    def __get_defaults(defaults_path, header, device_id):
+    def __get_defaults():
         """
         Gets the default mapping of channels for a device.
-
-        @param defaults_path: The path to the JSON file containing the mapping in the correct syntax.
-        @param header: A list of strings corresponding to column names that are in the signal data file.
-        @param device_id: A string associated with a unique Sense device mapping of channels. This should be found in the defaults file.
 
         @return: A tuple with
                 a) modalities: A dictionary mapping biosignal modalities to column indexes;
@@ -108,28 +117,31 @@ class Sense(BiosignalSource):
         @rtype: tuple of size 3
         """
 
+        if not hasattr(Sense, 'DEVICE_ID'):
+            raise IOError("Unlike other BiosignalSource(s), Sense needs to be instantiated and a 'device_id' must be provided on instantiation.")
+
         # Check if file exists and it is readable
-        if path.isfile(defaults_path) and access(defaults_path, R_OK):
+        if path.isfile(Sense.DEFAULTS_PATH) and access(Sense.DEFAULTS_PATH, R_OK):
 
             # OPTION A: Use the mapping in the json file
-            with open(defaults_path, 'r') as json_file:
+            with open(Sense.DEFAULTS_PATH, 'r') as json_file:
                 json_string = load(json_file)
 
                 # Get mapping of modalities
-                if Sense.MODALITIES in json_string[device_id]:
-                    modalities = json_string[device_id][Sense.MODALITIES]
+                if Sense.MODALITIES in json_string[Sense.DEVICE_ID]:
+                    modalities = json_string[Sense.DEVICE_ID][Sense.MODALITIES]
                 else:
                     raise IOError(f"Key {Sense.MODALITIES} is mandatory for each device default mapping.")
 
                 # Get mapping of channel labels, if any
-                if Sense.CHANNEL_LABELS in json_string[device_id]:
-                    channel_labels = json_string[device_id][Sense.CHANNEL_LABELS]
+                if Sense.CHANNEL_LABELS in json_string[Sense.DEVICE_ID]:
+                    channel_labels = json_string[Sense.DEVICE_ID][Sense.CHANNEL_LABELS]
                 else:
-                    channel_labels = header[Sense.KEY_CH_LABELS_IN_HEADER] # use default labels in csv
+                    channel_labels = None
 
                 # Get body location, if any
-                if Sense.BODY_LOCATION in json_string[device_id]:
-                    body_location = json_string[device_id][Sense.BODY_LOCATION]
+                if Sense.BODY_LOCATION in json_string[Sense.DEVICE_ID]:
+                    body_location = json_string[Sense.DEVICE_ID][Sense.BODY_LOCATION]
                 else:
                     body_location = None
 
@@ -140,7 +152,7 @@ class Sense(BiosignalSource):
             print("Either Sense defaults file is missing or it is not readable. Creating new defaults...")
             # OPTION B: Ask and save a new mapping
             json_string = {}
-            json_string[device_id] = {}  # Create a new object for a new device mapping
+            json_string[Sense.DEVICE_ID] = {}  # Create a new object for a new device mapping
             # B1. Input modalities
             # B2. Input Channel labels
             # B3. Input Body Location
@@ -181,7 +193,7 @@ class Sense(BiosignalSource):
             return np.array([line.strip().split() for line in fh], float)
 
     @staticmethod
-    def __read_file(file_path, type, defaults_path, device_id):
+    def __read_file(file_path, type, channel_labels, modalities_available):
         """
         Reads one csv file
         Args:
@@ -219,7 +231,7 @@ class Sense(BiosignalSource):
 
         # STEP 4
         # Get analogue channels of interest, mapped to labels, and a body location (if any associated)
-        mapping, body_location = Sense.__get_mapping(header, type, defaults_path, device_id)
+        mapping = Sense.__get_mapping(type, channel_labels, modalities_available)
 
         # STEP 5
         # Filtering only the samples of the channels of interest
@@ -230,7 +242,7 @@ class Sense(BiosignalSource):
         date = Sense.__aux_date(header)
 
         # return dict, start date, str of body location, sampling frequency
-        return samples_of_interest, date, body_location, header[Sense.KEY_HZ_IN_HEADER]
+        return samples_of_interest, date, header[Sense.KEY_HZ_IN_HEADER]
 
     @staticmethod
     def _read(dir, type, **options):
@@ -248,6 +260,9 @@ class Sense(BiosignalSource):
             IOError: If Sense files have no header.
         """
 
+        # STEP 0 - Get defaults
+        modalities_available, channel_labels, body_location = Sense.__get_defaults()
+
         # STEP 1 - Get files
         # A list is created with all the filenames that end with '.csv' inside the given directory.
         # E.g. [ file1.csv, file.2.csv, ... ]
@@ -257,14 +272,14 @@ class Sense(BiosignalSource):
 
         # STEP 2 - Read files
         # Get samples of analogue channels of interest from each file
-        data = [Sense.__read_file(file, type, options['defaults_path'], options['device_id']) for file in all_files]
-        # E.g.: data = samples_of_interest, start_date, body_location, sampling_frequency
+        data = [Sense.__read_file(file, type, channel_labels, modalities_available) for file in all_files]
+        # E.g.: data = samples_of_interest, start_date, sampling_frequency
 
         # STEP 3 - Restructuring
         # Listing all Segments of the same channel together, labelled to the same channel label.
         res = {}
         segments = {}
-        for samples, date, _, sf in data:
+        for samples, date, sf in data:
             for channel in samples:
                 segment = Timeseries.Segment(samples[channel], initial_datetime=date, sampling_frequency=sf)
                 segments[channel] = [segment, ] if channel not in res else segments[channel] + [segment, ]  # instantiating or appending
@@ -275,7 +290,7 @@ class Sense(BiosignalSource):
             res[channel] = Timeseries(segments[channel], sampling_frequency=res[channel], ordered=False)
             # ordered = False since this code is not guaranting any order when reading the files. Like this they will be ordered on the initializer of Timeseries.
 
-        return res
+        return res if body_location is None else res, body_location
 
     @staticmethod
     def _write(dir, timeseries):
