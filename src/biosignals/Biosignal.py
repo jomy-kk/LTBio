@@ -312,3 +312,17 @@ class Biosignal(ABC):
         Plots a summary of relevant aspects of common analysis of the Biosignal.
         '''
         pass  # Implemented in each type
+
+    def apply_operation(self, operation, **kwargs):
+        for channel in self.__timeseries:
+            channel._apply_operation(operation, **kwargs)
+
+    def invert(self, channel_label:str=None):
+        inversion = lambda x: -1*x
+        if channel_label is None:  # apply to all channels
+            self.apply_operation(inversion)
+        else:  # apply only to one channel
+            self.__timeseries[channel_label]._apply_operation(inversion)
+
+
+
