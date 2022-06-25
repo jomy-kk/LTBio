@@ -3,6 +3,7 @@ from dateutil.parser import parse as to_datetime
 from typing import List, Iterable
 from numpy import array
 from biosppy.signals.tools import power_spectrum
+from scipy.signal import resample
 import matplotlib.pyplot as plt
 
 from src.processing.FrequencyDomainFilter import Filter
@@ -97,8 +98,14 @@ class Timeseries():
                 self.__samples = self.__raw_samples
                 self.__is_filtered = False
 
-        def _apply_operation(self, operation):
-            self.__samples = operation(self.__samples)
+        def _resample(self, old_frequency, new_frequency):
+            n_samples = int(new_frequency * len(self) / old_frequency)
+            self.__samples = resample(self.__samples, num=n_samples)
+            self.__final_datetime = self.initial_datetime + timedelta(seconds=len(self) / new_frequency)
+
+        def _apply_operation(self, operation, **kwargs):
+            self.__samples = operation(self.__samples, **kwargs)
+
 
 
     def __init__(self, segments: List[Segment], ordered:bool, sampling_frequency:float, units:Unit=None, name:str=None, equally_segmented=False):
@@ -273,37 +280,50 @@ class Timeseries():
         for segment in self.__segments:
             segment._restore_raw()
 
+    def _resample(self, frequency:float):
+        for segment in self.__segments:
+            segment._resample(old_frequency=self.sampling_frequency, new_frequency=frequency)
+        self.__sampling_frequency = frequency
+
     def plot_spectrum(self):
         colors = ('blue', 'green', 'red')
         n_columns = len(self.__segments)
         for i in range(n_columns):
             segment = self.__segments[i]
             x, y = power_spectrum(signal=segment.samples)
-            plt.plot(x, y, color=colors[i], alpha=0.6, linewidth=0.5,
+            plt.plot(x, y, alpha=0.6, linewidth=0.5,
                      label='From {0} to {1}'.format(segment.initial_datetime, segment.final_datetime))
 
     def plot(self):
         xticks, xticks_labels = [], []  # to store the initial and final ticks of each Segment
-        SPACE = int(self.__sampling_frequency) * 2  # the empy space between each Segment
+        SPACE = int(self.__sampling_frequency) * 2  # the empty space between each Segment
 
         for i in range(len(self.__segments)):
             segment = self.__segments[i]
             x, y = range(len(segment)), segment.samples
             if i > 0:  # except for the first Segment
-                x = array(x) + (len(self.__segments[i - 1]) + SPACE)  # shift right in time
-                plt.gca().axvspan(x[0]-SPACE, x[0], alpha=0.05, color='black')  # add empy space in between Segments
+                x = array(x) + (xticks[-1] + SPACE)  # shift right in time
+                plt.gca().axvspan(x[0]-SPACE, x[0], alpha=0.05, color='black')  # add empty space in between Segments
             plt.gca().plot(x, y, linewidth=0.5)
+
             xticks += [x[0], x[-1]]  # add positions of the first and last samples of this Segment
-            xticks_labels += [str(segment.initial_datetime), str(segment.final_datetime)]  # add datetimes of the first and last samples of this Segemnt
+
+            # add datetimes of the first and last samples of this Segment
+            if segment.duration > timedelta(days=1):  # if greater that a day, include dates
+                time_format = "%d-%m-%Y %H:%M:%S"
+            else:  # otherwise, just the time
+                time_format = "%H:%M:%S"
+            xticks_labels += [segment.initial_datetime.strftime(time_format), segment.final_datetime.strftime(time_format)]
+
         plt.gca().set_xticks(xticks, xticks_labels)
         plt.tick_params(axis='x', direction='in')
 
         if self.units is not None:  # override ylabel
-            plt.gca().set_ylabel("Amplitude ({})".format(self.units.name))
+            plt.gca().set_ylabel("Amplitude ({})".format(self.units))
 
-    def _apply_operation(self, operation):
+    def _apply_operation(self, operation, **kwargs):
         for segment in self.__segments:
-            segment._apply_operation(operation)
+            segment._apply_operation(operation, **kwargs)
 
     def to_array(self):
         '''

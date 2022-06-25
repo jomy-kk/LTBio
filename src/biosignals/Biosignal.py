@@ -1,6 +1,19 @@
+###################################
+
+# IT - PreEpiSeizures
+
+# Package: biosignals
+# File: Biosignal
+# Description: The base class holding all data related to a biosignal and its channels.
+
+# Contributors: João Saraiva, Mariana Abreu
+# Last update: 01/05/2022
+
+###################################
+
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Collection, Set, ClassVar
 from dateutil.parser import parse as to_datetime, ParserError
 import matplotlib.pyplot as plt
 
@@ -13,6 +26,13 @@ from src.clinical.Patient import Patient
 
 
 class Biosignal(ABC):
+    '''
+    A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+    It may be associated with a source, a patient, and a body location. It can also have a name.
+    It has an initial and final datetime. Its length is its number of channels.
+    It can be resampled, filtered, and concatenated to other Biosignals.
+    Amplitude and spectrum plots can be displayed and saved.
+    '''
 
     def __init__(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | Tuple[datetime], source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None):
         self.__name = name
@@ -25,7 +45,12 @@ class Biosignal(ABC):
             if source is None:
                 raise ValueError("To read a biosignal from a file, specify the biosignal source.")
             else:
-                self.__timeseries = self.source._read(dir=timeseries, type=type(self))
+                read_data = self.source._read(dir=timeseries, type=type(self))
+                if isinstance(read_data, dict):
+                    self.__timeseries = read_data
+                elif isinstance(read_data, tuple):
+                    self.__timeseries = read_data[0]
+                    self.__acquisition_location = read_data[1]
         if isinstance(timeseries, datetime): # this should be a time interval -> fetch from database
             pass # TODO
         if isinstance(timeseries, dict): # this should be the {chanel name: Timeseries} -> save samples directly
@@ -98,11 +123,13 @@ class Biosignal(ABC):
 
 
     @property
-    def channel_names(self):
+    def channel_names(self) -> Tuple[str | BodyLocation]:
+        '''Returns a tuple with the labels associated to every channel.'''
         return tuple(self.__timeseries.keys())
 
     @property
     def name(self):
+        '''Returns the associated name, or 'No Name' if none was provided.'''
         return self.__name if self.__name != None else "No Name"
 
     @name.setter
@@ -111,38 +138,50 @@ class Biosignal(ABC):
 
     @property
     def patient_code(self):
+        '''Returns the code of the associated Patient, or 'n.d.' if none was provided.'''
         return self.__patient.code if self.__patient != None else 'n.d.'
 
     @property
-    def patient_conditions(self) -> [MedicalCondition]:
+    def patient_conditions(self) -> Set[MedicalCondition]:
+        '''Returns the set of medical conditions of the associated Patient, or None if no Patient was associated.'''
         return self.__patient.conditions if self.__patient != None else None
 
     @property
     def acquisition_location(self):
+        '''Returns the associated acquisition location, or None if none was provided.'''
         return self.__acquisition_location
 
     @property
-    def source(self):
+    def source(self) -> BiosignalSource:
+        '''Returns the BiosignalSource from where the data was read, or None if was not specified.'''
         return self.__source
 
     @property
-    def type(self):
+    def type(self) -> ClassVar:
+        '''Returns the biosignal modality class. E.g.: ECG, EMG, EDA, ...'''
         return type(self)
 
     @property
     def initial_datetime(self) -> datetime:
+        '''Returns the initial datetime of the channel that starts the earliest.'''
         return min([ts.initial_datetime for ts in self.__timeseries.values()])
 
     @property
     def final_datetime(self) -> datetime:
+        '''Returns the final datetime of the channel that ends the latest.'''
         return max([ts.final_datetime for ts in self.__timeseries.values()])
 
     @property
     def sampling_frequency(self) -> float:
+        '''Returns the sampling frequency of every channel (if equal), or raises an error if they are not equal.'''
         if len(self) == 1:
             return self.__timeseries[self.channel_names[0]].sampling_frequency
         else:
-            raise AttributeError("Biosignal contains 2+ channel, each of which with a corresponding sampling frequency.")
+            common_sf = self.__timeseries[self.channel_names[0]].sampling_frequency
+            for i in range(1, len(self)):
+                if self.__timeseries[self.channel_names[i]].sampling_frequency != common_sf:
+                    raise AttributeError("Biosignal contains 2+ channels, all not necessarly with the same sampling frequency.")
+            return common_sf
 
 
     def __len__(self):
@@ -150,12 +189,12 @@ class Biosignal(ABC):
         return len(self.__timeseries)
 
     def __str__(self):
-        return "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nSource: {}".format(self.name, self.type, self.acquisition_location, self.n_channels, self.source)
+        '''Returns a textual description of the Biosignal.'''
+        return "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nSource: {}".format(self.name, self.type.__name__, self.acquisition_location, len(self), self.source)
 
-    def _to_dict(self) -> Dict[str|BodyLocation, Timeseries]:
-        return self.__timeseries
 
     def __add__(self, other):
+        '''Adds one Biosignal to another and returns a concatenated Biosignal.'''
         # Check for possible arithmetic errors
         if self.type != other.type:
             raise TypeError("Cannot add a {0} to a {1}".format(other.type.__name__, self.type.__name__))
@@ -191,15 +230,45 @@ class Biosignal(ABC):
 
 
     def filter(self, filter_design:Filter) -> int:
+        '''
+        Filters every channel with to the given filter_design.
+
+        @param filter_design: A Filter object specifying the designed filter to be applied.
+        @return: 0 if the filtering is applied successfully.
+        @rtype: int
+        '''
         for channel in self.__timeseries.values():
             channel._accept_filtering(filter_design)
         return 0
 
     def undo_filters(self):
+        '''
+        Restores the raw samples of every channel, eliminating the action of any applied filter.
+        '''
         for channel in self.__timeseries.values():
             channel.undo_filters()
 
+    def resample(self, frequency:float):
+        '''
+        Resamples every channel to the new sampling frequency given, using Fourier method.
+        @param frequency: New sampling frequency (in Hertz).
+        '''
+        for channel in self.__timeseries.values():
+            channel._resample(frequency)
+
     def __draw_plot(self, timeseries_plotting_method, title, xlabel, ylabel, grid_on:bool, show:bool=True, save_to:str=None):
+        '''
+        Draws a base plot to display every channel in a subplot. It is independent of the content that is plotted.
+
+        @param timeseries_plotting_method: The method to be called in Timeseries, that defines what content to plot.
+        @param title: What the content is about. The Biosignal's name and patient code will be added.
+        @param xlabel: Label for the horizontal axis.
+        @param ylabel: Label for the vertical axis.
+        @param grid_on: True if grid in to be drawn or not; False otherwise.
+        @param show: True if plot is to be immediately displayed; False otherwise.
+        @param save_to: A path to save the plot as an image file; If none is provided, it is not saved.
+        @return:
+        '''
         fig = plt.figure()
 
         for i, channel_name in zip(range(len(self)), self.channel_names):
@@ -222,11 +291,38 @@ class Biosignal(ABC):
         plt.show() if show else plt.close()
 
     def plot_spectrum(self, show:bool=True, save_to:str=None):
+        '''
+        Plots the Bode plot of every channel.
+        @param show: True if plot is to be immediately displayed; False otherwise.
+        @param save_to: A path to save the plot as an image file; If none is provided, it is not saved.
+        '''
         self.__draw_plot(Timeseries.plot_spectrum, 'Power Spectrum of', 'Frequency (Hz)', 'Power (dB)', True, show, save_to)
 
     def plot(self, show:bool=True, save_to:str=None):
+        '''
+        Plots the amplitude in time of every channel.
+        @param show: True if plot is to be immediately displayed; False otherwise.
+        @param save_to: A path to save the plot as an image file; If none is provided, it is not saved.
+        '''
         self.__draw_plot(Timeseries.plot, None, 'Time', 'Amplitude (n.d.)', False, show, save_to)
 
     @abstractmethod
     def plot_summary(self, show:bool=True, save_to:str=None):
+        '''
+        Plots a summary of relevant aspects of common analysis of the Biosignal.
+        '''
         pass  # Implemented in each type
+
+    def apply_operation(self, operation, **kwargs):
+        for channel in self.__timeseries:
+            channel._apply_operation(operation, **kwargs)
+
+    def invert(self, channel_label:str=None):
+        inversion = lambda x: -1*x
+        if channel_label is None:  # apply to all channels
+            self.apply_operation(inversion)
+        else:  # apply only to one channel
+            self.__timeseries[channel_label]._apply_operation(inversion)
+
+
+

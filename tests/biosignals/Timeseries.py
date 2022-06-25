@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime, timedelta
 
-from src.biosignals.Unit import Unit
+from src.biosignals.Unit import *
 from src.biosignals.Timeseries import Timeseries
 
 
@@ -15,7 +15,7 @@ class TimeseriesTestCase(unittest.TestCase):
         cls.sf = 64
         cls.segment1, cls.segment2 = Timeseries.Segment(cls.samples1, cls.initial1, cls.sf), Timeseries.Segment(
             cls.samples2, cls.initial2, cls.sf)
-        cls.units = Unit.V
+        cls.units = Volt(Multiplier.m)
         cls.name = "Test Timeseries 1"
 
     def verify_metadata(cls, ts: Timeseries):
@@ -110,7 +110,7 @@ class TimeseriesTestCase(unittest.TestCase):
             ts1 += ts2
 
         # With different units
-        ts2 = Timeseries([cls.segment2, ], True, cls.sf, Unit.G, cls.name)
+        ts2 = Timeseries([cls.segment2, ], True, cls.sf, G(), cls.name)
         with cls.assertRaises(ArithmeticError):
             ts1 + ts2
             ts1 += ts2

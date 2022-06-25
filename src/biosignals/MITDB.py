@@ -7,19 +7,21 @@
 # Description: Procedures to read and write datafiles from MIT-BIH Arrhythmia Database.
 # URL: https://physionet.org/content/mitdb/1.0.0/
 
-# Contributors: João Saraiva, Mariana Abreu
+# Contributors: Mariana Abreu, João Saraiva
 # Last update: 31/05/2022
 
 ###################################
 from datetime import datetime
-from os import listdir, path
-from dateutil.parser import parse as to_datetime
-import wfdb
+from os import listdir, path, makedirs
 
-from src.biosignals.ECG import ECG
-from src.biosignals.Unit import Unit
+import wfdb
+import wget
+from dateutil.parser import parse as to_datetime
+
 from src.biosignals.BiosignalSource import BiosignalSource
+from src.biosignals.ECG import ECG
 from src.biosignals.Timeseries import Timeseries
+from src.biosignals.Unit import *
 from src.clinical.BodyLocation import BodyLocation
 
 
@@ -59,10 +61,8 @@ class MITDB(BiosignalSource):
 
         # get edf data
         signal, fields = wfdb.rdsamp(dirfile)
-        # hsm_data = read_raw_edf(dirfile)
-        # get channels that correspond to type (POL Ecg = type ecg)
+        # get channels
         channel_list = fields['sig_name']
-        # initial datetime
         if metadata:
             return channel_list, fields['fs'], fields['units']
         # structure of signal is two arrays, one array for each channel
@@ -88,24 +88,41 @@ class MITDB(BiosignalSource):
         for ch in range(len(channels)):
             segments = [Timeseries.Segment(edf_data[0][:, ch], initial_datetime=edf_data[1], sampling_frequency=sfreq)
                         for edf_data in all_edf]
-            unit = Unit.V if 'V' in units[ch] else ''
+            unit = Volt(Multiplier.m) if 'mV' in units[ch] else None
             name = BodyLocation.MLII if channels[ch].strip() == 'MLII' else BodyLocation.V5 if channels[ch].strip() == 'V5' else channels[ch]
             print(f'{ch} channel: {name}')
-            # samples = {edf_data[0]: edf_data[1][ch] for edf_data in segments}
             new_timeseries = Timeseries(segments, sampling_frequency=sfreq, name=channels[ch], units=unit, ordered=True)
             new_dict[channels[ch]] = new_timeseries
         return new_dict
 
     @staticmethod
+    def _fetch(type=None, patient_code=None):
+        """ Fetch one patient from the database
+        Args:
+            patient_code (int): number of patient to select
+        """
+        # Transform patient code to the patient folder name
+        if not patient_code:
+            raise IOError('Please give a patient code (int)')
+
+        temp_dir = '.cache'
+        if not path.isdir(temp_dir):
+            makedirs(temp_dir)
+        temp_dir = wget.download('https://physionet.org/content/mitdb/1.0.0/'+str(patient_code)+'.dat', out=temp_dir)
+        if temp_dir != '':
+            print(f'{temp_dir=}')
+            files = MITDB._read(temp_dir, type)
+            return files
+        elif len(temp_dir) == '':
+            raise IOError(f'No patient was found {patient_code=}')
+
+    @staticmethod
     def _write(path:str, timeseries: dict):
         pass
 
-path_ = "resources/MITDB_DAT_tests"
+    @staticmethod
+    def _transfer(samples, to_unit):
+        pass
 
-files = MITDB._read(path_, ECG)
-print(files['V2'].sampling_frequency)
-print(files['V2'].units)
-
-#ecg = ECG(path_, MITDB)
-#print(ecg.channel_names)
-#print(ecg['MLII'][:].segments[0].samples)
+    def _write(path:str, timeseries: dict):
+        pass
