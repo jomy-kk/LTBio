@@ -66,7 +66,7 @@ class SupervisingTrainer(PipelineUnit):
 
             # Produce report
             #self.__model.report(self.reporter, show=False, save_to='resources/reports_tests/my_test'+str(i+1))
-            result = self.__model.report(self.reporter, show=False, save_to='reports/my_test'+str(i+1))
+            result = self.__model.report(self.reporter, show=False, save_to='resources/reports_tests/my_test'+str(i+1))
             results.append(result)
 
         self.reporter.print_end_of_trains(len(self.train_conditions))
