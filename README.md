@@ -11,7 +11,8 @@ Python library for easy managing and processing of large Long-Term Biosignals.
 All rights reserved. No code in this repository is licessenced. This repository is object of evaluation of some Master's and Doctoral's theses.
 
 #### Language and Dependencies
-Developed and tested on Python 3.10.4. See dependencies in `requirements.txt`.
+Developed and tested on Python 3.10.4. See Python dependencies in `requirements.txt`, and install the following on your machine if needed:
+* `graphviz` to plot Pipeline diagrams (`sudo apt-get install graphviz` or `brew install graphviz`)
 
 #### Contribute!
 
