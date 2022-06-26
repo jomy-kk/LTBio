@@ -8,11 +8,13 @@ charset-normalizer==2.0.12
 cycler==0.11.0
 decorator==5.1.1
 defusedxml==0.7.1
+diagrams==0.21.1
 dill==0.3.4
 fonttools==4.33.2
 fpdf2==2.5.5
 gitdb==4.0.9
 GitPython==3.1.27
+graphviz==0.19.2
 h5py==3.6.0
 idna==3.3
 iniconfig==1.1.1
