@@ -2,9 +2,10 @@ import unittest
 from datetime import datetime
 from random import randint
 from statistics import mean
+from typing import Dict
 
 from src.features.FeatureExtractor import FeatureExtractor
-from src.features.Features import TimeFeatures, Features
+from src.features.Features import TimeFeatures
 from src.biosignals.Timeseries import Timeseries
 
 
@@ -28,7 +29,7 @@ class FeatureExtractorTestCase(unittest.TestCase):
         extractor = FeatureExtractor((TimeFeatures.mean, ), name='My second pipeline unit!')
         features = extractor.apply(self.ts)
 
-        self.assertIsInstance(features, Features)
+        self.assertIsInstance(features, Dict)
         self.assertEqual(features['mean'].initial_datetime, self.initial1)
         self.assertEqual(features['mean'].final_datetime, self.final)
         for i in range(self.n_segments):

@@ -192,6 +192,8 @@ class Biosignal(ABC):
         '''Returns a textual description of the Biosignal.'''
         return "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nSource: {}".format(self.name, self.type.__name__, self.acquisition_location, len(self), self.source)
 
+    def _to_dict(self) -> Dict[str|BodyLocation, Timeseries]:
+        return self.__timeseries
 
     def __add__(self, other):
         '''Adds one Biosignal to another and returns a concatenated Biosignal.'''

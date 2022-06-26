@@ -11,25 +11,28 @@
 
 ###################################
 
-from typing import Tuple
+from typing import Collection, Dict, Callable
 
-from src.features.Features import Features
 from src.pipeline.PipelineUnit import PipelineUnit
 from src.biosignals.Timeseries import Timeseries
 
 
 class FeatureExtractor(PipelineUnit):
 
-    def __init__(self, feature_functions: Tuple, name:str=None):
+    PIPELINE_INPUT_LABELS = {'timeseries': 'timeseries'}
+    PIPELINE_OUTPUT_LABELS = {'features': 'timeseries'}
+    ART_PATH = 'resources/pipeline_media/feature_extractor.png'
+
+    def __init__(self, feature_functions: Collection[Callable], name:str=None):
         super().__init__(name)
         self.__feature_functions = feature_functions
 
-    def apply(self, timeseries:Timeseries) -> Features:
+    def apply(self, timeseries:Timeseries) -> Dict[str, Timeseries]:
 
         assert timeseries.is_equally_segmented  # we're assuming all Segments have the same duration
         segment_duration = timeseries.segments[0].duration.total_seconds()
 
-        features = Features(original_timeseries=timeseries)
+        features = {}
 
         for feature_function in self.__feature_functions:
             extracted_values = []

@@ -12,13 +12,15 @@
 # Created: 10/06/2022
 
 # ===================================
-from typing import Iterable
-
 from src.biosignals.Timeseries import Timeseries
 from src.decision.Decision import Decision
 from src.pipeline.PipelineUnit import PipelineUnit
 
 class DecisionMaker(PipelineUnit):
+
+    PIPELINE_INPUT_LABELS = {'timeseries': 'timeseries'}
+    PIPELINE_OUTPUT_LABELS = {'_': 'decision'}
+    ART_PATH = 'resources/pipeline_media/decision_maker.png'
 
     def __init__(self, decision: Decision, name: str = None):
         super().__init__(name)

@@ -44,6 +44,9 @@ class Features():
     def __len__(self):
         return len(self.__features)
 
+    def to_dict(self):
+        return self.__features
+
 
 class TimeFeatures(ABC):
     """
