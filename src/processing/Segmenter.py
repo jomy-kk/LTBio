@@ -24,6 +24,7 @@ class Segmenter(PipelineUnit):
 
     PIPELINE_INPUT_LABELS = {'timeseries': 'timeseries'}
     PIPELINE_OUTPUT_LABELS = {'timeseries': 'timeseries'}
+    ART_PATH = 'resources/pipeline_media/segmenter.png'
 
     def __init__(self, window_length: timedelta, overlap_length: timedelta = None, name=None):
         super().__init__(name)

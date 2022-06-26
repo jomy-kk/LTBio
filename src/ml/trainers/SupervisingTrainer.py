@@ -25,6 +25,7 @@ class SupervisingTrainer(PipelineUnit):
 
     PIPELINE_INPUT_LABELS = {'object': 'timeseries', 'target': 'target'}
     PIPELINE_OUTPUT_LABELS = {'results': 'results'}
+    ART_PATH = 'resources/pipeline_media/ml.png'
 
     def __init__(self, model:SupervisedModel, train_conditions:Collection[SupervisedTrainConditions], name:str=None):
         super().__init__(name)

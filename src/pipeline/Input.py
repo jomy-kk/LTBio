@@ -19,6 +19,7 @@ class Input(PipelineUnit):
 
     PIPELINE_INPUT_LABELS = {}
     PIPELINE_OUTPUT_LABELS = {'_': '_'}  # the packet label is to be defined for each instance
+    ART_PATH = 'resources/pipeline_media/input.png'
 
     def __init__(self, label:str, data, name:str=None):
         super().__init__(name)

@@ -20,6 +20,7 @@ class DecisionMaker(PipelineUnit):
 
     PIPELINE_INPUT_LABELS = {'timeseries': 'timeseries'}
     PIPELINE_OUTPUT_LABELS = {'_': 'decision'}
+    ART_PATH = 'resources/pipeline_media/decision_maker.png'
 
     def __init__(self, decision: Decision, name: str = None):
         super().__init__(name)

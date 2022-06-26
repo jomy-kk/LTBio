@@ -51,7 +51,7 @@ class Sense(BiosignalSource):
         else:
            #try:
             config = configparser.ConfigParser()
-            config.read('config.ini')
+            config.read('examples/config.ini')
             Sense.DEFAULTS_PATH = config['defaults']['Sense']
             print(f"Getting default mapping from {Sense.DEFAULTS_PATH}")
             #except:

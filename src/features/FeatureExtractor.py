@@ -21,6 +21,7 @@ class FeatureExtractor(PipelineUnit):
 
     PIPELINE_INPUT_LABELS = {'timeseries': 'timeseries'}
     PIPELINE_OUTPUT_LABELS = {'features': 'timeseries'}
+    ART_PATH = 'resources/pipeline_media/feature_extractor.png'
 
     def __init__(self, feature_functions: Collection[Callable], name:str=None):
         super().__init__(name)

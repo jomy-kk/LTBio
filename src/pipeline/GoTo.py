@@ -19,5 +19,7 @@ class GoTo(PipelineUnit):
     def __init__(self, name=None):
         super().__init__(name)
 
+    ART_PATH = 'resources/pipeline_media/goto.png'
+
     def apply(self, step_number:int):
         pass # TODO

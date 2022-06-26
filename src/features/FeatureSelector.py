@@ -22,6 +22,7 @@ class FeatureSelector(PipelineUnit):
 
     PIPELINE_INPUT_LABELS = {'features': 'timeseries'}
     PIPELINE_OUTPUT_LABELS = {'selected_features': 'timeseries'}
+    ART_PATH = 'resources/pipeline_media/feature_selector.png'
 
     def __init__(self, selection_function: Callable[[Timeseries.Segment], bool], name:str=None):
         super().__init__(name)

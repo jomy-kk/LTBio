@@ -15,6 +15,7 @@
 from inspect import signature
 from typing import List, Collection
 
+from pipeline.Input import Input
 from src.pipeline.Packet import Packet
 from src.biosignals.Biosignal import Biosignal
 from src.pipeline.PipelineUnit import PipelineUnit
@@ -113,7 +114,20 @@ class Pipeline():
                 raise AssertionError('{} input label of the new unit does not match to any output label of the last unit.'.format(
                         input_label))
 
+    def plot_diagram(self, show:bool=True, save_to:str=None):
+        from diagrams import Diagram
+        from diagrams.custom import Custom
 
-
-
-
+        with Diagram(name="Pipeline" + ((" " + self.name) if self.name is not None else ""), direction='LR', show=show, filename=save_to):
+            blocks = []
+            input_unit = False
+            for unit in self.__steps:
+                blocks.append(Custom(str(unit), unit.ART_PATH))
+                if len(blocks) > 1:
+                    if isinstance(unit, Input):
+                        input_unit = True
+                    elif input_unit:
+                        blocks[-3] >> blocks[-1]
+                        blocks[-2] >> blocks[-1]
+                    else:
+                        blocks[-2] >> blocks[-1]

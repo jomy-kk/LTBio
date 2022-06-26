@@ -37,6 +37,7 @@ class PipelineUnit(ABC):
 
     PIPELINE_INPUT_LABELS: Dict[str, str]  # { apply parameter : packet label }
     PIPELINE_OUTPUT_LABELS: Dict[str, str]  # { apply output : packet label }
+    ART_PATH = 'resources/pipeline_media/nd.png'
 
     def __init__(self, name:str):
         self.name = name
@@ -92,3 +93,8 @@ class PipelineUnit(ABC):
         load[packet_label] = output  # replace or add
 
         return Packet(**load)
+
+    def __str__(self):
+        res = self.__class__.__name__
+        res += ' ' + self.name if self.name is not None else ''
+        return res
