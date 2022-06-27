@@ -13,6 +13,7 @@ All rights reserved. No code in this repository is licessenced. This repository 
 #### Language and Dependencies
 Developed and tested on Python 3.10.4. See Python dependencies in `requirements.txt`, and install the following on your machine if needed:
 * `graphviz` to plot Pipeline diagrams (`sudo apt-get install graphviz` or `brew install graphviz`)
+* `h5py` to read HDF5 files if running on an Apple Sillicon machine (`brew install hdf5 && export HDF5_DIR=/opt/homebrew/bin/brew/Cellar/hdf5/<version>`)
 
 #### Contribute!
 
