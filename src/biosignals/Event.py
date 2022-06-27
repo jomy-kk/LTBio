@@ -14,11 +14,12 @@
 # ===================================
 
 from datetime import  datetime
+from dateutil.parser import parse as to_datetime
 
 class Event():
 
-    def __init__(self, datetime:datetime, name:str):
-        self.__datetime = datetime
+    def __init__(self, datetime:datetime|str, name:str):
+        self.__datetime = to_datetime(datetime) if isinstance(datetime, str) else datetime
         self.__name = name
 
     @property
@@ -34,6 +35,9 @@ class Event():
 
     def __eq__(self, other):
         return self.__datetime == other.datetime and self.__name == other.name
+
+    def __ne__(self, other):
+        return not self == other
 
     def __lt__(self, other):
         return self.__datetime < other.datetime
