@@ -55,7 +55,7 @@ class E4TestCase(unittest.TestCase):
         self.assertTrue(isinstance(events, list))
         self.assertTrue(len(events) > 0)
         for event in events:
-            self.assertTrue(event.datetime in self.all_onsets)
+            self.assertTrue(event.onset in self.all_onsets)
 
 if __name__ == '__main__':
     unittest.main()

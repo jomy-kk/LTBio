@@ -167,7 +167,7 @@ class E4(BiosignalSource):
                     reader = csv.reader(f, dialect=csv.excel_tab)
                     a = list(reader)
                     # Events are named numerically
-                    res += [Event(E4.__aux_date(a[i][0]), 'event' + str(i+1))  for i in range(len(a))]
+                    res += [Event('event' + str(i + 1), E4.__aux_date(a[i][0])) for i in range(len(a))]
         return res
 
     @staticmethod

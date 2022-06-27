@@ -350,20 +350,20 @@ class Timeseries():
 
         def __add_event(event:Event):
             try:
-                self.__check_boundaries(event.datetime)  # raises IndexError
+                self.__check_boundaries(event.onset)  # raises IndexError
                 if event.name in self.__associated_events:
                     raise NameError(f"There is already another Event named with '{events.name}'. Cannot have two Events with the same name.")
                 else:
                     self.__associated_events[event.name] = event
             except IndexError:
-                raise ValueError(f"Event '{event.name}' at {event.datetime} is outside of Timeseries domain, [{self.initial_datetime},{self.final_datetime}[.")
+                raise ValueError(f"Event '{event.name}' at {event.onset} is outside of Timeseries domain, [{self.initial_datetime},{self.final_datetime}[.")
 
         if isinstance(events, Event):
             __add_event(events)
         elif isinstance(events, dict):
             for event_key in events:
                 event = events[event_key]
-                __add_event(Event(event.datetime, event_key))  # rename with given key
+                __add_event(Event(event_key, event._Event__onset, event._Event__offset))  # rename with given key
         else:
             for event in events:
                 __add_event(event)

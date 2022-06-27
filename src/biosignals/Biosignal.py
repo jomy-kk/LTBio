@@ -379,7 +379,7 @@ class Biosignal(ABC):
         elif isinstance(events, dict):
             for event_key in events:
                 event = events[event_key]
-                __add_event(Event(event.datetime, event_key))  # rename with given key
+                __add_event(Event(event_key, event._Event__onset, event._Event__offset))  # rename with given key
         else:
             for event in events:
                 __add_event(event)
