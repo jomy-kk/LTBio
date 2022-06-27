@@ -46,12 +46,21 @@ class Biosignal(ABC):
             if source is None:
                 raise ValueError("To read a biosignal from a file, specify the biosignal source.")
             else:
-                read_data = self.source._read(dir=timeseries, type=type(self))
-                if isinstance(read_data, dict):
+                read_data = self.source._read(timeseries, type=type(self) )
+
+                if isinstance(read_data, dict):  # Get Timeseries
                     self.__timeseries = read_data
-                elif isinstance(read_data, tuple):
+
+                elif isinstance(read_data, tuple):  # Get Timeseries and location
                     self.__timeseries = read_data[0]
                     self.__acquisition_location = read_data[1]
+
+                # Get Events, if any
+                events = self.source._events(timeseries)
+                if events is not None:
+                    self.associate(events)
+
+
         if isinstance(timeseries, datetime): # this should be a time interval -> fetch from database
             pass # TODO
         if isinstance(timeseries, dict): # this should be the {chanel name: Timeseries} -> save samples directly
@@ -173,6 +182,11 @@ class Biosignal(ABC):
     def final_datetime(self) -> datetime:
         '''Returns the final datetime of the channel that ends the latest.'''
         return max([ts.final_datetime for ts in self.__timeseries.values()])
+
+    @property
+    def events(self):
+        '''Tuple of associated Events, ordered by datetime.'''
+        return tuple(sorted(self.__associated_events.values()))
 
     @property
     def sampling_frequency(self) -> float:

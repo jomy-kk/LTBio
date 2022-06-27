@@ -1,6 +1,7 @@
 import unittest
 from datetime import datetime
 
+from biosignals.Event import Event
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals import (E4, EDA, PPG, ACC, TEMP)
 
@@ -11,6 +12,11 @@ class E4TestCase(unittest.TestCase):
         self.testpath = 'resources/E4_CSV_tests/' # This is a test directory with CSV files in the E4 structure,
         self.initial1 = datetime(2022, 6, 2, 16, 16, 56)
         self.initial2 = datetime(2022, 6, 11, 19, 8, 28)
+        self.event_onset_1 = datetime.utcfromtimestamp(1654186627.86)
+        self.event_onset_2 = datetime.utcfromtimestamp(1654186639.28)
+        self.event_onset_3 = datetime.utcfromtimestamp(1654186644.95)
+        self.event_onset_4 = datetime.utcfromtimestamp(1654186645.19)
+        self.all_onsets = (self.event_onset_1, self.event_onset_2, self.event_onset_3, self.event_onset_4)
 
     def verify_data(self, x, label, sf, n_samples, unit, first_samples):
         self.assertTrue(isinstance(x, dict))
@@ -44,6 +50,12 @@ class E4TestCase(unittest.TestCase):
         x = self.E4._read(self.testpath, ACC.ACC)
         self.verify_data(x, ('x', 'y', 'z'), 32.0, 48684, None, ((26,-33,47), (-60,-26,-16)) )
 
+    def test_get_events(self):
+        events = self.E4._events(self.testpath)
+        self.assertTrue(isinstance(events, list))
+        self.assertTrue(len(events) > 0)
+        for event in events:
+            self.assertTrue(event.datetime in self.all_onsets)
 
 if __name__ == '__main__':
     unittest.main()
