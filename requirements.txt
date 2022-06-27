@@ -15,7 +15,7 @@ fpdf2==2.5.5
 gitdb==4.0.9
 GitPython==3.1.27
 graphviz==0.19.2
-h5py==3.6.0
+h5py==3.7.0
 idna==3.3
 iniconfig==1.1.1
 isort==5.10.1
