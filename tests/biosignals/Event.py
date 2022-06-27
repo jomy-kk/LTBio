@@ -1,6 +1,7 @@
 import unittest
 from datetime import datetime, timedelta
 
+from biosignals.ECG import ECG
 from biosignals.Event import Event
 from biosignals.Timeseries import Timeseries
 
@@ -17,6 +18,7 @@ class EventTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         self.timeseries = Timeseries([Timeseries.Segment([1., 2., 3.], self.datetime1, 1.), ], True, 1.)
+        self.biosignal = ECG({'x': self.timeseries})
 
     def test_create_event(self):
         event = Event(self.datetime1, self.name1)  # with datetime object
@@ -92,6 +94,28 @@ class EventTestCase(unittest.TestCase):
         self.timeseries.associate((event2, event1))
         events = self.timeseries.events
         self.assertEqual(events, (event1, event2))
+
+    def test_associate_one_event_to_biosignal(self):
+        event1 = Event(self.datetime1, self.name1)
+        self.biosignal.associate(event1)
+        self.assertTrue(self.name1 in self.biosignal)
+        self.assertFalse(self.name2 in self.biosignal)
+
+    def test_associate_multiple_events_to_biosignal(self):
+        event1 = Event(self.datetime1, self.name1)
+        event2 = Event(self.datetime2, self.name2)
+        self.biosignal.associate((event1, event2))
+        self.assertTrue(self.name1 in self.biosignal)
+        self.assertTrue(self.name2 in self.biosignal)
+
+    def test_associate_events_with_new_keys_to_biosignal(self):
+        event1 = Event(self.datetime1, self.name1)
+        event2 = Event(self.datetime2, self.name2)
+        self.biosignal.associate({'a': event1, 'b': event2})
+        self.assertTrue('a' in self.biosignal)
+        self.assertTrue('b' in self.biosignal)
+        self.assertFalse(self.name1 in self.biosignal)
+        self.assertFalse(self.name2 in self.biosignal)
 
 if __name__ == '__main__':
     unittest.main()
