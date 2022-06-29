@@ -15,6 +15,7 @@ from abc import ABC, abstractmethod
 from typing import Collection, Dict
 from inspect import signature
 
+import pipeline
 from src.features.Features import Features
 from src.pipeline.Packet import Packet
 from src.biosignals.Timeseries import Timeseries
@@ -98,3 +99,18 @@ class PipelineUnit(ABC):
         res = self.__class__.__name__
         res += ' ' + self.name if self.name is not None else ''
         return res
+
+    def __rshift__(self, other):
+        '''
+        Defines the >> operator, the fastest shortcut to create a Pipeline
+        '''
+        if isinstance(other, PipelineUnit):  # concatenate self.Unit + other.Unit = res.Pipeline
+            res = pipeline.Pipeline.Pipeline()
+            res.add(self)
+            res.add(other)
+            return res
+        elif isinstance(other, pipeline.Pipeline.Pipeline):  # concatenate another self.Unit + other.Pipeline = res.Pipeline
+            pass
+        else:
+            raise TypeError(f'Cannot join a PipelineUnit with a {type(other)}.')
+
