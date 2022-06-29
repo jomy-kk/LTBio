@@ -12,9 +12,11 @@
 ###################################
 
 from abc import ABC, abstractmethod
+from typing import Collection
+
 from numpy import array
 
-from src.biosignals.Unit import Unit
+from src.biosignals.Event import Event
 
 class BiosignalSource(ABC):
 
@@ -32,6 +34,10 @@ class BiosignalSource(ABC):
     @abstractmethod
     def _read(path:str, type, **options):
         pass
+
+    @staticmethod
+    def _events(path:str, **options) -> Collection[Event] | None:
+        return None  # Override implementation is optional
 
     @staticmethod
     @abstractmethod

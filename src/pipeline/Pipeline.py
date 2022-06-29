@@ -15,7 +15,7 @@
 from inspect import signature
 from typing import List, Collection
 
-from pipeline.Input import Input
+from src.pipeline.Input import Input
 from src.pipeline.Packet import Packet
 from src.biosignals.Biosignal import Biosignal
 from src.pipeline.PipelineUnit import PipelineUnit
@@ -48,10 +48,28 @@ class Pipeline():
     def __len__(self):
         return len(self.__steps)
 
+    def __str__(self):
+        res = 'Pipeline' + (' ' + self.name if self.name is not None else '')
+        for i in range(len(self)):
+            res += f'\nStep {i+1}: ' + str(self.__steps[i])
+        return res
+
     def add(self, unit:PipelineUnit):
         if len(self) > 0:
             self.__check_completeness(unit)
         self.__steps.append(unit)
+
+    def __rshift__(self, other):
+        '''
+        Defines the >> operator, the fastest shortcut to create a Pipeline
+        '''
+        if isinstance(other, PipelineUnit):  # concatenate self.Pipeline + other.Unit = res.Pipeline
+            self.add(other)
+            return self
+        elif isinstance(other, Pipeline):  # concatenate another self.Pipeline + other.Pipeline = res.Pipeline
+            pass
+        else:
+            raise TypeError(f'Cannot join a PipelineUnit with a {type(other)}.')
 
     def load(self, biosignals: Biosignal | Collection[Biosignal]):
         if isinstance(biosignals, Biosignal):
@@ -87,7 +105,7 @@ class Pipeline():
         self.__current_packet = Packet(timeseries=all_timeseries)
 
     def __unpack_last_packet(self) -> Biosignal | Collection[Biosignal]:
-        return self.__current_packet  #._to_dict()
+        return self.__current_packet._to_dict()
 
     def __check_completeness(self, new_unit:PipelineUnit):
         load_that_will_be_available = {}
@@ -131,3 +149,4 @@ class Pipeline():
                         blocks[-2] >> blocks[-1]
                     else:
                         blocks[-2] >> blocks[-1]
+

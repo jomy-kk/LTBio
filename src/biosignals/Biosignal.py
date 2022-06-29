@@ -17,6 +17,7 @@ from typing import Dict, Tuple, Collection, Set, ClassVar
 from dateutil.parser import parse as to_datetime, ParserError
 import matplotlib.pyplot as plt
 
+from src.biosignals.Event import Event
 from src.processing.FrequencyDomainFilter import Filter
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals.BiosignalSource import BiosignalSource
@@ -45,17 +46,28 @@ class Biosignal(ABC):
             if source is None:
                 raise ValueError("To read a biosignal from a file, specify the biosignal source.")
             else:
-                read_data = self.source._read(dir=timeseries, type=type(self))
-                if isinstance(read_data, dict):
+                read_data = self.source._read(timeseries, type=type(self) )
+
+                if isinstance(read_data, dict):  # Get Timeseries
                     self.__timeseries = read_data
-                elif isinstance(read_data, tuple):
+
+                elif isinstance(read_data, tuple):  # Get Timeseries and location
                     self.__timeseries = read_data[0]
                     self.__acquisition_location = read_data[1]
+
+                # Get Events, if any
+                events = self.source._events(timeseries)
+                if events is not None:
+                    self.associate(events)
+
+
         if isinstance(timeseries, datetime): # this should be a time interval -> fetch from database
             pass # TODO
         if isinstance(timeseries, dict): # this should be the {chanel name: Timeseries} -> save samples directly
             self.__timeseries = timeseries
         pass
+
+        self.__associated_events = {}
 
 
     def __getitem__(self, item):
@@ -172,6 +184,11 @@ class Biosignal(ABC):
         return max([ts.final_datetime for ts in self.__timeseries.values()])
 
     @property
+    def events(self):
+        '''Tuple of associated Events, ordered by datetime.'''
+        return tuple(sorted(self.__associated_events.values()))
+
+    @property
     def sampling_frequency(self) -> float:
         '''Returns the sampling frequency of every channel (if equal), or raises an error if they are not equal.'''
         if len(self) == 1:
@@ -194,6 +211,22 @@ class Biosignal(ABC):
 
     def _to_dict(self) -> Dict[str|BodyLocation, Timeseries]:
         return self.__timeseries
+
+    def __iter__(self):
+        return self.__timeseries.values().__iter__()
+
+    def __contains__(self, item):
+        if isinstance(item, str):
+            if item in self.__timeseries.keys():  # if channel exists
+                return True
+            if item in self.__associated_events:  # if Event occurs
+                return True
+        elif isinstance(item, datetime):
+            for channel in self:
+                if item in channel:  # if at least one channel defines this point in time
+                    return True
+        else:
+            raise TypeError(f'Cannot apply this operation with {type(item)}.')
 
     def __add__(self, other):
         '''Adds one Biosignal to another and returns a concatenated Biosignal.'''
@@ -326,5 +359,27 @@ class Biosignal(ABC):
         else:  # apply only to one channel
             self.__timeseries[channel_label]._apply_operation(inversion)
 
+    def associate(self, events: Event | Collection[Event] | Dict[str, Event]):
+        '''
+        Associates an Event (a point in time) to all Timeseries.
+        Events have names that serve as keys. If keys are given,
+        i.e. if 'events' is a dict, then the Event names are override.
+        @param events: One or multiple Event objects.
+        @rtype: None
+        '''
 
+        def __add_event(event: Event):
+            for channel in self:
+                channel.associate(event)
+            # if errors were not raised, then ...
+            self.__associated_events[event.name] = event
 
+        if isinstance(events, Event):
+            __add_event(events)
+        elif isinstance(events, dict):
+            for event_key in events:
+                event = events[event_key]
+                __add_event(Event(event_key, event._Event__onset, event._Event__offset))  # rename with given key
+        else:
+            for event in events:
+                __add_event(event)

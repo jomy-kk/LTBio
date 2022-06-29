@@ -5,10 +5,9 @@
 # Package: biosignals
 # File: E4
 # Description: Procedures to read and write datafiles from Empatica E4 wristband.
-# URL: oneDrive
 
-# Contributors: Mariana Abreu
-# Last update: 20/06/2022
+# Contributors: Mariana Abreu, João Saraiva
+# Last update: 27/06/2022
 
 ###################################
 import csv
@@ -18,6 +17,7 @@ from ast import literal_eval
 
 from numpy import vstack
 
+from src.biosignals.Event import Event
 from src.biosignals.Unit import Unit
 from src.biosignals.ACC import ACC
 from src.biosignals.BiosignalSource import BiosignalSource
@@ -140,25 +140,35 @@ class E4(BiosignalSource):
         return res
 
     @staticmethod
-    def _onsets(dir, file_key='tag'):
+    def _events(dir:str, file_key='tag'):
         """ Extracts onsets from tags file
         First we check if a tags file exists in directory. Then it will be opened and passed as a list "a".
         Each date in a will be transformed from unix timestamp str to datetime using aux_date function.
-        Returns: dictionary with a key label and a datetime from each timestamp in list "a"
+        Returns: A List of Event objects.
         """
-        # get onsets file
-        onsets_file = [path.join(dir, file) for file in listdir(dir) if file_key in file]
-        if not onsets_file:
-            return []
-        if len(onsets_file) > 1:
-            raise IOError(f'{len(onsets_file)} tag files were found, which should be used?')
-        else:
-            with open(onsets_file[0], 'r') as f:
-                reader = csv.reader(f, dialect=csv.excel_tab)
-                a = list(reader)
-            # if a is empty onsets will be {} else it will contain datetime with a numerated label
-            onsets = {'label ' + str(i): E4.__aux_date(a[i][0]) for i in range(len(a))}
-            return onsets
+
+        # STEP 1
+        # Get list of subdirectories
+        all_subdirectories = list([path.join(dir, d) for d in listdir(dir)])
+
+        # STEP 2
+        # Get tag file
+        res = []
+        for subdir in all_subdirectories:
+            onsets_file = [path.join(subdir, file) for file in listdir(subdir) if file_key in file]
+            if not onsets_file:
+                raise IOError(f"No tag file was found in path '{subdir}'.")
+            if len(onsets_file) > 1:
+                raise IOError(f'{len(onsets_file)} tag files were found, rather than just 1.')
+            else:
+                # STEP 3
+                # Get onsets
+                with open(onsets_file[0], 'r') as f:
+                    reader = csv.reader(f, dialect=csv.excel_tab)
+                    a = list(reader)
+                    # Events are named numerically
+                    res += [Event('event' + str(i + 1), E4.__aux_date(a[i][0])) for i in range(len(a))]
+        return res
 
     @staticmethod
     def _fetch(source_dir='', type=None, patient_code=None):

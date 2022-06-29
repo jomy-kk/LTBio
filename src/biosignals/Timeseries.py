@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 from dateutil.parser import parse as to_datetime
-from typing import List, Iterable
+from typing import List, Iterable, Collection, Dict, Tuple
 from numpy import array
 from biosppy.signals.tools import power_spectrum
 from scipy.signal import resample
 import matplotlib.pyplot as plt
 
+from src.biosignals.Event import Event
 from src.processing.FrequencyDomainFilter import Filter
 from src.biosignals.Unit import Unit
 
@@ -129,6 +130,8 @@ class Timeseries():
 
         self.__is_equally_segmented = equally_segmented
 
+        self.__associated_events = {}
+
 
     # Getters and Setters
 
@@ -166,6 +169,11 @@ class Timeseries():
     @property
     def is_equally_segmented(self) -> bool:
         return self.__is_equally_segmented
+
+    @property
+    def events(self):
+        '''Tuple of associated Events, ordered by datetime.'''
+        return tuple(sorted(self.__associated_events.values()))
 
     def __iter__(self) -> Iterable:
         return self.__segments.__iter__()
@@ -332,3 +340,34 @@ class Timeseries():
         assert len(self.__segments) == 1
         return array(self.__segments[0].samples)
 
+    def associate(self, events:Event|Collection[Event]|Dict[str, Event]):
+        '''
+        Associates an Event (a point in time) with the Timeseries. Events have names that serve as keys. If keys are given,
+        i.e. if 'events' is a dict, then the Event names are override.
+        @param events: One or multiple Event objects.
+        @rtype: None
+        '''
+
+        def __add_event(event:Event):
+            try:
+                self.__check_boundaries(event.onset)  # raises IndexError
+                if event.name in self.__associated_events:
+                    raise NameError(f"There is already another Event named with '{events.name}'. Cannot have two Events with the same name.")
+                else:
+                    self.__associated_events[event.name] = event
+            except IndexError:
+                raise ValueError(f"Event '{event.name}' at {event.onset} is outside of Timeseries domain, [{self.initial_datetime},{self.final_datetime}[.")
+
+        if isinstance(events, Event):
+            __add_event(events)
+        elif isinstance(events, dict):
+            for event_key in events:
+                event = events[event_key]
+                __add_event(Event(event_key, event._Event__onset, event._Event__offset))  # rename with given key
+        else:
+            for event in events:
+                __add_event(event)
+
+    def __contains__(self, item):
+        '''Checks if event occurs in Timeseries.'''
+        return item in self.__associated_events

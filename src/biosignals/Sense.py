@@ -51,9 +51,9 @@ class Sense(BiosignalSource):
         else:
            #try:
             config = configparser.ConfigParser()
-            config.read('examples/config.ini')
+            config.read('../resources/config.ini')
             Sense.DEFAULTS_PATH = config['defaults']['Sense']
-            print(f"Getting default mapping from {Sense.DEFAULTS_PATH}")
+            #print(f"Getting default mapping from {Sense.DEFAULTS_PATH}")
             #except:
             #    raise FileNotFoundError('No defaults file for Sense devices was provided, nor a config.ini was found.')
 
