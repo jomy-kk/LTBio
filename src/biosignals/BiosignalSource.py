@@ -16,7 +16,7 @@ from typing import Collection
 
 from numpy import array
 
-from biosignals.Event import Event
+from src.biosignals.Event import Event
 
 class BiosignalSource(ABC):
 

@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 from typing import Collection, Dict
 from inspect import signature
 
-import pipeline
+import src.pipeline
 from src.features.Features import Features
 from src.pipeline.Packet import Packet
 from src.biosignals.Timeseries import Timeseries
@@ -47,9 +47,10 @@ class PipelineUnit(ABC):
     def apply(self, **kwargs):
         pass
 
-    def _apply(self, packet:Packet) -> Packet:
-        # Flag to apply once per each element in a Collection
-        APPLY_FOR_ALL = False
+    def _apply(self, packet:Packet, APPLY_FOR_ALL=False) -> Packet:
+        # Flag APPLY_FOR_ALL
+        # True = To apply once per each element in a Collection (apply-for-all)
+        # False = To apply to all at elements at once (apply-to-all)
 
         # Get what this unit needs from the Packet
         what_this_unit_needs = tuple(signature(self.apply).parameters.values())
@@ -65,18 +66,17 @@ class PipelineUnit(ABC):
             #    input[parameter_name] = packet[packet_label]
             #else:
                 # If there's a collection instead of a single element for this label, then apply once for each collection's element
-            if isinstance(packet[packet_label], Collection):
+            if isinstance(APPLY_FOR_ALL, bool) and APPLY_FOR_ALL and isinstance(packet[packet_label], Collection) and not isinstance(packet[packet_label], Timeseries):
                 APPLY_FOR_ALL = (packet_label, parameter_name)
             else:
                 input[parameter_name] = packet[packet_label]
-                #raise AssertionError("Packet contents and what this PipelineUnit requires don't match in type.")
 
-
-        # Apply the unit processing
-        if APPLY_FOR_ALL is False:
+        # Apply the unit processing to all at once
+        if not APPLY_FOR_ALL:
             output = self.apply(**input)
-        else:
 
+        # Apply the unit processing for all, once at a time
+        else:
             if isinstance(packet[APPLY_FOR_ALL[0]], dict):
                 output = {}
                 for label in packet[APPLY_FOR_ALL[0]]:
@@ -105,11 +105,11 @@ class PipelineUnit(ABC):
         Defines the >> operator, the fastest shortcut to create a Pipeline
         '''
         if isinstance(other, PipelineUnit):  # concatenate self.Unit + other.Unit = res.Pipeline
-            res = pipeline.Pipeline.Pipeline()
+            res = src.pipeline.Pipeline.Pipeline()
             res.add(self)
             res.add(other)
             return res
-        elif isinstance(other, pipeline.Pipeline.Pipeline):  # concatenate another self.Unit + other.Pipeline = res.Pipeline
+        elif isinstance(other, src.pipeline.Pipeline.Pipeline):  # concatenate another self.Unit + other.Pipeline = res.Pipeline
             pass
         else:
             raise TypeError(f'Cannot join a PipelineUnit with a {type(other)}.')

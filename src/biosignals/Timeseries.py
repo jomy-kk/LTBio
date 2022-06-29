@@ -6,7 +6,7 @@ from biosppy.signals.tools import power_spectrum
 from scipy.signal import resample
 import matplotlib.pyplot as plt
 
-from biosignals.Event import Event
+from src.biosignals.Event import Event
 from src.processing.FrequencyDomainFilter import Filter
 from src.biosignals.Unit import Unit
 

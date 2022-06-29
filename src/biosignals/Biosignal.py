@@ -17,7 +17,7 @@ from typing import Dict, Tuple, Collection, Set, ClassVar
 from dateutil.parser import parse as to_datetime, ParserError
 import matplotlib.pyplot as plt
 
-from biosignals.Event import Event
+from src.biosignals.Event import Event
 from src.processing.FrequencyDomainFilter import Filter
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals.BiosignalSource import BiosignalSource

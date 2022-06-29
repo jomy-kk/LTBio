@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from biosignals.Event import Event
+from src.biosignals.Event import Event
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals import (E4, EDA, PPG, ACC, TEMP)
 

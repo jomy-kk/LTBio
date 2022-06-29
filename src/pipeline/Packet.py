@@ -13,7 +13,7 @@
 
 # ===================================
 
-from typing import Collection, Dict
+from typing import Collection, Dict, Tuple
 from inspect import stack
 
 from src.biosignals.Timeseries import Timeseries
@@ -27,9 +27,9 @@ class Packet():
         self.__load = load
 
         if TIMESERIES_LABEL in self.__load:
-            assert isinstance(self.__load[TIMESERIES_LABEL], (Collection, Timeseries))
+            assert isinstance(self.__load[TIMESERIES_LABEL], Timeseries) or (isinstance(self.__load[TIMESERIES_LABEL], dict) and all(isinstance(x, Timeseries) for x in self.__load[TIMESERIES_LABEL].values())) or (isinstance(self.__load[TIMESERIES_LABEL], Collection) and all(isinstance(x, Timeseries) for x in self.__load[TIMESERIES_LABEL]))
             # if a collection of Timeseries is given and it is not in a dictionary format, then it will be converted to one:
-            if isinstance(self.__load[TIMESERIES_LABEL], Collection) and not isinstance(self.__load[TIMESERIES_LABEL], dict):
+            if not isinstance(self.__load[TIMESERIES_LABEL], Timeseries) and isinstance(self.__load[TIMESERIES_LABEL], Collection) and not isinstance(self.__load[TIMESERIES_LABEL], dict):
                 self.__load[TIMESERIES_LABEL] = {str(i): ts for i, ts in enumerate(self.__load[TIMESERIES_LABEL])}
         
         self.__who_packed = stack()[1][3]  # FIX ME: this gets the function name that called this one; we want the object pointer

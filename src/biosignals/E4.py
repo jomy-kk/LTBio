@@ -17,7 +17,7 @@ from ast import literal_eval
 
 from numpy import vstack
 
-from biosignals.Event import Event
+from src.biosignals.Event import Event
 from src.biosignals.Unit import Unit
 from src.biosignals.ACC import ACC
 from src.biosignals.BiosignalSource import BiosignalSource

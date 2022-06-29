@@ -15,7 +15,7 @@
 from inspect import signature
 from typing import List, Collection
 
-from pipeline.Input import Input
+from src.pipeline.Input import Input
 from src.pipeline.Packet import Packet
 from src.biosignals.Biosignal import Biosignal
 from src.pipeline.PipelineUnit import PipelineUnit
@@ -105,7 +105,7 @@ class Pipeline():
         self.__current_packet = Packet(timeseries=all_timeseries)
 
     def __unpack_last_packet(self) -> Biosignal | Collection[Biosignal]:
-        return self.__current_packet  #._to_dict()
+        return self.__current_packet._to_dict()
 
     def __check_completeness(self, new_unit:PipelineUnit):
         load_that_will_be_available = {}

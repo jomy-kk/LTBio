@@ -29,7 +29,7 @@ class FeatureSelector(PipelineUnit):
         self.__selection_function = selection_function
 
     def apply(self, features:Dict[str, Timeseries]) -> Dict[str, Timeseries]:
-
+        assert isinstance(features, dict)
         selected_features = {}
         for feature_name in features:
             ts = features[feature_name]
