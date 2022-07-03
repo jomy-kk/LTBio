@@ -14,9 +14,9 @@
 # ===================================
 from src.biosignals.Timeseries import Timeseries
 from src.decision.Decision import Decision
-from src.pipeline.PipelineUnit import PipelineUnit
+from src.pipeline.PipelineUnit import SinglePipelineUnit
 
-class DecisionMaker(PipelineUnit):
+class DecisionMaker(SinglePipelineUnit):
 
     PIPELINE_INPUT_LABELS = {'timeseries': 'timeseries'}
     PIPELINE_OUTPUT_LABELS = {'_': 'decision'}

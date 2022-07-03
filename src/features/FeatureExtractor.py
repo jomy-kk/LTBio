@@ -13,11 +13,11 @@
 
 from typing import Collection, Dict, Callable
 
-from src.pipeline.PipelineUnit import PipelineUnit
+from src.pipeline.PipelineUnit import SinglePipelineUnit
 from src.biosignals.Timeseries import Timeseries
 
 
-class FeatureExtractor(PipelineUnit):
+class FeatureExtractor(SinglePipelineUnit):
 
     PIPELINE_INPUT_LABELS = {'timeseries': 'timeseries'}
     PIPELINE_OUTPUT_LABELS = {'features': 'timeseries'}

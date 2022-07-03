@@ -18,10 +18,10 @@ from numpy import array
 from src.ml.trainers.SupervisedTrainReport import SupervisedTrainReport
 from src.ml.models.SupervisedModel import SupervisedModel
 from src.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
-from src.pipeline.PipelineUnit import PipelineUnit
+from src.pipeline.PipelineUnit import SinglePipelineUnit
 from src.biosignals.Timeseries import Timeseries
 
-class SupervisingTrainer(PipelineUnit):
+class SupervisingTrainer(SinglePipelineUnit):
 
     PIPELINE_INPUT_LABELS = {'object': 'timeseries', 'target': 'target'}
     PIPELINE_OUTPUT_LABELS = {'results': 'results'}
