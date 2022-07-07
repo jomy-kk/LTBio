@@ -12,7 +12,7 @@
 ###################################
 
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Tuple, Collection, Set, ClassVar
 from dateutil.parser import parse as to_datetime, ParserError
 import matplotlib.pyplot as plt
@@ -84,13 +84,48 @@ class Biosignal(ABC):
                 ts = {item: self.__timeseries[item], }
                 return (type(self))(timeseries=ts, source=self.__source, acquisition_location=self.__acquisition_location,
                                 patient=self.__patient, name=self.__name)  # Patient should be the same object
+
+            elif item in self.__associated_events:
+                event = self.__associated_events[item]
+                if event.has_onset and event.has_offset:
+                    return self[event.onset:event.offset]
+                elif event.has_onset:
+                    return self[event.onset]
+                elif event.has_offset:
+                    return self[event.offset]
+
             else:
                 try:
                     self.__timeseries[to_datetime(item)]
                 except:
-                    raise IndexError("Datetime in incorrect format or '{}' is not a channel of this Biosignal.".format(item))
+                    raise IndexError("Datetime in incorrect format or '{}' is not a channel nor an event of this Biosignal.".format(item))
+
+        def __get_events_with_padding(event_name, padding_before=timedelta(seconds=0), padding_after=timedelta(seconds=0)):
+            if event_name in self.__associated_events:
+                event = self.__associated_events[event_name]
+                if event.has_onset and event.has_offset:
+                    return self[event.onset - padding_before: event.offset + padding_after]
+                elif event.has_onset:
+                    return self[event.onset - padding_before: event.onset + padding_after]
+                elif event.has_offset:
+                    return self[event.offset - padding_before: event.offset + padding_after]
+            else:
+                raise IndexError(f"No Event named '{event_name}' associated to this Biosignal.")
 
         if isinstance(item, slice):
+            # Index by events with padding
+            if isinstance(item.start, (timedelta, int)) and isinstance(item.step, (timedelta, int)) and isinstance(item.stop, str):
+                start = timedelta(seconds=item.start) if isinstance(item.start, int) else item.start  # shortcut for seconds
+                step = timedelta(seconds=item.step) if isinstance(item.step, int) else item.step  # shortcut for seconds
+                return __get_events_with_padding(item.stop, padding_before=start, padding_after=step)
+            elif isinstance(item.start, (timedelta, int)) and isinstance(item.stop, str):
+                start = timedelta(seconds=item.start) if isinstance(item.start, int) else item.start  # shortcut for seconds
+                return __get_events_with_padding(item.stop, padding_before=start)
+            elif isinstance(item.start, str) and isinstance(item.stop, (timedelta, int)):
+                stop = timedelta(seconds=item.stop) if isinstance(item.stop, int) else item.stop  # shortcut for seconds
+                return __get_events_with_padding(item.start, padding_after=stop)
+
+            # Index by datetime
             if len(self) == 1:
                 channel_name = self.channel_names[0]
                 channel = self.__timeseries[channel_name]

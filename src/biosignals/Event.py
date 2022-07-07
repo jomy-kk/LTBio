@@ -28,18 +28,26 @@ class Event():
         self.__name = name
 
     @property
+    def has_onset(self) -> bool:
+        return self.__onset != None
+
+    @property
+    def has_offset(self) -> bool:
+        return self.__offset != None
+
+    @property
     def onset(self) -> datetime:
-        if self.__onset is None:
-            raise AttributeError(f"Event {self.name} has no onset.")
-        else:
+        if self.has_onset:
             return self.__onset
+        else:
+            raise AttributeError(f"Event {self.name} has no onset.")
 
     @property
     def offset(self) -> datetime:
-        if self.__offset is None:
-            raise AttributeError(f"Event {self.name} has no offset.")
-        else:
+        if self.has_offset:
             return self.__offset
+        else:
+            raise AttributeError(f"Event {self.name} has no offset.")
 
     @property
     def duration(self) -> timedelta:
