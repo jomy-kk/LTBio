@@ -64,7 +64,7 @@ class PipelineTestCase(unittest.TestCase):
         first_packet = pipeline.current_packet
         self.assertEqual(len(first_packet), 1)
         self.assertEqual(first_packet.contents, {'timeseries': dict})
-        self.assertEqual(first_packet.all_timeseries, {"a": self.ts1, "b": self.ts2})
+        self.assertEqual(first_packet.timeseries, {"a": self.ts1, "b": self.ts2})
 
 
 if __name__ == '__main__':
