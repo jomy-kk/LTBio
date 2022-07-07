@@ -40,6 +40,7 @@ class Biosignal(ABC):
         self.__source = source
         self.__acquisition_location = acquisition_location
         self.__patient = patient
+        self.__associated_events = {}
 
         # Handle timeseries
         if isinstance(timeseries, str): # this should be a filepath -> read samples from file
@@ -66,8 +67,6 @@ class Biosignal(ABC):
         if isinstance(timeseries, dict): # this should be the {chanel name: Timeseries} -> save samples directly
             self.__timeseries = timeseries
         pass
-
-        self.__associated_events = {}
 
 
     def __getitem__(self, item):

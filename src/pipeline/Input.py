@@ -12,10 +12,10 @@
 # Created: 25/06/2022
 
 # ===================================
-from src.pipeline.PipelineUnit import PipelineUnit
+from src.pipeline.PipelineUnit import SinglePipelineUnit
 
 
-class Input(PipelineUnit):
+class Input(SinglePipelineUnit):
 
     PIPELINE_INPUT_LABELS = {}
     PIPELINE_OUTPUT_LABELS = {'_': '_'}  # the packet label is to be defined for each instance

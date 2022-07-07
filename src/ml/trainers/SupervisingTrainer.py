@@ -18,10 +18,10 @@ from numpy import array
 from src.ml.trainers.SupervisedTrainReport import SupervisedTrainReport
 from src.ml.models.SupervisedModel import SupervisedModel
 from src.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
-from src.pipeline.PipelineUnit import PipelineUnit
+from src.pipeline.PipelineUnit import SinglePipelineUnit
 from src.biosignals.Timeseries import Timeseries
 
-class SupervisingTrainer(PipelineUnit):
+class SupervisingTrainer(SinglePipelineUnit):
 
     PIPELINE_INPUT_LABELS = {'object': 'timeseries', 'target': 'target'}
     PIPELINE_OUTPUT_LABELS = {'results': 'results'}
@@ -36,7 +36,7 @@ class SupervisingTrainer(PipelineUnit):
             raise AttributeError("Give at least one SupervisedTrainConditions to 'train_conditions'.")
 
 
-    def apply(self, object:Collection[Timeseries], target:Timeseries, ):
+    def apply(self, object:Collection[Timeseries], target:Timeseries):
         self.reporter = SupervisedTrainReport()
         self.reporter.print_successful_instantiation()
         self.reporter.print_model_description(self.__model, **self.__model.non_trainable_parameters)

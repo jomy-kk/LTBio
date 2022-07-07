@@ -18,7 +18,7 @@ from typing import List, Collection
 from src.pipeline.Input import Input
 from src.pipeline.Packet import Packet
 from src.biosignals.Biosignal import Biosignal
-from src.pipeline.PipelineUnit import PipelineUnit
+from src.pipeline.PipelineUnit import PipelineUnit, SinglePipelineUnit, PipelineUnitsUnion
 
 
 class Pipeline():
@@ -55,8 +55,8 @@ class Pipeline():
         return res
 
     def add(self, unit:PipelineUnit):
-        if len(self) > 0:
-            self.__check_completeness(unit)
+        #if len(self) > 0:
+        #    self.__check_completeness(unit)
         self.__steps.append(unit)
 
     def __rshift__(self, other):
@@ -108,26 +108,37 @@ class Pipeline():
         return self.__current_packet._to_dict()
 
     def __check_completeness(self, new_unit:PipelineUnit):
+        # Know what will be available up to this point
         load_that_will_be_available = {}
         for unit in self.__steps:
-            # Get output label and type  # FIXME: Currently assuming only 1 output for PipelineUnit(s)
-            output_label = tuple(unit.PIPELINE_OUTPUT_LABELS.values())[0]
-            output_type = signature(unit.apply).return_annotation
-            load_that_will_be_available[output_label] = output_type  # If it's the case, it replaces type of same labels, as it should
+            # Get output label and type
+            if isinstance(unit, SinglePipelineUnit):
+                output_label = tuple(unit.PIPELINE_OUTPUT_LABELS.values())[0]
+                output_type = signature(unit.apply).return_annotation
+                load_that_will_be_available[output_label] = output_type  # If it's the case, it replaces type of same labels, as it should
+            elif isinstance(unit, PipelineUnitsUnion):
+                output_labels = tuple(unit.PIPELINE_OUTPUT_LABELS.values())
 
-        new_unit_parameters = tuple(signature(new_unit.apply).parameters.values())
 
+        # Know what the new unit needs
+        if isinstance(new_unit, SinglePipelineUnit):
+            new_unit_parameters = tuple(signature(new_unit.apply).parameters.values())
+        elif isinstance(new_unit, PipelineUnitsUnion):
+            new_unit_parameters = new_unit.all_input_parameters
+
+        # Check if it matches
         for parameter in new_unit_parameters:
             parameter_name = parameter.name
             parameter_type = parameter.annotation
             input_label = new_unit.PIPELINE_INPUT_LABELS[parameter_name]  # Map to the label in Packet
 
             if input_label in load_that_will_be_available:
-                if isinstance(parameter_type, type(load_that_will_be_available[input_label])):
-                    continue
-                else:
-                    raise AssertionError('Input type, {}, of the new unit does not match the output type, {}, of the last unit.'.format(
-                            parameter_type, load_that_will_be_available[input_label]))
+                if isinstance(new_unit, SinglePipelineUnit):  # TODO: Currently, we're jumpting verification of Union input and output types
+                    if isinstance(parameter_type, type(load_that_will_be_available[input_label])):
+                        continue
+                    else:
+                        raise AssertionError('Input type, {}, of the new unit does not match the output type, {}, of the last unit.'.format(
+                                parameter_type, load_that_will_be_available[input_label]))
             else:
                 raise AssertionError('{} input label of the new unit does not match to any output label of the last unit.'.format(
                         input_label))

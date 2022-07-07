@@ -14,11 +14,10 @@
 from typing import Callable, Dict
 
 from src.biosignals.Timeseries import Timeseries
-from src.features.Features import Features
-from src.pipeline.PipelineUnit import PipelineUnit
+from src.pipeline.PipelineUnit import SinglePipelineUnit
 
 
-class FeatureSelector(PipelineUnit):
+class FeatureSelector(SinglePipelineUnit):
 
     PIPELINE_INPUT_LABELS = {'features': 'timeseries'}
     PIPELINE_OUTPUT_LABELS = {'selected_features': 'timeseries'}

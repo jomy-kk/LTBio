@@ -14,10 +14,10 @@
 from datetime import timedelta
 from biosppy.signals.tools import windower
 
-from src.pipeline.PipelineUnit import PipelineUnit
+from src.pipeline.PipelineUnit import SinglePipelineUnit
 from src.biosignals.Timeseries import Timeseries
 
-class Segmenter(PipelineUnit):
+class Segmenter(SinglePipelineUnit):
     """
     This PipelineUnit can segment one Timeseries at a time.
     """
@@ -40,7 +40,8 @@ class Segmenter(PipelineUnit):
                     adjacent = False
                     break
             if not adjacent:
-                if input(f"Segments of {timeseries.name} are not adjacent. Join them? (y/n) ").lower() == 'y':
+                x = input(f"Segments of {timeseries.name} are not adjacent. Join them? (y/n) ").lower()
+                if x == 'y':
                     pass  # go ahead
                 else:
                     raise AssertionError('Framework does not support segmenting non-adjacent segments, unless you want to join them. Try indexing the time period of interest first.')
