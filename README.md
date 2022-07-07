@@ -5,6 +5,8 @@
 [![Features](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-features-package.yml/badge.svg)](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-features-package.yml)
 [![Machine Learning](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-ml-package.yml/badge.svg)](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-ml-package.yml)
 [![Decision](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-decision-package.yml/badge.svg)](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-decision-package.yml)
+[![Pipeline](https://github.com/jomy-kk/IT-LongTermBiosignals/actions/workflows/test-pipeline-package.yml/badge.svg)](https://github.com/jomy-kk/IT-LongTermBiosignals/actions/workflows/test-pipeline-package.yml)
+[![Integration Tests](https://github.com/jomy-kk/IT-LongTermBiosignals/actions/workflows/test-integration.yml/badge.svg)](https://github.com/jomy-kk/IT-LongTermBiosignals/actions/workflows/test-integration.yml)
 
 #### Description
 Python library for easy managing and processing of large Long-Term Biosignals.
