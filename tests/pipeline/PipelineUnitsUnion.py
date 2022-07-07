@@ -1,8 +1,8 @@
 import unittest
 from datetime import datetime, timedelta
 
-from features.FeatureExtractor import FeatureExtractor
-from features.Features import TimeFeatures
+from src.features.FeatureExtractor import FeatureExtractor
+from src.features.Features import TimeFeatures
 from src.pipeline.PipelineUnit import ApplyTogether, ApplySeparately
 from src.features.FeatureSelector import FeatureSelector
 from src.biosignals.Timeseries import Timeseries
