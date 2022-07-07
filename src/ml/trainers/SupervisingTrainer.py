@@ -36,7 +36,7 @@ class SupervisingTrainer(SinglePipelineUnit):
             raise AttributeError("Give at least one SupervisedTrainConditions to 'train_conditions'.")
 
 
-    def apply(self, object:Collection[Timeseries], target:Timeseries, ):
+    def apply(self, object:Collection[Timeseries], target:Timeseries):
         self.reporter = SupervisedTrainReport()
         self.reporter.print_successful_instantiation()
         self.reporter.print_model_description(self.__model, **self.__model.non_trainable_parameters)

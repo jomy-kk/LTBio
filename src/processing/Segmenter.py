@@ -40,7 +40,8 @@ class Segmenter(SinglePipelineUnit):
                     adjacent = False
                     break
             if not adjacent:
-                if input(f"Segments of {timeseries.name} are not adjacent. Join them? (y/n) ").lower() == 'y':
+                x = input(f"Segments of {timeseries.name} are not adjacent. Join them? (y/n) ").lower()
+                if x == 'y':
                     pass  # go ahead
                 else:
                     raise AssertionError('Framework does not support segmenting non-adjacent segments, unless you want to join them. Try indexing the time period of interest first.')

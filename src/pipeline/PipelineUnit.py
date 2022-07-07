@@ -111,10 +111,10 @@ class PipelineUnit(ABC):
             packet_label = unit.PIPELINE_INPUT_LABELS[parameter_name]  # Map to the label in Packet
 
             content = packet[packet_label]
-            if isinstance(content, dict) and parameter_type is not Dict[str, Timeseries]:
+            if isinstance(content, dict) and parameter_type is Timeseries:
                 assert len(content) == 1
                 input[parameter_name] = tuple(content.values())[0]  # arity match
-            elif not isinstance(content, dict) and parameter_type is Dict[str, Timeseries]:
+            elif not isinstance(content, dict) and parameter_type is not Timeseries:
                 input[parameter_name] = {'_': content}  # arity match
             else:
                 input[parameter_name] = content  # arity already matches
@@ -247,9 +247,12 @@ class SinglePipelineUnit(PipelineUnit, ABC):
             raise TypeError(f'Cannot join a PipelineUnit with a {type(other)}.')
 
     def _apply(self, packet:Packet) -> Packet:
-        input = self.__unpack(packet)
-        output = self.__apply(input)
-        return self.__pack(packet, output)
+        if self.__requires_one_timeseries() and packet.has_timeseries_collection:
+            return ApplySeparately(self)._apply(packet)
+        else:
+            input = self.__unpack(packet)
+            output = self.__apply(input)
+            return self.__pack(packet, output)
 
     def __unpack(self, packet:Packet):
         return PipelineUnit._unpack_as_is(packet, self)
@@ -260,6 +263,14 @@ class SinglePipelineUnit(PipelineUnit, ABC):
     def __pack(self, previous_packet:Packet, current_output) -> Packet:
         return PipelineUnit._pack_as_is(previous_packet, current_output, self)
 
+    def __requires_one_timeseries(self) -> bool:
+        if Packet.TIMESERIES_LABEL in self.PIPELINE_INPUT_LABELS.values():
+            what_this_unit_needs = tuple(signature(self.apply).parameters.values())
+            for parameter in what_this_unit_needs:
+                if self.PIPELINE_INPUT_LABELS[parameter.name] == Packet.TIMESERIES_LABEL:
+                    if parameter.annotation is Timeseries:
+                        return True
+        return False
 
 class PipelineUnitsUnion(PipelineUnit, ABC):
     """
