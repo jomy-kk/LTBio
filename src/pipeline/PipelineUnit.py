@@ -13,7 +13,7 @@
 ###################################
 
 from abc import ABC, abstractmethod
-from inspect import signature
+from inspect import signature, Parameter
 from typing import Collection, Dict, Iterable, Callable, Tuple
 
 from src.biosignals.Timeseries import Timeseries
@@ -48,6 +48,21 @@ class PipelineUnit(ABC):
         Acts as the 'operation' method in the composite design pattern.
         """
         pass
+
+    def __rshift__(self, other):
+        '''
+        Defines the >> operator, the fastest shortcut to create a Pipeline
+        '''
+        from src.pipeline.Pipeline import Pipeline
+        if isinstance(other, PipelineUnit):  # concatenate self.Unit + other.Unit = res.Pipeline
+            res = Pipeline()
+            res.add(self)
+            res.add(other)
+            return res
+        elif isinstance(other, Pipeline):  # concatenate another self.Unit + other.Pipeline = res.Pipeline
+            pass
+        else:
+            raise TypeError(f'Cannot join a PipelineUnit with a {type(other)}.')
 
     @staticmethod
     def _unpack_separately(packet:Packet, unit) -> Tuple[Iterable[str], Iterable[Dict]]:
@@ -231,21 +246,6 @@ class SinglePipelineUnit(PipelineUnit, ABC):
         res += ' ' + self.name if self.name is not None else ''
         return res
 
-    def __rshift__(self, other):
-        '''
-        Defines the >> operator, the fastest shortcut to create a Pipeline
-        '''
-        from src.pipeline.Pipeline import Pipeline
-        if isinstance(other, PipelineUnit):  # concatenate self.Unit + other.Unit = res.Pipeline
-            res = Pipeline()
-            res.add(self)
-            res.add(other)
-            return res
-        elif isinstance(other, Pipeline):  # concatenate another self.Unit + other.Pipeline = res.Pipeline
-            pass
-        else:
-            raise TypeError(f'Cannot join a PipelineUnit with a {type(other)}.')
-
     def _apply(self, packet:Packet) -> Packet:
         if self.__requires_one_timeseries() and packet.has_timeseries_collection:
             return ApplySeparately(self)._apply(packet)
@@ -292,7 +292,17 @@ class PipelineUnitsUnion(PipelineUnit, ABC):
     ------------
     This method should handle how each SingleUnit is applied to the Timeseries (when there are many) -- if together or
     separately.
+
+    Labels
+    ------------
+    PIPELINE_INPUT_LABELS
+    Maps every label of a needed input inside a Packet to the parameter names of the corresponding 'apply' methods.
+    PIPELINE_OUTPUT_LABELS
+    Maps every output name of the 'apply' methods to a label to be saved inside a Packet.
     """
+
+    PIPELINE_INPUT_LABELS: Dict[str, str]  # { apply parameter : packet label }
+    PIPELINE_OUTPUT_LABELS: Dict[str, str]  # { apply output : packet label }
 
     def __init__(self, units: SinglePipelineUnit | Collection[SinglePipelineUnit], name:str=None):
         super(PipelineUnitsUnion, self).__init__(name)
@@ -302,11 +312,17 @@ class PipelineUnitsUnion(PipelineUnit, ABC):
 
         if isinstance(units, SinglePipelineUnit):
             self.__units.append(units)
+            self.PIPELINE_INPUT_LABELS = units.PIPELINE_INPUT_LABELS
+            self.PIPELINE_OUTPUT_LABELS = units.PIPELINE_OUTPUT_LABELS
         elif isinstance(units, Collection) and not isinstance(units, dict):
+            self.PIPELINE_INPUT_LABELS = {}
+            self.PIPELINE_OUTPUT_LABELS = {}
             for unit in units:
                 if isinstance(unit, SinglePipelineUnit):
                     if unit.name is not None:
                         self.__units.append(unit)
+                        self.PIPELINE_INPUT_LABELS.update(unit.PIPELINE_INPUT_LABELS)
+                        self.PIPELINE_OUTPUT_LABELS.update(unit.PIPELINE_OUTPUT_LABELS)
                     else:
                         raise AssertionError(f"Pipeline Unit of type {type(unit).__name__} must have a name if inside a Union, in order to resolve eventual conflicting labels.")
                 else:
@@ -317,6 +333,13 @@ class PipelineUnitsUnion(PipelineUnit, ABC):
     @property
     def current_unit(self):
         return self.__current_unit
+
+    @property
+    def all_input_parameters(self) -> Tuple[Parameter]:
+        res = []  # shouldn't this be a Set
+        for unit in self.__units:
+            res += list(signature(unit.apply).parameters.values())
+        return tuple(res)
 
     def __str__(self):
         return 'Union' + (': ' + self.name) if self.name is not None else ''
