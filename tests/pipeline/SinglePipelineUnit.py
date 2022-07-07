@@ -1,7 +1,6 @@
 import unittest
 from datetime import datetime, timedelta
 
-from src.pipeline.PipelineUnit import Apply
 from src.decision.NAryDecision import NAryDecision
 from src.decision.DecisionMaker import DecisionMaker
 from src.features.Features import TimeFeatures
@@ -45,7 +44,7 @@ class SinglePipelineUnitTestCase(unittest.TestCase):
         # Segmeters are a good example of taking 1 Timeseries and outputting 1 Timeseries.
         # There is coherence between Packet and parameters needed.
         unit = Segmenter(timedelta(seconds=1))
-        result_packet = unit._apply(self.packetA, Apply.TOGETHER)  # but in this case there's just 1
+        result_packet = unit._apply(self.packetA)
         self.assertTrue(isinstance(result_packet.single_timeseries, Timeseries))
         self.assertEqual(len(result_packet), 1)
         self.assertTrue('timeseries' in result_packet)
@@ -55,7 +54,7 @@ class SinglePipelineUnitTestCase(unittest.TestCase):
         # FeatureSelectors are a good example of taking many Timeseries and also outputting many Timeseries.
         # There is coherence between Packet and parameters needed.
         unit = FeatureSelector(lambda x: True)
-        result_packet = unit._apply(self.packetB, Apply.TOGETHER)
+        result_packet = unit._apply(self.packetB)
         self.assertTrue(isinstance(result_packet.all_timeseries, dict))
         self.assertTrue(len(result_packet), 1)
         self.assertTrue(len(result_packet.all_timeseries), 2)
@@ -65,7 +64,7 @@ class SinglePipelineUnitTestCase(unittest.TestCase):
         # FeatureExtractors are a good example of taking 1 Timeseries and outputting many Timeseries.
         # Hence, there is NO coherence between Packet and parameters needed.
         unit = FeatureExtractor((TimeFeatures.mean, TimeFeatures.variance))
-        result_packet = unit._apply(self.packetC, Apply.TOGETHER)  # but in this case there's just 1
+        result_packet = unit._apply(self.packetC)
         self.assertTrue(isinstance(result_packet.all_timeseries, dict))
         self.assertTrue(len(result_packet), 1)
         self.assertTrue(len(result_packet.all_timeseries), 2)
@@ -73,7 +72,7 @@ class SinglePipelineUnitTestCase(unittest.TestCase):
     def test_apply_with_packet_many_timeseries_to_one_number(self):
         # DecisionMakers are a good example of taking many Timeseries and outputting a value.
         unit = DecisionMaker(NAryDecision(lambda x: 5))
-        result_packet = unit._apply(self.packetC, Apply.TOGETHER)
+        result_packet = unit._apply(self.packetC)
         self.assertTrue(isinstance(result_packet['decision'], int))
         self.assertEqual(result_packet['decision'], 5)
         self.assertTrue(len(result_packet), 1)

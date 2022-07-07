@@ -8,22 +8,16 @@
 
 # Contributors: João Saraiva
 # Created: 02/06/2022
+# Last Updated: 03/07/2022
 
 ###################################
 
 from abc import ABC, abstractmethod
-from enum import Enum, unique
-from typing import Collection, Dict, Iterable, List
 from inspect import signature
+from typing import Collection, Dict, Iterable, Callable, Tuple
 
-from biosignals.Timeseries import Timeseries
+from src.biosignals.Timeseries import Timeseries
 from src.pipeline.Packet import Packet
-
-
-@unique
-class Apply(Enum):
-    SEPARATE = 0
-    TOGETHER = 1
 
 
 class PipelineUnit(ABC):
@@ -48,14 +42,145 @@ class PipelineUnit(ABC):
         self.name = name
 
     @abstractmethod
-    def _apply(self, packet:Packet, how_to:Apply) -> Packet:
+    def _apply(self, packet:Packet) -> Packet:
         """
         Receives a Packet with the necessary inputs to apply the unit and returns a Packet with the relevant outputs.
-        It also receives a way of applying, 'how_to', in case a collection of Timeseries come with the packet.
         Acts as the 'operation' method in the composite design pattern.
-        Acts as the 'template' method in the template method design pattern.
         """
         pass
+
+    @staticmethod
+    def _unpack_separately(packet:Packet, unit) -> Tuple[Iterable[str], Iterable[Dict]]:
+        """
+        Auxiliary class procedure.
+        Receives a Packet and returns a Tuple of Iterables, (x, y), where:
+        - y are dictionaries with the necessary inputs, each with one Timeseries.
+        - x are the original labels of each Timeseries in the receiving Packet.
+        """
+
+        # Get what this unit needs from the Packet
+        what_this_unit_needs = tuple(signature(unit.apply).parameters.values())
+
+        # Unpack from the Packet what is needed
+        common_input = {}
+        for parameter in what_this_unit_needs:
+            parameter_name = parameter.name
+            parameter_type = parameter.annotation
+            packet_label = unit.PIPELINE_INPUT_LABELS[parameter_name]  # Map to the label in Packet
+
+            if packet_label == Packet.TIMESERIES_LABEL :  # Timeseries
+                separate_inputs = []
+                original_ts_labels = []
+                if packet.has_timeseries_collection:  # Meaning there were discovered 1 or more Timeseries in a collection
+                    for original_ts_label, ts in packet[packet_label].items():
+                        this_input = {label: content for label, content in common_input.items()}  # Create copy of common content
+                        if parameter_type is Timeseries:  # if apply only requires 1 Timeseries, rather than collection
+                            this_input[parameter_name] = ts  # Add the element of 1 Timeseries
+                        else:
+                            this_input[parameter_name] = {original_ts_label: ts}  # Add only 1 the collection of 1 Timeseries
+                        separate_inputs.append(this_input)  # Save separate input
+                        original_ts_labels.append(original_ts_label)
+                elif packet.has_single_timeseries:  # Meaning just 1 Timeseries was found outside a collection
+                    this_input = {label: content for label, content in common_input.items()}  # Create copy of common content
+                    this_input[parameter_name] = packet[packet_label]  # Add the only Timeseries
+                    separate_inputs.append(this_input)  # Save separate input
+                else:
+                    pass  # There are no Timeseries
+
+                return iter(original_ts_labels), iter(separate_inputs)
+
+            else:  # Others
+                common_input[parameter_name] = packet[packet_label]
+                return iter((packet_label, )), iter((common_input, ))
+
+    @staticmethod
+    def _unpack_as_is(packet: Packet, unit) -> Dict:
+        """
+        Auxiliary class procedure.
+        Receives a Packet and returns an input dictionaries with all necessary parameters
+        """
+
+        # Get what this unit needs from the Packet
+        what_this_unit_needs = tuple(signature(unit.apply).parameters.values())
+
+        # Unpack from the Packet what is needed
+        input = {}
+        for parameter in what_this_unit_needs:
+            parameter_name = parameter.name
+            parameter_type = parameter.annotation
+            packet_label = unit.PIPELINE_INPUT_LABELS[parameter_name]  # Map to the label in Packet
+
+            content = packet[packet_label]
+            if isinstance(content, dict) and parameter_type is not Dict[str, Timeseries]:
+                assert len(content) == 1
+                input[parameter_name] = tuple(content.values())[0]  # arity match
+            elif not isinstance(content, dict) and parameter_type is Dict[str, Timeseries]:
+                input[parameter_name] = {'_': content}  # arity match
+            else:
+                input[parameter_name] = content  # arity already matches
+
+        return input
+
+    @staticmethod
+    def _pack_as_is(previous_packet:Packet, current_output, unit) -> Packet:
+        """
+        Receives the received Packet and the output dictionary of 'apply' and returns a new Packet with the union of all
+        contents. If some new content has the same label of a previous content, it will be replaced.
+        """
+        load = previous_packet._to_dict()  # start with the contents already in the previous packet
+        packet_label = tuple(unit.PIPELINE_OUTPUT_LABELS.values())[0]
+        load[packet_label] = current_output  # replace or add
+        return Packet(**load)
+
+    @staticmethod
+    def _pack_with_original_ts_labels(previous_packet:Packet, current_output:list, unit, original_ts_labels:list) -> Packet:
+        """
+        Receives the received Packet, its original Timeseries labels, and the output dictionary of 'apply'.
+        It returns a new Packet with the union of all contents.
+        If some new content has the same label of a previous content, it will be replaced.
+        """
+        load = previous_packet._to_dict()  # start with the contents already in the previous packet
+        packet_label = tuple(unit.PIPELINE_OUTPUT_LABELS.values())[0]
+
+        # Timeseries
+        timeseries = {}
+        if packet_label == Packet.TIMESERIES_LABEL:
+            for original_ts_label, ts in zip(original_ts_labels, current_output):
+                assert isinstance(ts, Timeseries)  # Assuming only 1 Timeseries was outputted in each application
+                timeseries[original_ts_label] = ts
+            load[Packet.TIMESERIES_LABEL] = timeseries
+
+        # Others
+        else:
+            load[packet_label] = current_output  # replace or add
+
+        return Packet(**load)
+
+    @staticmethod
+    def _pack_separate_outputs(previous_packet:Packet, separate_outputs:list, unit, original_ts_labels:list) -> Packet:
+        """
+        Receives the received Packet, its original Timeseries labels, and a list of outputs, one per each time 'apply' was called.
+        It returns a new Packet with the union of all contents.
+        If some new content has the same label of a previous content, it will be replaced.
+        """
+        load = previous_packet._to_dict()  # start with the contents already in the previous packet
+        packet_label = tuple(unit.PIPELINE_OUTPUT_LABELS.values())[0]
+
+        res = {}
+        for original_ts_label, output in zip(original_ts_labels, separate_outputs):
+            if isinstance(output, dict):
+                if len(separate_outputs) > 1:
+                    for content_label, content in output.items():
+                        res[original_ts_label+':'+content_label] = content
+                else:  # no need to associate to each original label, because there is just 1 output, it means there was just 1 input
+                    for content_label, content in output.items():
+                        res[content_label] = content
+            else:
+                res[original_ts_label] = output
+
+        load[packet_label] = res
+
+        return Packet(**load)
 
 
 class SinglePipelineUnit(PipelineUnit, ABC):
@@ -121,83 +246,24 @@ class SinglePipelineUnit(PipelineUnit, ABC):
         else:
             raise TypeError(f'Cannot join a PipelineUnit with a {type(other)}.')
 
+    def _apply(self, packet:Packet) -> Packet:
+        input = self.__unpack(packet)
+        output = self.__apply(input)
+        return self.__pack(packet, output)
 
-    def __unpack_all_timeseries(self, packet:Packet) -> dict:
-        """
-        Receives a Packet and returns a dictionary with the inputs needed to apply this unit.
-        """
+    def __unpack(self, packet:Packet):
+        return PipelineUnit._unpack_separately(packet, self)
 
-        # Get what this unit needs from the Packet
-        what_this_unit_needs = tuple(signature(self.apply).parameters.values())
+    def __apply(self, separate_inputs: Iterable):
+        separate_outputs = []
+        for input in separate_inputs:  # If there was only 1 input (i.e. 1 Timeseries), this cycle runs only once, which is okay
+            output = self.apply(**input)
+            separate_outputs.append(output) # Currently, Pipeline Units only output 1 object
 
-        # Unpack from the Packet what is needed
-        input = {}
-        for parameter in what_this_unit_needs:
-            parameter_name = parameter.name
-            parameter_type = parameter.annotation
-            packet_label = self.PIPELINE_INPUT_LABELS[parameter_name]  # Map to the label in Packet
-
-            input[parameter_name] = packet[packet_label]
-
-        return input
-
-    def __unpack_iterable_timeseries(self, packet:Packet) -> Iterable:
-        """
-        Receives a Packet and returns an iterable of input dictionaries, each with one Timeseries.
-        """
-
-        # Get what this unit needs from the Packet
-        what_this_unit_needs = tuple(signature(self.apply).parameters.values())
-
-        # Unpack from the Packet what is needed
-        general_input = {}
-        timeseries = None
-        for parameter in what_this_unit_needs:
-            parameter_name = parameter.name
-            parameter_type = parameter.annotation
-            packet_label = self.PIPELINE_INPUT_LABELS[parameter_name]  # Map to the label in Packet
-
-            if parameter_name == 'timeseries' and parameter_type is dict:
-                timeseries = packet[packet_label]
-            else:
-                general_input[parameter_name] = packet[packet_label]
-
-        inputs = []
-        for ts in timeseries:
-            inputs.append({'timeseries': ts}.update({label:x for label, x in general_input if label != 'timeseries'}))
-
-        return iter(inputs)
+        return separate_outputs if len(separate_outputs) > 1 else separate_outputs[0]
 
     def __pack(self, previous_packet:Packet, current_output) -> Packet:
-        """
-        Receives the received Packet and the output dictionary of 'apply' and returns a new Packet with the union of all
-        contents. If some new content has the same label of a previous content, it will be replaced.
-        """
-        load = previous_packet._to_dict()  # start with the contents already in the previous packet
-        packet_label = tuple(self.PIPELINE_OUTPUT_LABELS.values())[0]
-        load[packet_label] = current_output  # replace or add
-        return Packet(**load)
-
-    def _apply(self, packet:Packet, how_to:Apply=None) -> Packet:
-
-        if how_to is None or how_to is Apply.TOGETHER:
-            # Step 1 - Unpack the packet contents, with all Timeseries in one element
-            input = self.__unpack_all_timeseries(packet)
-            # Step 2 - Apply to all inputs together
-            outputs = self.apply(**input)
-            # Step 3 - Create a Packet with outputs
-            return self.__pack(packet, outputs)
-
-        elif how_to is Apply.SEPARATE:
-            # Step 1 - Unpack the packet contents, returning an iterable in which each element holds one Timeseries.
-            inputs = self.__unpack_iterable_timeseries(packet)
-            # Step 2 - Apply to each input separately
-            outputs = {}
-            for input in inputs:  # If there was only 1 input (i.e. 1 Timeseries), this cycle runs only once
-                output = self.apply(**input)
-                outputs += output  # join together
-            # Step 3 - Create a Packet with outputs
-            return self.__pack(packet, outputs)
+        return PipelineUnit._pack_as_is(previous_packet, current_output, self)
 
 
 class PipelineUnitsUnion(PipelineUnit, ABC):
@@ -225,14 +291,18 @@ class PipelineUnitsUnion(PipelineUnit, ABC):
     def __init__(self, units: SinglePipelineUnit | Collection[SinglePipelineUnit], name:str=None):
         super(PipelineUnitsUnion, self).__init__(name)
 
-        self.__current_unit = None
         self.__units = []
+        self.__current_unit = None
+
         if isinstance(units, SinglePipelineUnit):
             self.__units.append(units)
         elif isinstance(units, Collection) and not isinstance(units, dict):
             for unit in units:
                 if isinstance(unit, SinglePipelineUnit):
-                    self.__units.append(unit)
+                    if unit.name is not None:
+                        self.__units.append(unit)
+                    else:
+                        raise AssertionError(f"Pipeline Unit of type {type(unit).__name__} must have a name if inside a Union, in order to resolve eventual conflicting labels.")
                 else:
                     raise TypeError(f"{unit.__class__} is not a unitary PipelineUnit.")
         else:
@@ -242,45 +312,46 @@ class PipelineUnitsUnion(PipelineUnit, ABC):
     def current_unit(self):
         return self.__current_unit
 
+    def __str__(self):
+        return 'Union' + (': ' + self.name) if self.name is not None else ''
+
     def _apply(self, packet:Packet) -> Packet:
+        """
+        Acts as the 'template' method in the template method design pattern.
+        """
+
+        # Assert that there is not a single Timeseries and a single unit
+        if len(self.__units) == 1 and packet.has_single_timeseries:
+            raise AssertionError(f"There's only 1 Timeseries arriving to Union {self.name} comprising only 1 PipelineUnit. There's no use case for this. Instead, try inserting the PipelineUnit directly to the Pipeline, without using Unions.")
+
+        output_packets = []
         for unit in self.__units:
             self.__current_unit = unit
             input = self.__unpack(packet)
             output = self.__delegate(input)
-            return self.__pack(packet, output)
+            output_packets.append(self.__pack(packet, output))
 
-    def __unpack(self, packet: Packet) -> dict:
-        """
-        Receives a Packet and returns a dictionary with the inputs needed to apply this unit.
-        """
-
-        # Get what this unit needs from the Packet
-        what_this_unit_needs = tuple(signature(self.__current_unit.apply).parameters.values())
-
-        # Unpack from the Packet what is needed
-        input = {}
-        for parameter in what_this_unit_needs:
-            parameter_name = parameter.name
-            parameter_type = parameter.annotation
-            packet_label = self.__current_unit.PIPELINE_INPUT_LABELS[parameter_name]  # Map to the label in Packet
-
-            input[parameter_name] = packet[packet_label]
-
-        return input
+        return self.__return_packet(output_packets)
 
     @abstractmethod
-    def __delegate(self, input: dict):
+    def __unpack(self, packet: Packet):
         pass
 
+    @abstractmethod
+    def __delegate(self, input):
+        pass
+
+    @abstractmethod
     def __pack(self, previous_packet:Packet, current_output) -> Packet:
-        """
-        Receives the received Packet and the output dictionary of 'apply' and returns a new Packet with the union of all
-        contents. If some new content has the same label of a previous content, it will be replaced.
-        """
-        load = previous_packet._to_dict()  # start with the contents already in the previous packet
-        packet_label = tuple(self.__current_unit.PIPELINE_OUTPUT_LABELS.values())[0]
-        load[packet_label] = current_output  # replace or add
-        return Packet(**load)
+        pass
+
+    def __return_packet(self, output_packets:list) -> Packet:
+        if len(output_packets) == 1:
+            return output_packets[0]
+        else:
+            # There might exist some conflicts here, such as contents with the same label.
+            # To ensure resolution, units must have names, and previous labels will be prefixed by the unit name.
+            return Packet.join_packets(**{unit.name: packet for unit, packet in zip(self.__units, output_packets)})
 
 
 class ApplyTogether(PipelineUnitsUnion):
@@ -292,8 +363,15 @@ class ApplyTogether(PipelineUnitsUnion):
     def __init__(self, units: SinglePipelineUnit | Collection[SinglePipelineUnit], name: str = None):
         super(ApplyTogether, self).__init__(units, name)
 
+    def _PipelineUnitsUnion__unpack(self, packet: Packet) -> dict:
+        unpacked = PipelineUnit._unpack_as_is(packet, self.current_unit)
+        return unpacked
+
     def _PipelineUnitsUnion__delegate(self, input: dict):
         return self.current_unit.apply(**input)  # Apply to all Timeseries together
+
+    def _PipelineUnitsUnion__pack(self, previous_packet: Packet, current_output) -> Packet:
+        return PipelineUnit._pack_as_is(previous_packet, current_output, self.current_unit)
 
 
 class ApplySeparately(PipelineUnitsUnion):
@@ -305,23 +383,21 @@ class ApplySeparately(PipelineUnitsUnion):
     def __init__(self, units: SinglePipelineUnit | Collection[SinglePipelineUnit], name: str = None):
         super(ApplySeparately, self).__init__(units, name)
 
-    def _PipelineUnitsUnion__delegate(self, input: dict):
+    def _PipelineUnitsUnion__unpack(self, packet: Packet) -> Iterable:
+        original_labels, separate_inputs = PipelineUnit._unpack_separately(packet, self.current_unit)
+        self.__original_ts_labels = original_labels
+        return separate_inputs
 
-        common_input = {}
-        for label, content in input.items():
-            if label != 'timeseries':
-                common_input[label] = content
-
-        separate_inputs = []
-        for ts in input['timeseries'].values():
-            this_input = {label: content for label, content in common_input.items()}  # Create copy of common content
-            this_input['timeseries'] = ts  # Add 1 Timeseries
-            separate_inputs.append(this_input)  # Save separate input
-
+    def _PipelineUnitsUnion__delegate(self, separate_inputs: Iterable) -> list:
         separate_outputs = []
-        for x in separate_inputs:  # If there was only 1 input (i.e. 1 Timeseries), this cycle runs only once
-            output = self.current_unit.apply(**x)
-            separate_outputs.append(output)
+        for input in separate_inputs:  # If there was only 1 input (i.e. 1 Timeseries), this cycle runs only once, which is okay
+            output = self.current_unit.apply(**input)
+            separate_outputs.append(output) # Currently, Pipeline Units only output 1 object
 
-        # Currently, Pipeline Units only output 1 object
         return separate_outputs
+
+    def _PipelineUnitsUnion__pack(self, previous_packet: Packet, current_output) -> Packet:
+        if Packet.TIMESERIES_LABEL in current_output and len(self.__original_ts_labels) == len(current_output[Packet.TIMESERIES_LABEL]):
+            return PipelineUnit._pack_with_original_ts_labels(previous_packet, current_output, self.current_unit, self.__original_ts_labels)
+        else:
+            return PipelineUnit._pack_separate_outputs(previous_packet, current_output, self.current_unit, self.__original_ts_labels)
