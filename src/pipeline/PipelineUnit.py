@@ -252,15 +252,10 @@ class SinglePipelineUnit(PipelineUnit, ABC):
         return self.__pack(packet, output)
 
     def __unpack(self, packet:Packet):
-        return PipelineUnit._unpack_separately(packet, self)
+        return PipelineUnit._unpack_as_is(packet, self)
 
-    def __apply(self, separate_inputs: Iterable):
-        separate_outputs = []
-        for input in separate_inputs:  # If there was only 1 input (i.e. 1 Timeseries), this cycle runs only once, which is okay
-            output = self.apply(**input)
-            separate_outputs.append(output) # Currently, Pipeline Units only output 1 object
-
-        return separate_outputs if len(separate_outputs) > 1 else separate_outputs[0]
+    def __apply(self, input: Iterable):
+        return self.apply(**input)
 
     def __pack(self, previous_packet:Packet, current_output) -> Packet:
         return PipelineUnit._pack_as_is(previous_packet, current_output, self)
