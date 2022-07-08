@@ -182,6 +182,7 @@ class Timeseries():
         '''The built-in slicing and indexing ([x:y]) operations.'''
         if isinstance(item, datetime):
             return self.__get_sample(item)
+
         if isinstance(item, str):
             return self.__get_sample(to_datetime(item))
 
@@ -350,7 +351,10 @@ class Timeseries():
 
         def __add_event(event:Event):
             try:
-                self.__check_boundaries(event.onset)  # raises IndexError
+                if event.has_onset:
+                    self.__check_boundaries(event.onset)  # raises IndexError
+                if event.has_offset:
+                    self.__check_boundaries(event.offset)  # raises IndexError
                 if event.name in self.__associated_events:
                     raise NameError(f"There is already another Event named with '{events.name}'. Cannot have two Events with the same name.")
                 else:

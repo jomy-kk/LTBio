@@ -12,12 +12,13 @@ class EventTestCase(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.datetime1 = datetime(2022, 6, 1, 16, 0, 2)
         cls.datetime2 = datetime(2022, 6, 1, 16, 0, 4)
+        cls.datetime3 = datetime(2022, 6, 1, 16, 0, 8)
         cls.datetime1_in_str = '2022-06-01 16:00:02'
         cls.name1 = 'My first Event'
         cls.name2 = 'My other Event'
 
     def setUp(self) -> None:
-        self.timeseries = Timeseries([Timeseries.Segment([1., 2., 3.], self.datetime1, 1.), ], True, 1.)
+        self.timeseries = Timeseries([Timeseries.Segment([1., 2., 3., 4., 5., 6., 7., 8.], self.datetime1, 1.), ], True, 1.)
         self.biosignal = ECG({'x': self.timeseries})
 
     def test_create_event(self):
@@ -50,7 +51,7 @@ class EventTestCase(unittest.TestCase):
         event = Event(self.name1, self.datetime1, self.datetime2)
         self.assertEqual(event.duration, timedelta(seconds=2))
 
-        # raises error if it's not a period
+        # raises error if it's not a period in time
         event = Event(self.name1, self.datetime1)
         with self.assertRaises(AttributeError):
             x = event.duration
@@ -122,7 +123,7 @@ class EventTestCase(unittest.TestCase):
         self.assertFalse(self.name2 in self.timeseries)
 
     def test_associate_event_out_of_timeseries_domain_raises_error(self):
-        event1 = Event(self.name1, self.datetime1 + timedelta(seconds=4))
+        event1 = Event(self.name1, self.datetime1 + timedelta(seconds=10))
         with self.assertRaises(ValueError):
             self.timeseries.associate(event1)
 
@@ -155,6 +156,50 @@ class EventTestCase(unittest.TestCase):
         self.assertTrue('b' in self.biosignal)
         self.assertFalse(self.name1 in self.biosignal)
         self.assertFalse(self.name2 in self.biosignal)
+
+    def test_index_biosignal_with_event_onset(self):
+        event = Event('seizure', self.datetime2)
+        self.biosignal.associate(event)
+        self.assertEqual(self.biosignal['seizure'], 3.0)
+
+    def test_index_biosignal_with_event_offset(self):
+        event = Event('seizure', offset=self.datetime2)
+        self.biosignal.associate(event)
+        self.assertEqual(self.biosignal['seizure'], 3.0)
+
+    def test_index_biosignal_with_event_period(self):
+        event = Event('seizure', self.datetime2, self.datetime3)
+        self.biosignal.associate(event)
+        self.assertEqual(self.biosignal['seizure'].segments[0].samples, [3., 4., 5., 6.])
+
+    def test_index_biosignal_with_event_period_with_padding(self):
+        event = Event('seizure', self.datetime2, self.datetime3)
+        self.biosignal.associate(event)
+        self.assertEqual(self.biosignal[timedelta(seconds=2):'seizure':timedelta(seconds=1)].segments[0].samples, [1., 2., 3., 4., 5., 6., 7.])
+        self.assertEqual(self.biosignal[2:'seizure':1].segments[0].samples, [1., 2., 3., 4., 5., 6., 7.])
+        self.assertEqual(self.biosignal['seizure':timedelta(seconds=1)].segments[0].samples, [3., 4., 5., 6., 7.])
+        self.assertEqual(self.biosignal['seizure':1].segments[0].samples, [3., 4., 5., 6., 7.])
+        self.assertEqual(self.biosignal[timedelta(seconds=1):'seizure'].segments[0].samples, [2., 3., 4., 5., 6.])
+        self.assertEqual(self.biosignal[1:'seizure'].segments[0].samples, [2., 3., 4., 5., 6.])
+
+        event = Event('seizure2', onset=self.datetime2)
+        self.biosignal.associate(event)
+        self.assertEqual(self.biosignal[timedelta(seconds=2):'seizure2':timedelta(seconds=1)].segments[0].samples, [1., 2., 3.])
+        self.assertEqual(self.biosignal[2:'seizure2':1].segments[0].samples, [1., 2., 3.])
+        self.assertEqual(self.biosignal['seizure2':timedelta(seconds=2)].segments[0].samples, [3., 4.])
+        self.assertEqual(self.biosignal['seizure2':2].segments[0].samples, [3., 4.])
+        self.assertEqual(self.biosignal[timedelta(seconds=2):'seizure2'].segments[0].samples, [1., 2.])
+        self.assertEqual(self.biosignal[2:'seizure2'].segments[0].samples, [1., 2.])
+
+        event = Event('seizure3', offset=self.datetime2)
+        self.biosignal.associate(event)
+        self.assertEqual(self.biosignal[timedelta(seconds=2):'seizure3':timedelta(seconds=1)].segments[0].samples, [1., 2., 3.])
+        self.assertEqual(self.biosignal[2:'seizure3':1].segments[0].samples, [1., 2., 3.])
+        self.assertEqual(self.biosignal['seizure3':timedelta(seconds=2)].segments[0].samples, [3., 4.])
+        self.assertEqual(self.biosignal['seizure3':2].segments[0].samples, [3., 4.])
+        self.assertEqual(self.biosignal[timedelta(seconds=2):'seizure3'].segments[0].samples, [1., 2.])
+        self.assertEqual(self.biosignal[2:'seizure3'].segments[0].samples, [1., 2.])
+
 
 if __name__ == '__main__':
     unittest.main()
