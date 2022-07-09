@@ -41,7 +41,7 @@ class Epilepsy(MedicalCondition):
         super(MedicalCondition, self).__init__()
         self.seizures = []
 
-    def name(self):
+    def __str__(self):
         return "Epilepsy"
 
     @property
