@@ -156,6 +156,7 @@ class E4(BiosignalSource):
         # STEP 2
         # Get tag file
         res = []
+        n_events = 0  # counter of events
         for subdir in all_subdirectories:
             if isdir(subdir):
                 onsets_file = [path.join(subdir, file) for file in listdir(subdir) if file_key in file]
@@ -170,7 +171,9 @@ class E4(BiosignalSource):
                         reader = csv.reader(f, dialect=csv.excel_tab)
                         a = list(reader)
                         # Events are named numerically
-                        res += [Event('event' + str(i + 1), E4.__aux_date(a[i][0])) for i in range(len(a))]
+                        for i in range(len(a)):
+                            n_events += 1
+                            res.append(Event('event' + str(n_events), E4.__aux_date(a[i][0])))
         return res
 
     @staticmethod
