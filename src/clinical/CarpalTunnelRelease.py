@@ -3,28 +3,27 @@
 # IT - PreEpiSeizures
 
 # Package: clinical
-# File: SurgicalProcedure
-# Description: Abstract class to describe any surgical procedure.
+# File: CarpalTunnelRelease
+# Description: Class to describe carpal tunnel surgeries.
 
 # Contributors: João Saraiva
-# Last update: 23/04/2022
+# Last update: 09/07/2022
 
 ###################################
 
-from abc import ABC, abstractmethod
 from datetime import datetime
 
-class SurgicalProcedure(ABC):
+from src.clinical.SurgicalProcedure import SurgicalProcedure
 
-    def __init__(self, date: datetime = None, outcome:bool=None):
-        self.outcome = outcome
-        self.date = date
+
+class CarpalTunnelRelease(SurgicalProcedure):
+
+    def __init__(self, date: datetime = None, outcome=bool):
+        super().__init__(date, outcome)
 
     @property
-    @abstractmethod
     def name(self):
-        '''Get the name of the condition. This getter should be overwritten in every subclass.'''
-        pass
+        return "Carpal Tunnel Release"
 
     def __str__(self):
         outcome = ""
