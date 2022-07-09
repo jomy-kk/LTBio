@@ -47,6 +47,7 @@ class Patient():
         self.__sex = sex
         self.__name = name
         self.__code = code
+        self.__notes = []
         self.__locked = True
 
     @property
@@ -56,6 +57,13 @@ class Patient():
     @property
     def conditions(self):
         return self.__conditions
+
+    @property
+    def notes(self):
+        return self.__notes
+
+    def add_note(self, description:str):
+        self.__notes.append(description)
 
     def get_protected_info(self):
         """Returns a dictionary of the private/sensible information: Name, Age, Medications, and Surgical Procedures."""
