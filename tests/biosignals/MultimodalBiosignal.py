@@ -11,7 +11,7 @@ from src.biosignals.Timeseries import Timeseries
 from src.biosignals.Unit import *
 from src.clinical.BodyLocation import BodyLocation
 from src.clinical.Epilepsy import Epilepsy
-from src.clinical.Patient import Patient
+from src.clinical.Patient import Patient, Sex
 
 
 class MultimodalBiosignalTestCase(unittest.TestCase):
@@ -19,7 +19,7 @@ class MultimodalBiosignalTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.condition = Epilepsy()
-        cls.patient = Patient(101, "João Miguel Areias Saraiva", 23, (cls.condition,), tuple(), tuple())
+        cls.patient = Patient(101, "João Miguel Areias Saraiva", 23, Sex.M, (cls.condition,), tuple(), tuple())
         cls.sf = 1
         cls.initial1 = datetime(2021, 5, 4, 15, 56, 30, 866915)
         cls.samples1 = [506.0, 501.0, 497.0, 374.5, 383.4, 294.2]

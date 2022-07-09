@@ -4,7 +4,7 @@ from os import rmdir, mkdir
 
 from src.clinical.BodyLocation import BodyLocation
 from src.clinical.Epilepsy import Epilepsy
-from src.clinical.Patient import Patient
+from src.clinical.Patient import Patient, Sex
 from src.biosignals.Unit import *
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals import (HEM, ECG)
@@ -17,7 +17,7 @@ class HEMTestCase(unittest.TestCase):
         cls.testpath = 'resources/HEM_TRC_tests/' # This is a test directory with TRC files in the HEM structure,
         cls.channelx, cls.channely = "ecg", "ECG" # containing ECG channels with these names,
 
-        cls.patient = Patient(101, "João Miguel Areias Saraiva", 23, (Epilepsy(),), tuple(), tuple())
+        cls.patient = Patient(101, "João Miguel Areias Saraiva", 23, Sex.M, (Epilepsy(),), tuple(), tuple())
         cls.samplesx1, cls.samplesx2, cls.samplesy1, cls.samplesy2 = [440.234375, 356.73828, 191.69922], \
                                                                          [-90.52734, -92.77344, -61.621094], \
                                                                          [582.03125, 629.98047, 620.01953], \

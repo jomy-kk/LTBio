@@ -14,6 +14,8 @@
 # ===================================
 
 from datetime import datetime, timedelta
+
+from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime
 
 class Event():
@@ -42,12 +44,20 @@ class Event():
         else:
             raise AttributeError(f"Event {self.name} has no onset.")
 
+    @onset.setter
+    def onset(self, datetime: datetime):
+        self.__onset = datetime
+
     @property
     def offset(self) -> datetime:
         if self.has_offset:
             return self.__offset
         else:
             raise AttributeError(f"Event {self.name} has no offset.")
+
+    @offset.setter
+    def offset(self, datetime: datetime):
+        self.__offset = datetime
 
     @property
     def duration(self) -> timedelta:
@@ -58,16 +68,24 @@ class Event():
         return self.__offset - self.__onset
 
     @property
+    def domain(self) -> DateTimeRange:
+        if self.__onset is None:
+            raise AttributeError(f"Event has no duration, only an {self.name} has no offset.")
+        if self.__offset is None:
+            raise AttributeError(f"Event has no duration, only an {self.name} has no onset.")
+        return DateTimeRange(self.__onset, self.__offset)
+
+    @property
     def name(self) -> str:
         return self.__name
 
     def __str__(self):
         if self.__offset is None:
-            return self.__name + ': Starts at ' + str(self.__onset)
+            return self.__name + ': Starts at ' + self.__onset.strftime("%d %b, %H:%M:%S")
         elif self.__onset is None:
-            return self.__name + ': Ends at ' + str(self.__offset)
+            return self.__name + ': Ends at ' + self.__offset.strftime("%d %b, %H:%M:%S")
         else:
-            return self.__name + ': Starts at ' + str(self.__onset) + '; Ends at ' + str(self.__offset)
+            return self.__name + ': [' + self.__onset.strftime("%d %b, %H:%M:%S") + '; ' + self.__offset.strftime("%d %b, %H:%M:%S") + ']'
 
     def __eq__(self, other):
         return self.__name == other.name and self.__onset == other._Event__onset and self.__offset == other._Event__offset

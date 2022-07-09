@@ -3,7 +3,7 @@ from datetime import datetime
 from os import rmdir, mkdir
 
 from src.clinical.Epilepsy import Epilepsy
-from src.clinical.Patient import Patient
+from src.clinical.Patient import Patient, Sex
 from src.biosignals.Unit import *
 from src.biosignals.Timeseries import Timeseries
 from src.biosignals import (HSM, ECG)
@@ -14,7 +14,7 @@ class HSMTestCase(unittest.TestCase):
     def setUpClass(cls):
         cls.HSM = HSM.HSM()  # Have to instantiate to directly test _read and _write methods.
         cls.testpath = 'resources/HSM_EDF_tests/' # This is a test directory with EDF files in the HSM structure,
-        cls.patient = Patient(101, "João Miguel Areias Saraiva", 23, (Epilepsy(),), tuple(), tuple())
+        cls.patient = Patient(101, "João Miguel Areias Saraiva", 23, Sex.M, (Epilepsy(),), tuple(), tuple())
 
         cls.samplesx1, cls.samplesx2, cls.samplesy1, cls.samplesy2 = [0.00023582690935384015, 0.00023582690935384015,
                                                                           0.00023582690935384015], \

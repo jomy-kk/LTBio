@@ -10,7 +10,7 @@
 # Last update: 23/04/2022
 
 ###################################
-
+from enum import unique, Enum
 from typing import Tuple
 
 from src.clinical.MedicalCondition import MedicalCondition
@@ -18,13 +18,24 @@ from src.clinical.Medication import Medication
 from src.clinical.SurgicalProcedure import SurgicalProcedure
 
 
+@unique
+class Sex(str, Enum):
+    """
+    Biological sex of human beings.
+    """
+    M = "Male"
+    F = "Female"
+    _ = "n.d."
+
+
 class Patient():
-    def __init__(self, code, name:str=None, age:int=None, conditions:Tuple[MedicalCondition]=(), medications:Tuple[Medication]=(), procedures:Tuple[SurgicalProcedure]=()):
+    def __init__(self, code, name:str=None, age:int=None, sex:Sex=Sex._, conditions:Tuple[MedicalCondition]=(), medications:Tuple[Medication]=(), procedures:Tuple[SurgicalProcedure]=()):
         """
         Instantiates a patient.
         :param code: The patient's anonymous code. This should be defined by the team.
         :param name: The patient's legal name.
         :param age: The patient's age in years.
+        :param sex: The patient's biological sex.
         :param conditions: A tuple of objects of type MedicalCondition, e.g. Epilepsy. These objects contain information about the condition.
         :param medications: A tuple of objects of type Medication, e.g. Benzodiazepine.
         :param procedures: A tuple of objects of type SurgicalProcedure, e.g. EpilepsySurgery. These objects contain information about the procedure.
@@ -33,6 +44,7 @@ class Patient():
         self.__medications = medications
         self.__conditions = conditions
         self.__age = age
+        self.__sex = sex
         self.__name = name
         self.__code = code
         self.__locked = True

@@ -14,6 +14,7 @@ import csv
 from datetime import datetime
 from os import listdir, path, sep
 from ast import literal_eval
+from os.path import isdir
 
 from numpy import vstack
 
@@ -117,20 +118,21 @@ class E4(BiosignalSource):
         # STEP 2
         # Get list of files of interest, i.e., the ones corresponding to the modality of interest
         for subdir in all_subdirectories:
-            file = list([path.join(subdir, file) for file in listdir(subdir) if sensor in file])[0]
-            if not file:
-                raise IOError(f'Files were not found in path {subdir} for {sensor=} ')
+            if isdir(subdir):
+                file = list([path.join(subdir, file) for file in listdir(subdir) if sensor in file])[0]
+                if not file:
+                    raise IOError(f'Files were not found in path {subdir} for {sensor=} ')
 
-            # STEP 3
-            # Read each file
-            samples, datetime, sf = E4.__read_file(file)
+                # STEP 3
+                # Read each file
+                samples, datetime, sf = E4.__read_file(file)
 
-            # STEP 4 - Restructuring
-            # Listing all Segments of the same channel together, labelled to the same channel label.
-            for channel_label in samples:
-                segment = Timeseries.Segment(samples[channel_label], initial_datetime=datetime, sampling_frequency=sf)
-                segments[channel_label] = [segment, ] if channel_label not in res else segments[channel_label] + [segment, ]  # instantiating or appending
-                res[channel_label] = sf  # save sampling frequency here to be used on the next loop
+                # STEP 4 - Restructuring
+                # Listing all Segments of the same channel together, labelled to the same channel label.
+                for channel_label in samples:
+                    segment = Timeseries.Segment(samples[channel_label], initial_datetime=datetime, sampling_frequency=sf)
+                    segments[channel_label] = [segment, ] if channel_label not in res else segments[channel_label] + [segment, ]  # instantiating or appending
+                    res[channel_label] = sf  # save sampling frequency here to be used on the next loop
 
         # Encapsulating the list of Segments of the same channel in a Timeseries
         for channel in segments:
@@ -155,19 +157,20 @@ class E4(BiosignalSource):
         # Get tag file
         res = []
         for subdir in all_subdirectories:
-            onsets_file = [path.join(subdir, file) for file in listdir(subdir) if file_key in file]
-            if not onsets_file:
-                raise IOError(f"No tag file was found in path '{subdir}'.")
-            if len(onsets_file) > 1:
-                raise IOError(f'{len(onsets_file)} tag files were found, rather than just 1.')
-            else:
-                # STEP 3
-                # Get onsets
-                with open(onsets_file[0], 'r') as f:
-                    reader = csv.reader(f, dialect=csv.excel_tab)
-                    a = list(reader)
-                    # Events are named numerically
-                    res += [Event('event' + str(i + 1), E4.__aux_date(a[i][0])) for i in range(len(a))]
+            if isdir(subdir):
+                onsets_file = [path.join(subdir, file) for file in listdir(subdir) if file_key in file]
+                if not onsets_file:
+                    raise IOError(f"No tag file was found in path '{subdir}'.")
+                if len(onsets_file) > 1:
+                    raise IOError(f'{len(onsets_file)} tag files were found, rather than just 1.')
+                else:
+                    # STEP 3
+                    # Get onsets
+                    with open(onsets_file[0], 'r') as f:
+                        reader = csv.reader(f, dialect=csv.excel_tab)
+                        a = list(reader)
+                        # Events are named numerically
+                        res += [Event('event' + str(i + 1), E4.__aux_date(a[i][0])) for i in range(len(a))]
         return res
 
     @staticmethod

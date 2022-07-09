@@ -24,6 +24,7 @@ from dateutil.parser import parse as to_datetime
 
 from src.biosignals.BiosignalSource import BiosignalSource
 from src.biosignals.Timeseries import Timeseries
+from src.clinical.BodyLocation import BodyLocation  # don't remove this one; literal_eval uses it.
 
 
 class Sense(BiosignalSource):
@@ -142,6 +143,8 @@ class Sense(BiosignalSource):
                 # Get body location, if any
                 if Sense.BODY_LOCATION in json_string[Sense.DEVICE_ID]:
                     body_location = json_string[Sense.DEVICE_ID][Sense.BODY_LOCATION]
+                    if body_location.startswith('BodyLocation.'):
+                        body_location = eval(body_location)
                 else:
                     body_location = None
 
@@ -270,12 +273,17 @@ class Sense(BiosignalSource):
         if not all_files:
             raise IOError(f"No files in {dir}.")
 
-        # STEP 2 - Read files
+        # STEP 2 - Convert channel labels to BodyLocations, if any
+        for position, label in channel_labels.items():
+            if label.startswith('BodyLocation.'):
+               channel_labels[position] = eval(label)
+
+        # STEP 3 - Read files
         # Get samples of analogue channels of interest from each file
         data = [Sense.__read_file(file, type, channel_labels, modalities_available) for file in all_files]
         # E.g.: data = samples_of_interest, start_date, sampling_frequency
 
-        # STEP 3 - Restructuring
+        # STEP 4 - Restructuring
         # Listing all Segments of the same channel together, labelled to the same channel label.
         res = {}
         segments = {}
