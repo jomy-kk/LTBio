@@ -112,7 +112,7 @@ class Timeseries():
 
 
     def __init__(self, segments: List[Segment], ordered:bool, sampling_frequency:float, units:Unit=None, name:str=None, equally_segmented=False):
-        ''' Receives a list of non-overlapping Segments (overlaps will not be checked) and a sampling frequency common to all Segments.
+        ''' Receives a list of non-overlapping Segments and a sampling frequency common to all Segments.
         If they are timely ordered, pass ordered=True, otherwise pass ordered=False.
         Additionally, it can receive the sample units and a name, if needed.'''
 
@@ -121,6 +121,14 @@ class Timeseries():
             self.__segments = sorted(segments)
         else:
             self.__segments = segments
+
+        # Check if Segments overlap
+        for i in range(1, len(self.__segments)):
+            if self.__segments[i-1].overlaps(self.__segments[i]):
+                if name is not None:
+                    raise AssertionError(f"Overlapping Segments in Timeseries '{name}'. To each timepoint must correspond one and only one sample, like a function.")
+                else:
+                    raise AssertionError("Overlapping Segments not allowed. To each timepoint must correspond one and only one sample, like a function.")
 
         # Save metadata
         self.__sampling_frequency = sampling_frequency
