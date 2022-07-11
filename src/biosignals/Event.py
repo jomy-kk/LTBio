@@ -26,7 +26,7 @@ class Event():
         self.__onset = to_datetime(onset) if isinstance(onset, str) else onset
         self.__offset = to_datetime(offset) if isinstance(offset, str) else offset
         if onset is not None and offset is not None and offset < onset:
-            raise AssertionError("The offset can come before the onset.")
+            raise AssertionError(f"In Event '{name}', the offset cannot come before the onset.")
         self.__name = name
 
     @property
