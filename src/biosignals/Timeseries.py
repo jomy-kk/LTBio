@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+
 from dateutil.parser import parse as to_datetime
 from typing import List, Iterable, Collection, Dict, Tuple
 from numpy import array
@@ -107,8 +108,6 @@ class Timeseries():
         def _apply_operation(self, operation, **kwargs):
             self.__samples = operation(self.__samples, **kwargs)
 
-
-
     def __init__(self, segments: List[Segment], ordered:bool, sampling_frequency:float, units:Unit=None, name:str=None, equally_segmented=False):
         ''' Receives a list of non-overlapping Segments (overlaps will not be checked) and a sampling frequency common to all Segments.
         If they are timely ordered, pass ordered=True, otherwise pass ordered=False.
@@ -149,6 +148,15 @@ class Timeseries():
     @property
     def final_datetime(self) -> datetime:
         return self.__final_datetime
+
+    @property
+    def duration(self) -> timedelta:
+        """ returns actual recorded time without interruptions
+        """
+        total_time = timedelta(seconds=0)
+        for segment in self:
+            total_time += segment.duration
+        return total_time
 
     @property
     def sampling_frequency(self):
@@ -274,7 +282,6 @@ class Timeseries():
             return x
 
         raise TypeError("Trying to concatenate an object of type {}. Expected type: Timeseries.".format(type(other)))
-
 
     def trim(self, initial_datetime: datetime, final_datetime: datetime):
         pass # TODO
