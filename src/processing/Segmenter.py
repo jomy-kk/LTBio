@@ -8,6 +8,7 @@
 
 # Contributors: João Saraiva
 # Created: 01/06/2022
+# Last updated: 11/07/2022
 
 ###################################
 
@@ -15,7 +16,8 @@ from datetime import timedelta
 from biosppy.signals.tools import windower
 
 from src.pipeline.PipelineUnit import SinglePipelineUnit
-from src.biosignals.Timeseries import Timeseries
+from src.biosignals.Timeseries import Timeseries, OverlappingTimeseries
+
 
 class Segmenter(SinglePipelineUnit):
     """
@@ -31,7 +33,7 @@ class Segmenter(SinglePipelineUnit):
         self.window_length = window_length
         self.overlap_length = overlap_length
 
-    def apply(self, timeseries:Timeseries) -> Timeseries:
+    def apply(self, timeseries:Timeseries) -> OverlappingTimeseries:
         # Assert it only has one Segment or that all Segments are adjacent
         if len(timeseries.segments) > 0:
             adjacent = True
@@ -62,6 +64,6 @@ class Segmenter(SinglePipelineUnit):
             trimmed_segments = [Timeseries.Segment(values[i], start_datetimes[i], sf, segment.is_filtered) for i in range(len(values))]
             res_trimmed_segments += trimmed_segments
 
-        return Timeseries(res_trimmed_segments, True, sf, timeseries.units, equally_segmented=True,
+        return OverlappingTimeseries(res_trimmed_segments, True, sf, timeseries.units, equally_segmented=True,
                           name=timeseries.name + " segmented " + str(self.window_length) + " +/- " + str(self.overlap_length))
 

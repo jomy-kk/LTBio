@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime, timedelta
 
 from src.biosignals.MITDB import MITDB
-from src.biosignals.Timeseries import Timeseries
+from src.biosignals.Timeseries import Timeseries, OverlappingTimeseries
 from src.biosignals.ECG import ECG
 from src.processing.Segmenter import Segmenter
 
@@ -21,7 +21,7 @@ class SegmenterTestCase(unittest.TestCase):
         cls.initial = datetime(2000, 1, 1, 0, 0, 0)  # 1/1/2000 0 AM
         cls.sf = 360
         cls.segmentx, cls.segmenty = Timeseries.Segment(cls.samplesx, cls.initial, cls.sf), \
-                                       Timeseries.Segment(cls.samplesy, cls.initial, cls.sf)
+                                       Timeseries.Segment(cls.samplesy, cls.initial+timedelta(days=1), cls.sf)
 
         cls.n_samplesx_trimmed = 649998
         cls.n_samplesy_trimmed = 649998
@@ -55,6 +55,9 @@ class SegmenterTestCase(unittest.TestCase):
 
         x_segmented = segmenter.apply(self.x)
         y_segmented = segmenter.apply(self.y)
+
+        self.assertTrue(isinstance(x_segmented, OverlappingTimeseries))
+        self.assertTrue(isinstance(y_segmented, OverlappingTimeseries))
 
         self.assertEqual(len(x_segmented), 974997)
         self.assertEqual(len(y_segmented), 974997)

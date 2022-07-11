@@ -117,18 +117,23 @@ class Timeseries():
         Additionally, it can receive the sample units and a name, if needed.'''
 
         # Order the Segments, if necessary
+        # Order the Segments, if necessary
         if not ordered:
             self.__segments = sorted(segments)
         else:
             self.__segments = segments
 
         # Check if Segments overlap
-        for i in range(1, len(self.__segments)):
-            if self.__segments[i-1].overlaps(self.__segments[i]):
-                if name is not None:
-                    raise AssertionError(f"Overlapping Segments in Timeseries '{name}'. To each timepoint must correspond one and only one sample, like a function.")
-                else:
-                    raise AssertionError("Overlapping Segments not allowed. To each timepoint must correspond one and only one sample, like a function.")
+        if not isinstance(self, OverlappingTimeseries):
+            for i in range(1, len(self.__segments)):
+                print(self.__segments[i-1].overlaps(self.__segments[i]))
+                print(self.__segments[i-1].final_datetime)
+                print(self.__segments[i].initial_datetime)
+                if self.__segments[i-1].overlaps(self.__segments[i]):
+                    if name is not None:
+                        raise AssertionError(f"Overlapping Segments in Timeseries '{name}'. To each timepoint must correspond one and only one sample, like a function.")
+                    else:
+                        raise AssertionError("Overlapping Segments not allowed. To each timepoint must correspond one and only one sample, like a function.")
 
         # Save metadata
         self.__sampling_frequency = sampling_frequency
@@ -419,6 +424,23 @@ class Timeseries():
             for event in events:
                 __add_event(event)
 
+    def disassociate(self, event_name:str):
+        if event_name in self.__associated_events:
+            del self.__associated_events[event_name]
+        else:
+            raise NameError(f"There's no Event '{event_name}' associated to this Timeseries.")
+
     def __contains__(self, item):
         '''Checks if event occurs in Timeseries.'''
         return item in self.__associated_events
+
+
+class OverlappingTimeseries(Timeseries):
+
+    def __init__(self, segments: List[Timeseries.Segment], ordered: bool, sampling_frequency: float, units: Unit = None,
+                 name: str = None, equally_segmented=False):
+        ''' Receives a list of overlapping Segments and a sampling frequency common to all Segments.
+        If they are timely ordered, pass ordered=True, otherwise pass ordered=False.
+        Additionally, it can receive the sample units and a name, if needed.'''
+
+        super().__init__(segments, ordered, sampling_frequency, units, name, equally_segmented)

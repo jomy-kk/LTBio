@@ -29,12 +29,12 @@ class SinglePipelineUnitTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.datetime = datetime.now()
+        cls.datetime = datetime(2022, 1, 1, 1, 1, 1)
         cls.ts1 = Timeseries([Timeseries.Segment([0, 1, 2, 3, 4], cls.datetime, 1), ], True, 1)
         cls.ts2 = Timeseries([Timeseries.Segment([0, 1, 2, 3, 4, 5], datetime.now(), 1), ], True, 1)
         cls.ts3 = Timeseries([Timeseries.Segment([0, 1], cls.datetime, 1),
-                              Timeseries.Segment([2, 3], cls.datetime, 1),
-                              Timeseries.Segment([4, 5], cls.datetime, 1),
+                              Timeseries.Segment([2, 3], cls.datetime+timedelta(seconds=2), 1),
+                              Timeseries.Segment([4, 5], cls.datetime+timedelta(seconds=4), 1),
                               ], True, 1, equally_segmented=True)
         cls.packetA = Packet(timeseries=cls.ts1)
         cls.packetB = Packet(timeseries=(cls.ts1, cls.ts2))
