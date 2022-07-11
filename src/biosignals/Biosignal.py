@@ -523,6 +523,23 @@ class Biosignal(ABC):
             for event in events:
                 __add_event(event)
 
+    def disassociate(self, event_name:str):
+        '''
+        Disassociates an Event from all Timeseries.
+        @param event_name: The name of the Event to be removed.
+        @rtype: None
+        '''
+        if event_name in self.__associated_events:
+            for channel in self:
+                try:
+                    channel.disassociate(event_name)
+                except NameError:
+                    pass
+            del self.__associated_events[event_name]
+        else:
+            raise NameError(f"There's no Event '{event_name}' associated to this Biosignal.")
+
+
     EXTENSION = '.biosignal'
 
     def save(self, save_to:str):
