@@ -15,15 +15,19 @@
 # ===================================
 
 from ast import literal_eval
+from datetime import timedelta
 from json import load
 from os import listdir, path, access, R_OK
 import configparser
+from os.path import getsize
+from warnings import warn
 
 import numpy as np
 from dateutil.parser import parse as to_datetime
 
 from src.biosignals.BiosignalSource import BiosignalSource
 from src.biosignals.Timeseries import Timeseries
+from src.clinical.BodyLocation import BodyLocation  # don't remove this one; literal_eval uses it.
 
 
 class Sense(BiosignalSource):
@@ -43,6 +47,9 @@ class Sense(BiosignalSource):
     DEFAULTS_PATH: str
     DEVICE_ID: str
 
+    # Flag to deal with badly-formatted CSV files
+    BAD_FORMAT = False
+
     def __init__(self, device_id:str, defaults_path:str=None):
         super().__init__()
         Sense.DEVICE_ID = device_id
@@ -56,6 +63,8 @@ class Sense(BiosignalSource):
             #print(f"Getting default mapping from {Sense.DEFAULTS_PATH}")
             #except:
             #    raise FileNotFoundError('No defaults file for Sense devices was provided, nor a config.ini was found.')
+
+        Sense.BAD_FORMAT = False
 
     def __str__(self):
         return "ScientISST Sense"
@@ -142,6 +151,8 @@ class Sense(BiosignalSource):
                 # Get body location, if any
                 if Sense.BODY_LOCATION in json_string[Sense.DEVICE_ID]:
                     body_location = json_string[Sense.DEVICE_ID][Sense.BODY_LOCATION]
+                    if body_location.startswith('BodyLocation.'):
+                        body_location = eval(body_location)
                 else:
                     body_location = None
 
@@ -190,7 +201,32 @@ class Sense(BiosignalSource):
             header = next(fh)[1:]
             next(fh)
             # Get the remaining data, i.e., the samples
-            return np.array([line.strip().split() for line in fh], float)
+            data = [line.strip().split() for line in fh]
+            try:
+                return np.array(data, float)
+            except ValueError:  # In July 2022, it could occur that SENSE files could present Bad Format.
+                Sense.BAD_FORMAT = True
+                all_segments = []
+                start_indices = [0, ]
+                # In that case, we need to separate each valid segment of samples.
+                correct_length = len(data[0])  # FIXME: Assuming first line is syntax-valid. Poor verification, though.
+                for i in range(len(data)):
+                    if len(data[i]) != correct_length:  # Bad syntax found
+                        warn(f"File '{file_path}' has bad syntax on line {i}. This portion was dismissed.")
+                        # Trim the end of data
+                        for j in range(i-1, 0, -1):
+                            if data[j][0] == '15':  # Look for NSeq == 15
+                                all_segments.append(np.array(data[start_indices[-1]:j + 1], float))  # append "old" segment
+                                break
+                        # Trim the beginning of new segment
+                        for j in range(i+1, len(data), 1):
+                            if data[j][0] == '0':  # Look for NSeq == 0
+                                start_indices.append(j)
+                                break
+
+                all_segments.append(np.array(data[start_indices[-1]:], float))  # append last "new" segment
+                return all_segments, start_indices
+
 
     @staticmethod
     def __read_file(file_path, type, channel_labels, modalities_available):
@@ -209,7 +245,6 @@ class Sense(BiosignalSource):
         @return: A tuple with:
             a) sensor_data (np.array): 2-dimensional array of time over sensors columns.
             b) date (datetime): initial datetime of samples.
-            c) body_location (str): A string associated with the body location.
             d) sampling_frequency (float): The sampling frequency, in Hertz, of the read samples.
 
         @raise:
@@ -226,7 +261,7 @@ class Sense(BiosignalSource):
 
         # STEP 3
         # Raise Error if file is empty
-        if Sense.__check_empty(len(all_samples)):
+        if not Sense.BAD_FORMAT and Sense.__check_empty(len(all_samples)):
             raise IOError(f'Empty file: {file_path}.')
 
         # STEP 4
@@ -234,15 +269,32 @@ class Sense(BiosignalSource):
         mapping = Sense.__get_mapping(type, channel_labels, modalities_available)
 
         # STEP 5
-        # Filtering only the samples of the channels of interest
-        samples_of_interest = {}
-        for ix in mapping:
-            label = mapping[ix]
-            samples_of_interest[label] = all_samples[:, column_names.index(Sense.ANALOGUE_LABELS_FORMAT.format(str(ix)))]
+        # Get initial date and sampling frequency
         date = Sense.__aux_date(header)
+        sf = header[Sense.KEY_HZ_IN_HEADER]
 
-        # return dict, start date, str of body location, sampling frequency
-        return samples_of_interest, date, header[Sense.KEY_HZ_IN_HEADER]
+        # STEP 6
+        # Filtering only the samples of the channels of interest
+        if not Sense.BAD_FORMAT:
+            samples_of_interest = {}
+            for ix in mapping:
+                label = mapping[ix]
+                samples_of_interest[label] = all_samples[:, column_names.index(Sense.ANALOGUE_LABELS_FORMAT.format(str(ix)))]
+            # return dict, start date, sampling frequency
+            return samples_of_interest, date, sf
+        else:
+            samples_of_interest_by_segment, start_dates = [], []
+            all_segments, start_indices = all_samples
+            for segment, start_index in zip(all_segments, start_indices):
+                start_dates.append(date + timedelta(seconds=start_index/sf))
+                samples_of_interest = {}
+                for ix in mapping:
+                    label = mapping[ix]
+                    samples_of_interest[label] = segment[:, column_names.index(Sense.ANALOGUE_LABELS_FORMAT.format(str(ix)))]
+                samples_of_interest_by_segment.append(samples_of_interest)
+            # return segments, start dates, sampling frequency
+            return samples_of_interest_by_segment, start_dates, sf
+
 
     @staticmethod
     def _read(dir, type, **options):
@@ -270,12 +322,30 @@ class Sense(BiosignalSource):
         if not all_files:
             raise IOError(f"No files in {dir}.")
 
-        # STEP 2 - Read files
-        # Get samples of analogue channels of interest from each file
-        data = [Sense.__read_file(file, type, channel_labels, modalities_available) for file in all_files]
-        # E.g.: data = samples_of_interest, start_date, sampling_frequency
+        # STEP 2 - Convert channel labels to BodyLocations, if any
+        for position, label in channel_labels.items():
+            if label.startswith('BodyLocation.'):
+               channel_labels[position] = eval(label)
 
-        # STEP 3 - Restructuring
+        # STEP 3 - Read files
+        # Get samples of analogue channels of interest from each file
+        data = []
+        for file in all_files:
+            if getsize(file) == 0:
+                warn(f"File '{file}' has 0 bytes. Its reading was dismissed.")
+                continue
+            what_is_read = Sense.__read_file(file, type, channel_labels, modalities_available)
+            if not Sense.BAD_FORMAT:
+                data.append(what_is_read)
+            else:
+                samples_of_interest_by_segment, start_dates, sf = what_is_read
+                for segment, start_date in zip(samples_of_interest_by_segment, start_dates):
+                    data.append((segment, start_date, sf))
+                Sense.BAD_FORMAT = False  # done dealing with a bad format
+
+        # E.g.: data[k] = samples_of_interest, start_date, sampling_frequency
+
+        # STEP 4 - Restructuring
         # Listing all Segments of the same channel together, labelled to the same channel label.
         res = {}
         segments = {}

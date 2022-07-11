@@ -7,13 +7,15 @@
 # Description: The base class holding all data related to a biosignal and its channels.
 
 # Contributors: João Saraiva, Mariana Abreu
-# Last update: 01/05/2022
+# Last update: 09/07/2022
 
 ###################################
 
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, ABCMeta
 from datetime import datetime, timedelta
 from typing import Dict, Tuple, Collection, Set, ClassVar
+
+from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime, ParserError
 import matplotlib.pyplot as plt
 
@@ -38,9 +40,10 @@ class Biosignal(ABC):
     def __init__(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | Tuple[datetime], source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None):
         self.__name = name
         self.__source = source
-        self.__acquisition_location = acquisition_location
         self.__patient = patient
+        self.__acquisition_location = acquisition_location
         self.__associated_events = {}
+
 
         # Handle timeseries
         if isinstance(timeseries, str): # this should be a filepath -> read samples from file
@@ -66,7 +69,9 @@ class Biosignal(ABC):
             pass # TODO
         if isinstance(timeseries, dict): # this should be the {chanel name: Timeseries} -> save samples directly
             self.__timeseries = timeseries
-        pass
+
+        if self.__acquisition_location is not None:
+            self.__acquisition_location = acquisition_location  # override with user input
 
 
     def __getitem__(self, item):
@@ -88,7 +93,7 @@ class Biosignal(ABC):
             elif item in self.__associated_events:
                 event = self.__associated_events[item]
                 if event.has_onset and event.has_offset:
-                    return self[event.onset:event.offset]
+                    return self[DateTimeRange(event.onset,event.offset)]
                 elif event.has_onset:
                     return self[event.onset]
                 elif event.has_offset:
@@ -104,11 +109,11 @@ class Biosignal(ABC):
             if event_name in self.__associated_events:
                 event = self.__associated_events[event_name]
                 if event.has_onset and event.has_offset:
-                    return self[event.onset - padding_before: event.offset + padding_after]
+                    return self[DateTimeRange(event.onset - padding_before, event.offset + padding_after)]
                 elif event.has_onset:
-                    return self[event.onset - padding_before: event.onset + padding_after]
+                    return self[DateTimeRange(event.onset - padding_before, event.onset + padding_after)]
                 elif event.has_offset:
-                    return self[event.offset - padding_before: event.offset + padding_after]
+                    return self[DateTimeRange(event.offset - padding_before, event.offset + padding_after)]
             else:
                 raise IndexError(f"No Event named '{event_name}' associated to this Biosignal.")
 
@@ -132,10 +137,46 @@ class Biosignal(ABC):
                 return channel[item]
             else:
                 ts = {}
+                events = set()
                 for k in self.channel_names:
                     ts[k] = self.__timeseries[k][item]
-                return (type(self))(ts, source=self.__source, acquisition_location=self.__acquisition_location,
+                    events.update(set(self.__timeseries[k].events))
+                new = (type(self))(ts, source=self.__source, acquisition_location=self.__acquisition_location,
                                     patient=self.__patient, name=self.__name)  # Patient should be the same object
+                new.associate(events)
+                return new
+
+        if isinstance(item, DateTimeRange):  # Pass item directly to each channel
+            if len(self) == 1:
+                channel_name = self.channel_names[0]
+                channel = self.__timeseries[channel_name]
+                res = channel[item]
+                if res is None:
+                    raise IndexError(f"Event is outside Biosignal domain.")
+                else:
+                    return res
+            else:
+                ts = {}
+                events = set()
+                for k in self.channel_names:
+                    res = self.__timeseries[k][item]
+                    if res is not None:
+                        ts[k] = res
+                        events.update(set(self.__timeseries[k].events))
+
+                if len(ts) == 0:
+                    raise IndexError(f"Event is outside every channel's domain.")
+
+                new = (type(self))(ts, source=self.__source, acquisition_location=self.__acquisition_location,
+                                    patient=self.__patient, name=self.__name)  # Patient should be the same object
+
+                try:  # to associate events, if they are inside the domain
+                    new.associate(events)
+                except ValueError:
+                    pass
+
+                return new
+
 
         if isinstance(item, tuple):
             if len(self) == 1:
@@ -154,6 +195,7 @@ class Biosignal(ABC):
 
             else:
                 ts = {}
+                events = set()
                 for k in item:
                     if isinstance(k, datetime):
                         raise IndexError("This Biosignal has multiple channels. Index the channel before indexing the datetimes.")
@@ -162,8 +204,10 @@ class Biosignal(ABC):
                     if not isinstance(k, str):
                         raise IndexError("Index types not supported. Give a tuple of channel names (in str).")
                     ts[k] = self.__timeseries[k]
-                return (type(self))(ts, source=self.__source, acquisition_location=self.__acquisition_location, patient=self.__patient, name=self.__name)  # Patient should be the same object
-
+                    events.update(set(self.__timeseries[k].events))
+                new = (type(self))(ts, source=self.__source, acquisition_location=self.__acquisition_location, patient=self.__patient, name=self.__name)  # Patient should be the same object
+                new.associate(events)
+                return new
 
         raise IndexError("Index types not supported. Give a datetime (can be in string format), a slice or a tuple of those.")
 
@@ -218,6 +262,13 @@ class Biosignal(ABC):
         return max([ts.final_datetime for ts in self.__timeseries.values()])
 
     @property
+    def domain(self) -> Tuple[DateTimeRange]:
+        if len(self) == 1:
+            return tuple(self.__timeseries.values())[0].domain
+        else:
+            raise AttributeError("Index 1 channel to get its domain.")
+
+    @property
     def events(self):
         '''Tuple of associated Events, ordered by datetime.'''
         return tuple(sorted(self.__associated_events.values()))
@@ -241,7 +292,12 @@ class Biosignal(ABC):
 
     def __str__(self):
         '''Returns a textual description of the Biosignal.'''
-        return "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nSource: {}".format(self.name, self.type.__name__, self.acquisition_location, len(self), self.source)
+        res = "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nChannels: {}\nSource: {}\n".format(self.name, self.type.__name__, self.acquisition_location, len(self), ''.join([(x.title() + ', ') for x in self.channel_names]) , self.source.__str__(None) if isinstance(self.source, ABCMeta) else str(self.source))
+        if len(self.__associated_events) != 0:
+            res += "Events:\n"
+            for event in self.events:
+                res += '- ' + str(event) + '\n'
+        return res
 
     def _to_dict(self) -> Dict[str|BodyLocation, Timeseries]:
         return self.__timeseries
@@ -263,40 +319,82 @@ class Biosignal(ABC):
             raise TypeError(f'Cannot apply this operation with {type(item)}.')
 
     def __add__(self, other):
-        '''Adds one Biosignal to another and returns a concatenated Biosignal.'''
+        ''' Two functionalities:
+            - A: Temporally concatenates two Biosignal, if they have the same set of channel names.
+            - B: Joins the channels of two Biosignals of the same, if they do not have the same set of channel names.
+        Requisites:
+            - Both Biosignals must be of the same type.
+            - Both Biosignals must be associated to the same patient, if any.
+        Notes:
+            - If the two Biosignals have two distinct acquisition locations, they will be lost.
+            - If the two Biosignals have two distinct sources, they will be lost.
+        Raises:
+            - TypeError if Biosignals are not of the same type.
+            - ArithmeticError if Biosignals are not associated to the same patient, if any.
+            - ArithmeticError if, when temporally concatenating Biosignals, the second comes before the first.
+        '''
+
         # Check for possible arithmetic errors
+
         if self.type != other.type:
             raise TypeError("Cannot add a {0} to a {1}".format(other.type.__name__, self.type.__name__))
-        if set(self.channel_names) != set(other.channel_names):
-            raise ArithmeticError("Cannot add two Biosignals with a different number of channels or different channel names.")
+
         if self.patient_code != other.patient_code:
             raise ArithmeticError("Cannot add two Biosignals with different associated patient codes.")
-        if self.acquisition_location != other.acquisition_location:
-            raise ArithmeticError("Cannot add two Biosignals with different associated acquisition locations.")
-        if other.initial_datetime < self.final_datetime:
-            raise ArithmeticError("The second Biosignal comes before (in time) the first Biosignal.")
 
+        # Prepare common metadata
 
-        # Perform addition
+        acquisition_location = self.acquisition_location if self.acquisition_location == other.acquisition_location else None
+
+        source = type(self.source) if ((isinstance(self.source, ABCMeta) and isinstance(other.source, ABCMeta)
+                                       and self.source == other.source) or
+                                       (type(self.source) == type(other.source))
+                                       ) else None
+
+        name = f"{self.name} and {other.name}"
+
         res_timeseries = {}
-        for channel_name in self.channel_names:
-            res_timeseries[channel_name] = self.__timeseries[channel_name] + other[channel_name][:]
 
-        if self.source == other.source:
-            source = self.source
-        else:
-            answer = int(input("Sources are different. Which source is kept? (1) {0}; (2) {1}; (3) Mixed".format(str(self.source), str(other.source))))
-            if answer == 1:
-                source = self.source
-            elif answer == 2:
-                source = other.source
-            elif answer == 3:
-                pass  # TODO
+        # Functionality A:
+        if set(self.channel_names) == set(other.channel_names):
+            if other.initial_datetime < self.final_datetime:
+                raise ArithmeticError("The second Biosignal comes before (in time) the first Biosignal.")
             else:
-                raise ValueError("Specify which source to keep associated with the result Biosignal.")
+                # Perform addition
+                for channel_name in self.channel_names:
+                    res_timeseries[channel_name] = self._to_dict()[channel_name] + other._to_dict()[channel_name]
 
-        return type(self)(res_timeseries, source=source, patient=self.__patient, acquisition_location=self.acquisition_location, name=self.name + ' plus ' + other.name)
+        # Functionality B
+        elif not set(self.channel_names) in set(other.channel_names) and not set(other.channel_names) in set(self.channel_names):
+            res_timeseries.update(self._to_dict())
+            res_timeseries.update(other._to_dict())
 
+        # No functionality accepted
+        else:
+            raise ArithmeticError("No new channels were given nor the same set of channels to concatenate.")
+
+        events = set(self.events).union(set(other.events))
+        new = type(self)(res_timeseries, source, self.__patient, acquisition_location, name)
+        new.associate(events)
+        return new
+
+    def set_channel_name(self, current:str|BodyLocation, new:str|BodyLocation):
+        if current in self.__timeseries.keys():
+            self.__timeseries[new] = self.__timeseries[current]
+            del self.__timeseries[current]
+        else:
+            raise AttributeError(f"Channel named '{current}' does not exist.")
+
+    def set_event_name(self, current:str, new:str):
+        if current in self.__associated_events.keys():
+            event = self.__associated_events[current]
+            self.__associated_events[new] = Event(new, event._Event__onset, event._Event__offset)
+            del self.__associated_events[current]
+        else:
+            raise AttributeError(f"Event named '{current}' is not associated.")
+
+    def delete_events(self):
+        self.__associated_events = {}
 
     def filter(self, filter_design:Filter) -> int:
         '''
@@ -395,18 +493,25 @@ class Biosignal(ABC):
 
     def associate(self, events: Event | Collection[Event] | Dict[str, Event]):
         '''
-        Associates an Event (a point in time) to all Timeseries.
+        Associates an Event to all Timeseries.
         Events have names that serve as keys. If keys are given,
-        i.e. if 'events' is a dict, then the Event names are override.
+        i.e. if 'events' is a dict, then the Event names are overridden.
         @param events: One or multiple Event objects.
         @rtype: None
         '''
 
         def __add_event(event: Event):
+            n_channels_associated = 0
             for channel in self:
-                channel.associate(event)
-            # if errors were not raised, then ...
-            self.__associated_events[event.name] = event
+                try:
+                    channel.associate(event)
+                    n_channels_associated += 1
+                except ValueError:
+                    pass
+            if n_channels_associated > 0:  # If at least one association was possible
+                self.__associated_events[event.name] = event
+            else:
+                raise ValueError(f"Event '{event.name}' is outside of every channel's domain.")
 
         if isinstance(events, Event):
             __add_event(events)
@@ -417,3 +522,42 @@ class Biosignal(ABC):
         else:
             for event in events:
                 __add_event(event)
+
+    def disassociate(self, event_name:str):
+        '''
+        Disassociates an Event from all Timeseries.
+        @param event_name: The name of the Event to be removed.
+        @rtype: None
+        '''
+        if event_name in self.__associated_events:
+            for channel in self:
+                try:
+                    channel.disassociate(event_name)
+                except NameError:
+                    pass
+            del self.__associated_events[event_name]
+        else:
+            raise NameError(f"There's no Event '{event_name}' associated to this Biosignal.")
+
+
+    EXTENSION = '.biosignal'
+
+    def save(self, save_to:str):
+        # Check extension
+        if not save_to.endswith(Biosignal.EXTENSION):
+            save_to += Biosignal.EXTENSION
+
+        # Write
+        with open(save_to, 'wb') as f:
+            from _pickle import dump  # _pickle is cPickle
+            dump(self, f)
+
+    @classmethod
+    def load(cls, filepath:str):
+        # Check extension
+        if not filepath.endswith(Biosignal.EXTENSION):
+            raise IOError("Only .biosignal files are allowed.")
+
+        with open(filepath, 'rb') as f:
+            from _pickle import load  # _pickle is cPickle
+            return load(f)

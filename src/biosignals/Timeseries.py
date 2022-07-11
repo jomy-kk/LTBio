@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+
+from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime
 from typing import List, Iterable, Collection, Dict, Tuple
 from numpy import array
@@ -110,15 +112,28 @@ class Timeseries():
 
 
     def __init__(self, segments: List[Segment], ordered:bool, sampling_frequency:float, units:Unit=None, name:str=None, equally_segmented=False):
-        ''' Receives a list of non-overlapping Segments (overlaps will not be checked) and a sampling frequency common to all Segments.
+        ''' Receives a list of non-overlapping Segments and a sampling frequency common to all Segments.
         If they are timely ordered, pass ordered=True, otherwise pass ordered=False.
         Additionally, it can receive the sample units and a name, if needed.'''
 
+        # Order the Segments, if necessary
         # Order the Segments, if necessary
         if not ordered:
             self.__segments = sorted(segments)
         else:
             self.__segments = segments
+
+        # Check if Segments overlap
+        if not isinstance(self, OverlappingTimeseries):
+            for i in range(1, len(self.__segments)):
+                print(self.__segments[i-1].overlaps(self.__segments[i]))
+                print(self.__segments[i-1].final_datetime)
+                print(self.__segments[i].initial_datetime)
+                if self.__segments[i-1].overlaps(self.__segments[i]):
+                    if name is not None:
+                        raise AssertionError(f"Overlapping Segments in Timeseries '{name}'. To each timepoint must correspond one and only one sample, like a function.")
+                    else:
+                        raise AssertionError("Overlapping Segments not allowed. To each timepoint must correspond one and only one sample, like a function.")
 
         # Save metadata
         self.__sampling_frequency = sampling_frequency
@@ -149,6 +164,10 @@ class Timeseries():
     @property
     def final_datetime(self) -> datetime:
         return self.__final_datetime
+
+    @property
+    def domain(self) -> Tuple[DateTimeRange]:
+        return tuple([DateTimeRange(segment.initial_datetime, segment.final_datetime) for segment in self])
 
     @property
     def sampling_frequency(self):
@@ -207,6 +226,22 @@ class Timeseries():
                     raise IndexError("Index types not supported. Give a tuple of datetimes (can be in string format).")
             return tuple(res)
 
+        if isinstance(item, DateTimeRange):  # This is not publicly documented. Only Biosignal sends DateTimeRanges, when it is dealing with Events.
+            # First, trim the start and end limits of the interval.
+            start, end = None, None
+            for subdomain in self.domain:  # ordered subdomains
+                if subdomain.is_intersection(item):
+                    intersection = subdomain.intersection(item)
+                    if start is None:
+                        start = intersection.start_datetime
+                    end = intersection.end_datetime
+                elif start is not None:  # if there's no intersection with further subdomains and start was already found...
+                    break  # ... then, the end was already found
+            if start is None and end is None:
+                return None
+            else:
+                return self[start:end]
+
         raise IndexError("Index types not supported. Give a datetime (can be in string format), a slice or a tuple of those.")
 
     def __get_sample(self, datetime: datetime) -> float:
@@ -241,9 +276,24 @@ class Timeseries():
                             samples = segment[:]
                             res_segments.append(Timeseries.Segment(samples, segment.initial_datetime, self.__sampling_frequency, segment.is_filtered))
 
-    def __check_boundaries(self, datetime: datetime) -> None:
-        if datetime < self.__initial_datetime or datetime > self.__final_datetime:
-            raise IndexError("Datetime given is out of boundaries. This Timeseries begins at {} and ends at {}.".format(self.__initial_datetime, self.__final_datetime))
+    def __check_boundaries(self, datetime_or_range: datetime | DateTimeRange) -> None:
+        intersects = False
+        if isinstance(datetime_or_range, datetime):
+            for subdomain in self.domain:
+                if datetime_or_range in subdomain:
+                    intersects = True
+                    break
+            if not intersects:
+                raise IndexError(f"Datetime given is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
+
+        elif isinstance(datetime_or_range, DateTimeRange):
+            for subdomain in self.domain:
+                if subdomain.is_intersection(datetime_or_range):
+                    intersects = True
+                    break
+            if not intersects:
+                raise IndexError(f"Interval given is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
+
 
     # Operations to the samples
 
@@ -343,7 +393,7 @@ class Timeseries():
 
     def associate(self, events:Event|Collection[Event]|Dict[str, Event]):
         '''
-        Associates an Event (a point in time) with the Timeseries. Events have names that serve as keys. If keys are given,
+        Associates an Event with the Timeseries. Events have names that serve as keys. If keys are given,
         i.e. if 'events' is a dict, then the Event names are override.
         @param events: One or multiple Event objects.
         @rtype: None
@@ -351,16 +401,18 @@ class Timeseries():
 
         def __add_event(event:Event):
             try:
-                if event.has_onset:
+                if event.has_onset and not event.has_offset:
                     self.__check_boundaries(event.onset)  # raises IndexError
-                if event.has_offset:
+                if event.has_offset and not event.has_onset:
                     self.__check_boundaries(event.offset)  # raises IndexError
-                if event.name in self.__associated_events:
-                    raise NameError(f"There is already another Event named with '{events.name}'. Cannot have two Events with the same name.")
-                else:
-                    self.__associated_events[event.name] = event
+                if event.has_onset and event.has_offset:
+                    self.__check_boundaries(event.domain)
             except IndexError:
-                raise ValueError(f"Event '{event.name}' at {event.onset} is outside of Timeseries domain, [{self.initial_datetime},{self.final_datetime}[.")
+                raise ValueError(f"Event '{event.name}' is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
+            if event.name in self.__associated_events:
+                raise NameError(f"There is already another Event named with '{events.name}'. Cannot have two Events with the same name.")
+            else:
+                self.__associated_events[event.name] = event
 
         if isinstance(events, Event):
             __add_event(events)
@@ -372,6 +424,23 @@ class Timeseries():
             for event in events:
                 __add_event(event)
 
+    def disassociate(self, event_name:str):
+        if event_name in self.__associated_events:
+            del self.__associated_events[event_name]
+        else:
+            raise NameError(f"There's no Event '{event_name}' associated to this Timeseries.")
+
     def __contains__(self, item):
         '''Checks if event occurs in Timeseries.'''
         return item in self.__associated_events
+
+
+class OverlappingTimeseries(Timeseries):
+
+    def __init__(self, segments: List[Timeseries.Segment], ordered: bool, sampling_frequency: float, units: Unit = None,
+                 name: str = None, equally_segmented=False):
+        ''' Receives a list of overlapping Segments and a sampling frequency common to all Segments.
+        If they are timely ordered, pass ordered=True, otherwise pass ordered=False.
+        Additionally, it can receive the sample units and a name, if needed.'''
+
+        super().__init__(segments, ordered, sampling_frequency, units, name, equally_segmented)
