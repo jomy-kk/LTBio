@@ -15,6 +15,7 @@ from abc import ABC
 from typing import Dict
 
 import numpy as np
+from numpy import ndarray
 
 from src.biosignals.Timeseries import Timeseries
 
@@ -54,13 +55,28 @@ class TimeFeatures(ABC):
     """
 
     @staticmethod
-    def mean(segment:Timeseries.Segment) -> float:
-        return np.mean(segment.samples)
+    def mean(segment:ndarray) -> float:
+        return np.mean(segment)
 
     @staticmethod
-    def variance(segment:Timeseries.Segment) -> float:
-        return np.var(segment.samples)
+    def variance(segment:ndarray) -> float:
+        return np.var(segment)
 
     @staticmethod
-    def deviation(segment:Timeseries.Segment) -> float:
-        return np.std(segment.samples)
+    def deviation(segment:ndarray) -> float:
+        return np.std(segment)
+
+
+class HRVFeatures(ABC):
+
+    @staticmethod
+    def r_indices(segment:ndarray) -> float:
+        from biosppy.signals.tools import get_heart_rate
+        from biosppy.signals.ecg import ssf_segmenter
+
+    @staticmethod
+    def hr(segment:ndarray) -> float:
+        from biosppy.signals.tools import get_heart_rate
+        from biosppy.signals.ecg import ssf_segmenter
+
+

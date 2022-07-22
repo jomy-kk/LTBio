@@ -11,8 +11,8 @@ class DecisionMakerTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.ts1 = Timeseries([Timeseries.Segment([0, 1, 2, 3, 4], datetime.now(), 1), ], True, 1)
-        cls.ts2 = Timeseries([Timeseries.Segment([0, 1, 2, 3, 4, 5], datetime.now(), 1), ], True, 1)
+        cls.ts1 = Timeseries([0, 1, 2, 3, 4], datetime.now(), 1)
+        cls.ts2 = Timeseries([0, 1, 2, 3, 4, 5], datetime.now(), 1)
 
         def binary_decision_function(timeseries: Timeseries) -> bool:
             return len(timeseries) > 5

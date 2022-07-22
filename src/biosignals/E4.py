@@ -130,14 +130,19 @@ class E4(BiosignalSource):
                 # STEP 4 - Restructuring
                 # Listing all Segments of the same channel together, labelled to the same channel label.
                 for channel_label in samples:
-                    segment = Timeseries.Segment(samples[channel_label], initial_datetime=datetime, sampling_frequency=sf)
-                    segments[channel_label] = [segment, ] if channel_label not in res else segments[channel_label] + [segment, ]  # instantiating or appending
+                    # instantiating or appending
+                    if channel_label not in res:
+                        segments[channel_label] = {datetime: samples[channel_label]}
+                    else:
+                        segments[channel_label][datetime] = samples[channel_label]
                     res[channel_label] = sf  # save sampling frequency here to be used on the next loop
 
         # Encapsulating the list of Segments of the same channel in a Timeseries
         for channel in segments:
-            res[channel] = Timeseries(segments[channel], sampling_frequency=res[channel], ordered=False)
-            # ordered = False since this code is not guaranting any order when reading the files. Like this they will be ordered on the initializer of Timeseries.
+            if len(segments[channel]) > 1:
+                res[channel] = Timeseries.withDiscontiguousSegments(segments[channel], sampling_frequency=res[channel])
+            else:
+                res[channel] = Timeseries(tuple(segments[channel].values())[0], tuple(segments[channel].keys())[0], sampling_frequency=res[channel])
 
         return res
 

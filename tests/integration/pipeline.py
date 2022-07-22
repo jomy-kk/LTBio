@@ -35,14 +35,14 @@ class PipelineIntegrationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.datetime = datetime.now()
-        cls.ts1 = Timeseries([Timeseries.Segment([0, 1, 2, 3, 4, 7, 5], cls.datetime, 1), ], True, 1)
-        cls.ts2 = Timeseries([Timeseries.Segment([0, 1, 2, 3, 4, 5, 8], cls.datetime, 1), ], True, 1)
-        cls.ts3 = Timeseries([Timeseries.Segment([0, 1, 2, 3, 4, 5, 6], cls.datetime, 1), ], True, 1)
-        cls.ts3_segmented = Timeseries([
-            Timeseries.Segment([0, 1], cls.datetime, 1),
-            Timeseries.Segment([2, 3], cls.datetime+timedelta(seconds=2), 1),
-            Timeseries.Segment([4, 5], cls.datetime+timedelta(seconds=4), 1),
-        ], True, 1, equally_segmented=True)
+        cls.ts1 = Timeseries([0, 1, 2, 3, 4, 7, 5], cls.datetime, 1)
+        cls.ts2 = Timeseries([0, 1, 2, 3, 4, 5, 8], cls.datetime, 1)
+        cls.ts3 = Timeseries([0, 1, 2, 3, 4, 5, 6], cls.datetime, 1)
+        cls.ts3_segmented = Timeseries.withDiscontiguousSegments({
+            cls.datetime: [0, 1],
+            cls.datetime + timedelta(seconds=2): [2, 3],
+            cls.datetime + timedelta(seconds=4): [4, 5],
+        }, 1.0)
         cls.ecg_label = 'V5'
         cls.ts1_label = 'x'
         cls.ts2_label = 'y'
@@ -118,7 +118,7 @@ class PipelineIntegrationTests(unittest.TestCase):
         unit2 = FeatureExtractor((TimeFeatures.mean, TimeFeatures.variance))
         unit3 = FeatureSelector(lambda x: x[0] > 0.4)  # random function; it will only select 'mean'
 
-        target = Timeseries([Timeseries.Segment([0, 0, 1], self.datetime, 1.), ], True, 1.)
+        target = Timeseries([0, 0, 1], self.datetime, 1.)
         unit4 = Input('target', target)
         from sklearn.ensemble import GradientBoostingRegressor
         model = SkLearnModel(GradientBoostingRegressor(n_estimators=500, max_depth=4, min_samples_split=5))

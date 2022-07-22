@@ -19,9 +19,7 @@ class SegmenterTestCase(unittest.TestCase):
                                                  -0.11, -0.08, -0.04, 0.0, 0.125]
 
         cls.initial = datetime(2000, 1, 1, 0, 0, 0)  # 1/1/2000 0 AM
-        cls.sf = 360
-        cls.segmentx, cls.segmenty = Timeseries.Segment(cls.samplesx, cls.initial, cls.sf), \
-                                       Timeseries.Segment(cls.samplesy, cls.initial+timedelta(days=1), cls.sf)
+        cls.sf = 360.
 
         cls.n_samplesx_trimmed = 649998
         cls.n_samplesy_trimmed = 649998
@@ -73,6 +71,7 @@ class SegmenterTestCase(unittest.TestCase):
             self.assertEqual(segmenty.samples.tolist(), self.samplesy[j:j + segment_length])
 
 
+    """
     def test_timeseries_not_with_adjecent_segments_gives_error(self):
         segmenter = Segmenter(timedelta(milliseconds=10))
 
@@ -83,6 +82,7 @@ class SegmenterTestCase(unittest.TestCase):
 
         #with self.assertRaises(AssertionError):
         #    segmenter.apply(ts_with_gaps)
+    """
 
 
 if __name__ == '__main__':

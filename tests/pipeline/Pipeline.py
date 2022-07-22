@@ -26,8 +26,8 @@ class PipelineTestCase(unittest.TestCase):
         cls.samples1 = [506.0, 501.0, 497.0, 374.5, 383.4, 294.2]
         cls.samples2 = [502.0, 505.0, 505.0, 924.3, 293.4, 383.5]
         cls.samples3 = [527.0, 525.0, 525.0, 849.2, 519.5, 103.4]
-        cls.ts1 = Timeseries([Timeseries.Segment(cls.samples1, cls.initial1, cls.sf), ], True, cls.sf)
-        cls.ts2 = Timeseries([Timeseries.Segment(cls.samples2, cls.initial1, cls.sf), ], True, cls.sf)
+        cls.ts1 = Timeseries(cls.samples1, cls.initial1, cls.sf)
+        cls.ts2 = Timeseries(cls.samples2, cls.initial1, cls.sf)
         cls.ecg1 = ECG({"a": cls.ts1, "b": cls.ts2})
 
     def test_create_pipeline(self):

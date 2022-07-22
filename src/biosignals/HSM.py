@@ -66,10 +66,11 @@ class HSM(BiosignalSource):
         all_edf = list(map(HSM.__read_edf, all_files))
         new_dict = {}
         for ch in range(len(channels)):
-            segments = [Timeseries.Segment(edf_data[0][ch], initial_datetime=edf_data[1], sampling_frequency=sfreq)
-                        for edf_data in all_edf]
-            # samples = {edf_data[0]: edf_data[1][ch] for edf_data in segments}
-            new_timeseries = Timeseries(segments, sampling_frequency=sfreq, name=channels[ch], ordered=True)
+            segments = {edf_data[1]: edf_data[0][ch] for edf_data in all_edf}
+            if len(segments) > 1:
+                new_timeseries = Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=channels[ch])
+            else:
+                new_timeseries = Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq, name=channels[ch])
             new_dict[channels[ch]] = new_timeseries
         return new_dict
 

@@ -9,8 +9,8 @@ class PacketTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.ts1 = Timeseries([Timeseries.Segment([0, 1, 2, 3, 4], datetime.now(), 1), ], True, 1)
-        cls.ts2 = Timeseries([Timeseries.Segment([0, 1, 2, 3, 4, 5], datetime.now(), 1), ], True, 1)
+        cls.ts1 = Timeseries([0, 1, 2, 3, 4], datetime.now(), 1)
+        cls.ts2 = Timeseries([0, 1, 2, 3, 4, 5], datetime.now(), 1)
 
     def test_create_packet_with_single_timeseries(self):
         packet = Packet(timeseries=self.ts1, other=4)

@@ -222,10 +222,14 @@ class Bitalino(BiosignalSource):
         segments = [Bitalino.__read_bit(file, sensor_idx=ch_idx, sensor_names=channels, device=device, **options)
                     for file in all_files[h-1:]]
         for ch, channel in enumerate(channels):
-            samples = [Timeseries.Segment(segment[0][:, ch], initial_datetime=segment[1],
-                                          sampling_frequency=header['sampling rate'])
-                       for segment in segments if segment]
-            new_timeseries = Timeseries(samples, sampling_frequency=header['sampling rate'], ordered=True)
+
+            samples = {segment[1]: segment[0][:, ch] for segment in segments if segment}
+            if len(samples) > 1:
+                new_timeseries = Timeseries.withDiscontiguousSegments(samples, sampling_frequency=header['sampling rate'],
+                                                                      name=channels[ch])
+            else:
+                new_timeseries = Timeseries(tuple(samples.values())[0], tuple(samples.keys())[0], header['sampling rate'],
+                                            name=channels[ch])
             new_dict[channel] = new_timeseries
         return new_dict
 

@@ -73,6 +73,23 @@ class Biosignal(ABC):
         if self.__acquisition_location is not None:
             self.__acquisition_location = acquisition_location  # override with user input
 
+    def __copy__(self):
+        return type(self)([ts.__copy__() for ts in self.__timeseries], self.__source, self.__patient, self.__acquisition_location, str(self.__name))
+
+    def _new(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | Tuple[datetime] = None, source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, events:Collection[Event]=None):
+        timeseries = [ts.__copy__() for ts in self.__timeseries] if timeseries is None else timeseries  # copy
+        source = self.__source if source is None else source  # no copy
+        patient = self.__patient if patient is None else patient  # no copy
+        acquisition_location = self.__acquisition_location if acquisition_location is None else acquisition_location  # no copy
+        name = str(self.__name) if name is None else name  # copy
+
+        new = type(self)(timeseries, source, patient, acquisition_location, name)
+        new.associate(self.__associated_events if events is None else events)  # Associate events; no need to copy
+        return new
+
+    @property
+    def __has_single_channel(self) -> bool:
+        return len(self) == 1
 
     def __getitem__(self, item):
         '''The built-in slicing and indexing operations.'''
@@ -87,8 +104,7 @@ class Biosignal(ABC):
                 if len(self) == 1:
                     raise IndexError("This Biosignal only has 1 channel. Index only the datetimes.")
                 ts = {item: self.__timeseries[item], }
-                return (type(self))(timeseries=ts, source=self.__source, acquisition_location=self.__acquisition_location,
-                                patient=self.__patient, name=self.__name)  # Patient should be the same object
+                return self._new(timeseries=ts)
 
             elif item in self.__associated_events:
                 event = self.__associated_events[item]
@@ -131,19 +147,18 @@ class Biosignal(ABC):
                 return __get_events_with_padding(item.start, padding_after=stop)
 
             # Index by datetime
-            if len(self) == 1:
+            if self.__has_single_channel:  # one channel
                 channel_name = self.channel_names[0]
                 channel = self.__timeseries[channel_name]
                 return channel[item]
-            else:
+            else:  # multiple channels
                 ts = {}
                 events = set()
                 for k in self.channel_names:
                     ts[k] = self.__timeseries[k][item]
+                    # Events outside the new domain get discarded, hence collecting the ones that remained
                     events.update(set(self.__timeseries[k].events))
-                new = (type(self))(ts, source=self.__source, acquisition_location=self.__acquisition_location,
-                                    patient=self.__patient, name=self.__name)  # Patient should be the same object
-                new.associate(events)
+                new = self._new(timeseries=ts, events=events)
                 return new
 
         if isinstance(item, DateTimeRange):  # Pass item directly to each channel
@@ -162,18 +177,20 @@ class Biosignal(ABC):
                     res = self.__timeseries[k][item]
                     if res is not None:
                         ts[k] = res
+                        # Events outside the new domain get discarded, hence collecting the ones that remained
                         events.update(set(self.__timeseries[k].events))
 
                 if len(ts) == 0:
                     raise IndexError(f"Event is outside every channel's domain.")
 
-                new = (type(self))(ts, source=self.__source, acquisition_location=self.__acquisition_location,
-                                    patient=self.__patient, name=self.__name)  # Patient should be the same object
+                new = self._new(timeseries=ts, events=events)
 
+                """
                 try:  # to associate events, if they are inside the domain
                     new.associate(events)
                 except ValueError:
                     pass
+                """
 
                 return new
 
@@ -205,8 +222,7 @@ class Biosignal(ABC):
                         raise IndexError("Index types not supported. Give a tuple of channel names (in str).")
                     ts[k] = self.__timeseries[k]
                     events.update(set(self.__timeseries[k].events))
-                new = (type(self))(ts, source=self.__source, acquisition_location=self.__acquisition_location, patient=self.__patient, name=self.__name)  # Patient should be the same object
-                new.associate(events)
+                new = self._new(timeseries=ts, events=events)
                 return new
 
         raise IndexError("Index types not supported. Give a datetime (can be in string format), a slice or a tuple of those.")
@@ -374,8 +390,7 @@ class Biosignal(ABC):
             raise ArithmeticError("No new channels were given nor the same set of channels to concatenate.")
 
         events = set(self.events).union(set(other.events))
-        new = type(self)(res_timeseries, source, self.__patient, acquisition_location, name)
-        new.associate(events)
+        new = self._new(timeseries=res_timeseries, source=source, acquisition_location=acquisition_location, name=name, events=events)
         return new
 
     def set_channel_name(self, current:str|BodyLocation, new:str|BodyLocation):
@@ -413,7 +428,7 @@ class Biosignal(ABC):
         Restores the raw samples of every channel, eliminating the action of any applied filter.
         '''
         for channel in self.__timeseries.values():
-            channel.undo_filters()
+            channel._undo_filters()
 
     def resample(self, frequency:float):
         '''
@@ -463,7 +478,7 @@ class Biosignal(ABC):
         @param show: True if plot is to be immediately displayed; False otherwise.
         @param save_to: A path to save the plot as an image file; If none is provided, it is not saved.
         '''
-        self.__draw_plot(Timeseries.plot_spectrum, 'Power Spectrum of', 'Frequency (Hz)', 'Power (dB)', True, show, save_to)
+        self.__draw_plot(Timeseries._plot_spectrum, 'Power Spectrum of', 'Frequency (Hz)', 'Power (dB)', True, show, save_to)
 
     def plot(self, show:bool=True, save_to:str=None):
         '''
@@ -471,7 +486,7 @@ class Biosignal(ABC):
         @param show: True if plot is to be immediately displayed; False otherwise.
         @param save_to: A path to save the plot as an image file; If none is provided, it is not saved.
         '''
-        self.__draw_plot(Timeseries.plot, None, 'Time', 'Amplitude (n.d.)', False, show, save_to)
+        self.__draw_plot(Timeseries._plot, None, 'Time', 'Amplitude (n.d.)', False, show, save_to)
 
     @abstractmethod
     def plot_summary(self, show:bool=True, save_to:str=None):

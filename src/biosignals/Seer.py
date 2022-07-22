@@ -82,14 +82,16 @@ class Seer(BiosignalSource):
             channels, sfreq, units = Seer.__read_file(device_files[0], metadata=True)
             all_edf = list(map(Seer.__read_file, device_files))
             for ch in range(len(channels)):
-                segments = [Timeseries.Segment(edf_data[0][ch], initial_datetime=edf_data[1], sampling_frequency=sfreq)
-                            for edf_data in all_edf]
+                segments = {edf_data[1]: edf_data[0][ch] for edf_data in all_edf}
                 unit = units
                 name = f'{channels[ch]} from {device.split("-")[0]}'
                 dict_key = f'{device.split("-")[0]}-{channels[ch].upper()}' if len(devices) > 1 else channels[ch].upper()
-                print(f'{ch} channel: {name}')
-                new_timeseries = Timeseries(segments, sampling_frequency=sfreq, name=name, units=unit, ordered=True)
+                if len(segments) > 1:
+                    new_timeseries = Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=name, units=unit)
+                else:
+                    new_timeseries = Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq, name=name, units=unit)
                 new_dict[dict_key] = new_timeseries
+
         return new_dict
 
     @staticmethod

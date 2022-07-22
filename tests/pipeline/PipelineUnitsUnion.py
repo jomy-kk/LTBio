@@ -35,14 +35,14 @@ class PipelineUnitsUnionTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.datetime = datetime.now()
-        cls.ts1 = Timeseries([Timeseries.Segment([0, 1, 2, 3, 4], cls.datetime, 1), ], True, 1)
-        cls.ts2 = Timeseries([Timeseries.Segment([0, 1, 2, 3, 4, 5], cls.datetime, 1), ], True, 1)
-        cls.ts3 = Timeseries([Timeseries.Segment([0, 1, 2, 3, 4, 5, 6], cls.datetime, 1), ], True, 1)
-        cls.ts3_segmented = Timeseries([
-            Timeseries.Segment([0, 1], cls.datetime, 1),
-            Timeseries.Segment([2, 3], cls.datetime+timedelta(seconds=2), 1),
-            Timeseries.Segment([4, 5], cls.datetime+timedelta(seconds=4), 1),
-                                        ], True, 1, equally_segmented=True)
+        cls.ts1 = Timeseries([0, 1, 2, 3, 4], cls.datetime, 1)
+        cls.ts2 = Timeseries([0, 1, 2, 3, 4, 5], cls.datetime, 1)
+        cls.ts3 = Timeseries([0, 1, 2, 3, 4, 5, 6], cls.datetime, 1)
+        cls.ts3_segmented = Timeseries.withDiscontiguousSegments({
+            cls.datetime: [0, 1],
+            cls.datetime + timedelta(seconds=2): [2, 3],
+            cls.datetime + timedelta(seconds=4): [4, 5],
+            }, 1)
         cls.ts1_label = 'ts1'
         cls.ts2_label = 'ts2'
         cls.ts3_label = 'ts3'

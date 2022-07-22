@@ -69,10 +69,13 @@ class HEM(BiosignalSource):
         new_dict = {}
         # TODO ADD UNITS TO TIMESERIES
         for ch in range(len(channels)):
-            segments = [Timeseries.Segment(trc_data[0][ch], initial_datetime=trc_data[1], sampling_frequency=sfreq)
-                        for trc_data in all_trc]
-            new_timeseries = Timeseries(segments=segments, sampling_frequency=sfreq, ordered=True)
+            segments = {trc_data[1]: trc_data[0][ch] for trc_data in all_trc}
+            if len(segments) > 1:
+                new_timeseries = Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=channels[ch])
+            else:
+                new_timeseries = Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq,  name=channels[ch])
             new_dict[channels[ch]] = new_timeseries
+
         return new_dict
 
     @staticmethod

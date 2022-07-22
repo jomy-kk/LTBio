@@ -16,7 +16,8 @@ from datetime import timedelta
 from biosppy.signals.tools import windower
 
 from src.pipeline.PipelineUnit import SinglePipelineUnit
-from src.biosignals.Timeseries import Timeseries, OverlappingTimeseries
+from src.biosignals.Timeseries import Timeseries
+from src.biosignals.Frequency import Frequency
 
 
 class Segmenter(SinglePipelineUnit):
@@ -33,7 +34,7 @@ class Segmenter(SinglePipelineUnit):
         self.window_length = window_length
         self.overlap_length = overlap_length
 
-    def apply(self, timeseries:Timeseries) -> OverlappingTimeseries:
+    def apply(self, timeseries:Timeseries) -> Timeseries:
         # Assert it only has one Segment or that all Segments are adjacent
         if len(timeseries.segments) > 0:
             adjacent = True
@@ -48,7 +49,7 @@ class Segmenter(SinglePipelineUnit):
                 else:
                     raise AssertionError('Framework does not support segmenting non-adjacent segments, unless you want to join them. Try indexing the time period of interest first.')
 
-        sf = timeseries.sampling_frequency
+        sf = Frequency(timeseries.sampling_frequency)
         n_window_length = int(self.window_length.total_seconds()*sf)
         if self.overlap_length is not None:
             n_overlap_length = int(self.overlap_length.total_seconds()*sf)
@@ -56,14 +57,17 @@ class Segmenter(SinglePipelineUnit):
         else:
             n_step = None
 
-        res_trimmed_segments = []
-        for segment in timeseries.segments:
-            indexes, values = windower(segment.samples, n_window_length, n_step, fcn=lambda x:x)  # funcao identidade
-            assert len(indexes) == len(values)
-            start_datetimes = [timedelta(seconds=index/sf) + segment.initial_datetime for index in indexes]
-            trimmed_segments = [Timeseries.Segment(values[i], start_datetimes[i], sf, segment.is_filtered) for i in range(len(values))]
-            res_trimmed_segments += trimmed_segments
 
-        return OverlappingTimeseries(res_trimmed_segments, True, sf, timeseries.units, equally_segmented=True,
-                          name=timeseries.name + " segmented " + str(self.window_length) + " +/- " + str(self.overlap_length))
+        new = timeseries._segment_and_new(windower, 'values', 'index',
+                                          equally_segmented = True,
+                                          overlapping_segments = n_step is not None,
+                                          # **kwargs
+                                          size = n_window_length,
+                                          step = n_step,
+                                          fcn = lambda x: x  # funcao identidade
+                                          )
+
+        new.name = timeseries.name + " segmented " + str(self.window_length) + " +/- " + str(self.overlap_length)
+
+        return new
 

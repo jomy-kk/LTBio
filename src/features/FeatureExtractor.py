@@ -13,6 +13,7 @@
 
 from typing import Collection, Dict, Callable
 
+from src.biosignals.Unit import Unitless
 from src.pipeline.PipelineUnit import SinglePipelineUnit
 from src.biosignals.Timeseries import Timeseries
 
@@ -29,16 +30,21 @@ class FeatureExtractor(SinglePipelineUnit):
 
     def apply(self, timeseries:Timeseries) -> Dict[str, Timeseries]:
 
-        assert timeseries.is_equally_segmented  # we're assuming all Segments have the same duration
-        segment_duration = timeseries.segments[0].duration.total_seconds()
+        if not timeseries.is_equally_segmented:  # we're assuming all Segments have the same duration
+            raise AssertionError("Given Timeseries is not equally segmented.")
+        segment_duration = timeseries.segment_duration.total_seconds()
 
         features = {}
 
         for feature_function in self.__feature_functions:
-            extracted_values = []
-            for segment in timeseries.segments:
-                value = feature_function(segment)
-                extracted_values.append(value)
-            features[feature_function.__name__] = Timeseries([Timeseries.Segment(extracted_values, timeseries.initial_datetime, 1/segment_duration), ], True, 1/segment_duration, feature_function.__name__ + " - " + timeseries.name, equally_segmented=True)
+            extracted_values = timeseries._apply_operation_and_return(feature_function)
+            features[feature_function.__name__] = timeseries._new(segments_by_time = {timeseries.initial_datetime: extracted_values},
+                                                                  sampling_frequency = 1/segment_duration,
+                                                                  units=Unitless(),
+                                                                  name = feature_function.__name__ + " - " + timeseries.name,
+                                                                  equally_segmented=True,
+                                                                  overlapping_segments=False,
+                                                                  rawsegments_by_time={timeseries.initial_datetime: extracted_values}
+                                                                  )
 
         return features
