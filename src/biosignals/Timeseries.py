@@ -15,9 +15,10 @@
 # ===================================
 
 from datetime import datetime, timedelta
+from dateutil.parser import parse as to_datetime
 from typing import List, Iterable, Collection, Dict, Tuple, Callable
-
 import matplotlib.pyplot as plt
+
 from biosppy.signals.tools import power_spectrum
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime
@@ -464,6 +465,7 @@ class Timeseries():
         self.__name = name
         self.__associated_events = {}
 
+
         # Control Flags
         self.__is_equally_segmented = True  # Because there's only 1 Segment
 
@@ -530,6 +532,15 @@ class Timeseries():
     def domain(self) -> Tuple[DateTimeRange]:
         """The intervals of date and time in which the Timeseries is defined, i.e., samples were acquired."""
         return tuple([DateTimeRange(segment.initial_datetime, segment.final_datetime) for segment in self])
+
+    @property
+    def duration(self) -> timedelta:
+        """ returns actual recorded time without interruptions
+        """
+        total_time = timedelta(seconds=0)
+        for segment in self:
+            total_time += segment.duration
+        return total_time
 
     @property
     def sampling_frequency(self) -> float:
