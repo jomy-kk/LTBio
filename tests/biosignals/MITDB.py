@@ -3,6 +3,7 @@ from datetime import datetime
 
 from src.biosignals.Unit import *
 from src.biosignals.Timeseries import Timeseries
+from src.biosignals.Frequency import Frequency
 from src.biosignals import (MITDB, ECG)
 
 class MITDBTestCase(unittest.TestCase):
@@ -13,9 +14,7 @@ class MITDBTestCase(unittest.TestCase):
 
         self.samplesy, self.samplesx = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.215, 0.235, 0.24, 0.24, 0.245, 0.265], [-0.15, -0.15, -0.15, -0.15, -0.15, -0.15, -0.15, -0.15, -0.145, -0.135, -0.11, -0.08, -0.04, 0.0, 0.125]
         self.initial = datetime(2000, 1, 1, 0, 0, 0)  # 1/1/2000 0 AM
-        self.sf = 360
-        self.segmentx, self.segmenty = Timeseries.Segment(self.samplesx, self.initial, self.sf), \
-                                    Timeseries.Segment(self.samplesy, self.initial, self.sf)
+        self.sf = Frequency(360)
         self.units = Volt(Multiplier.m)
 
         self.n_samplesx = 650000

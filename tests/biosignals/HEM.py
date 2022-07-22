@@ -1,12 +1,11 @@
 import unittest
 from datetime import datetime
-from os import rmdir, mkdir
 
-from src.clinical.BodyLocation import BodyLocation
 from src.clinical.Epilepsy import Epilepsy
 from src.clinical.Patient import Patient, Sex
 from src.biosignals.Unit import *
 from src.biosignals.Timeseries import Timeseries
+from src.biosignals.Frequency import Frequency
 from src.biosignals import (HEM, ECG)
 
 class HEMTestCase(unittest.TestCase):
@@ -24,13 +23,9 @@ class HEMTestCase(unittest.TestCase):
                                                                          [154.6875 , 105.17578,  60.64453]
 
         cls.initial1, cls.initial2 = datetime(2018, 12, 11, 11, 59, 5), datetime(2018, 12, 11, 19, 39, 17)  # 1/1/2022 4PM and 3/1/2022 9AM
-        cls.sf = 256.
-        cls.segmentx1, cls.segmentx2 = Timeseries.Segment(cls.samplesx1, cls.initial1, cls.sf), Timeseries.Segment(cls.samplesx2, cls.initial2, cls.sf)
-        cls.segmenty1, cls.segmenty2 = Timeseries.Segment(cls.samplesy1, cls.initial1, cls.sf), Timeseries.Segment(cls.samplesy2, cls.initial2, cls.sf)
+        cls.sf = Frequency(256.)
         cls.units = Volt(Multiplier.m)
 
-        cls.tsx = Timeseries([cls.segmentx1, cls.segmentx2], True, cls.sf, cls.units)
-        cls.tsy = Timeseries([cls.segmenty1, cls.segmenty2], True, cls.sf, cls.units)
 
         cls.n_samplesx = 56736
         cls.n_samplesy = 56736

@@ -351,14 +351,19 @@ class Sense(BiosignalSource):
         segments = {}
         for samples, date, sf in data:
             for channel in samples:
-                segment = Timeseries.Segment(samples[channel], initial_datetime=date, sampling_frequency=sf)
-                segments[channel] = [segment, ] if channel not in res else segments[channel] + [segment, ]  # instantiating or appending
+                # instantiating or appending
+                if channel not in res:
+                    segments[channel] = {date: samples[channel]}
+                else:
+                    segments[channel][date] = samples[channel]
                 res[channel] = sf  # save sampling frequency here to be used on the next loop
 
         # Encapsulating the list of Segments of the same channel in a Timeseries
         for channel in segments:
-            res[channel] = Timeseries(segments[channel], sampling_frequency=res[channel], ordered=False)
-            # ordered = False since this code is not guaranting any order when reading the files. Like this they will be ordered on the initializer of Timeseries.
+            if len(segments[channel]) > 1:
+                res[channel] = Timeseries.withDiscontiguousSegments(segments[channel], sampling_frequency=res[channel])
+            else:
+                res[channel] = Timeseries(tuple(segments[channel].values())[0], tuple(segments[channel].keys())[0], sampling_frequency=res[channel])
 
         return res if body_location is None else res, body_location
 

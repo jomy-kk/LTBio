@@ -36,9 +36,9 @@ class SupervisingTrainerTestCase(unittest.TestCase):
         n_features = 10  # There are 10 features, which will be mapped to 10 individual Timeseries of 1 Segment
         n_samples = 442  # There are 442 samples for each feature
         # All features represented as Timeseries
-        cls.all_timeseries = [Timeseries([Timeseries.Segment(samples, datetime.today(), 1), ], True, 1) for samples in X]
+        cls.all_timeseries = [Timeseries(samples, datetime.today(), 1.0) for samples in X]
         # Targets represented as a Timeseries
-        cls.targets = Timeseries([Timeseries.Segment(y, datetime.today(), 1), ], True, 1)
+        cls.targets = Timeseries(y, datetime.today(), 1.0)
 
     def test_create_supervising_trainer(self):
         trainer = SupervisingTrainer(self.model, (self.conditions1, ), name='Test Trainer')

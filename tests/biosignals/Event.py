@@ -18,7 +18,7 @@ class EventTestCase(unittest.TestCase):
         cls.name2 = 'My other Event'
 
     def setUp(self) -> None:
-        self.timeseries = Timeseries([Timeseries.Segment([1., 2., 3., 4., 5., 6., 7., 8.], self.datetime1, 1.), ], True, 1.)
+        self.timeseries = Timeseries([1., 2., 3., 4., 5., 6., 7., 8.], self.datetime1, 1.)
         self.biosignal = ECG({'x': self.timeseries})
 
     def test_create_event(self):
@@ -170,35 +170,35 @@ class EventTestCase(unittest.TestCase):
     def test_index_biosignal_with_event_period(self):
         event = Event('seizure', self.datetime2, self.datetime3)
         self.biosignal.associate(event)
-        self.assertEqual(self.biosignal['seizure'].segments[0].samples, [3., 4., 5., 6.])
+        self.assertTrue(all(self.biosignal['seizure'].segments[0].samples == [3., 4., 5., 6.]))
 
     def test_index_biosignal_with_event_period_with_padding(self):
         event = Event('seizure', self.datetime2, self.datetime3)
         self.biosignal.associate(event)
-        self.assertEqual(self.biosignal[timedelta(seconds=2):'seizure':timedelta(seconds=1)].segments[0].samples, [1., 2., 3., 4., 5., 6., 7.])
-        self.assertEqual(self.biosignal[2:'seizure':1].segments[0].samples, [1., 2., 3., 4., 5., 6., 7.])
-        self.assertEqual(self.biosignal['seizure':timedelta(seconds=1)].segments[0].samples, [3., 4., 5., 6., 7.])
-        self.assertEqual(self.biosignal['seizure':1].segments[0].samples, [3., 4., 5., 6., 7.])
-        self.assertEqual(self.biosignal[timedelta(seconds=1):'seizure'].segments[0].samples, [2., 3., 4., 5., 6.])
-        self.assertEqual(self.biosignal[1:'seizure'].segments[0].samples, [2., 3., 4., 5., 6.])
+        self.assertTrue(all(self.biosignal[timedelta(seconds=2):'seizure':timedelta(seconds=1)].segments[0].samples == [1., 2., 3., 4., 5., 6., 7.]))
+        self.assertTrue(all(self.biosignal[2:'seizure':1].segments[0].samples == [1., 2., 3., 4., 5., 6., 7.]))
+        self.assertTrue(all(self.biosignal['seizure':timedelta(seconds=1)].segments[0].samples == [3., 4., 5., 6., 7.]))
+        self.assertTrue(all(self.biosignal['seizure':1].segments[0].samples == [3., 4., 5., 6., 7.]))
+        self.assertTrue(all(self.biosignal[timedelta(seconds=1):'seizure'].segments[0].samples == [2., 3., 4., 5., 6.]))
+        self.assertTrue(all(self.biosignal[1:'seizure'].segments[0].samples == [2., 3., 4., 5., 6.]))
 
         event = Event('seizure2', onset=self.datetime2)
         self.biosignal.associate(event)
-        self.assertEqual(self.biosignal[timedelta(seconds=2):'seizure2':timedelta(seconds=1)].segments[0].samples, [1., 2., 3.])
-        self.assertEqual(self.biosignal[2:'seizure2':1].segments[0].samples, [1., 2., 3.])
-        self.assertEqual(self.biosignal['seizure2':timedelta(seconds=2)].segments[0].samples, [3., 4.])
-        self.assertEqual(self.biosignal['seizure2':2].segments[0].samples, [3., 4.])
-        self.assertEqual(self.biosignal[timedelta(seconds=2):'seizure2'].segments[0].samples, [1., 2.])
-        self.assertEqual(self.biosignal[2:'seizure2'].segments[0].samples, [1., 2.])
+        self.assertTrue(all(self.biosignal[timedelta(seconds=2):'seizure2':timedelta(seconds=1)].segments[0].samples == [1., 2., 3.]))
+        self.assertTrue(all(self.biosignal[2:'seizure2':1].segments[0].samples == [1., 2., 3.]))
+        self.assertTrue(all(self.biosignal['seizure2':timedelta(seconds=2)].segments[0].samples == [3., 4.]))
+        self.assertTrue(all(self.biosignal['seizure2':2].segments[0].samples == [3., 4.]))
+        self.assertTrue(all(self.biosignal[timedelta(seconds=2):'seizure2'].segments[0].samples == [1., 2.]))
+        self.assertTrue(all(self.biosignal[2:'seizure2'].segments[0].samples == [1., 2.]))
 
         event = Event('seizure3', offset=self.datetime2)
         self.biosignal.associate(event)
-        self.assertEqual(self.biosignal[timedelta(seconds=2):'seizure3':timedelta(seconds=1)].segments[0].samples, [1., 2., 3.])
-        self.assertEqual(self.biosignal[2:'seizure3':1].segments[0].samples, [1., 2., 3.])
-        self.assertEqual(self.biosignal['seizure3':timedelta(seconds=2)].segments[0].samples, [3., 4.])
-        self.assertEqual(self.biosignal['seizure3':2].segments[0].samples, [3., 4.])
-        self.assertEqual(self.biosignal[timedelta(seconds=2):'seizure3'].segments[0].samples, [1., 2.])
-        self.assertEqual(self.biosignal[2:'seizure3'].segments[0].samples, [1., 2.])
+        self.assertTrue(all(self.biosignal[timedelta(seconds=2):'seizure3':timedelta(seconds=1)].segments[0].samples == [1., 2., 3.]))
+        self.assertTrue(all(self.biosignal[2:'seizure3':1].segments[0].samples == [1., 2., 3.]))
+        self.assertTrue(all(self.biosignal['seizure3':timedelta(seconds=2)].segments[0].samples == [3., 4.]))
+        self.assertTrue(all(self.biosignal['seizure3':2].segments[0].samples == [3., 4.]))
+        self.assertTrue(all(self.biosignal[timedelta(seconds=2):'seizure3'].segments[0].samples == [1., 2.]))
+        self.assertTrue(all(self.biosignal[2:'seizure3'].segments[0].samples == [1., 2.]))
 
 
 if __name__ == '__main__':

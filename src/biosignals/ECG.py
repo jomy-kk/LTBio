@@ -1,13 +1,13 @@
 from datetime import timedelta
-from typing import Dict
+from typing import Dict, Callable
 
 import numpy as np
 from biosppy.plotting import plot_ecg
 from biosppy.signals.tools import get_heart_rate
 from biosppy.signals.ecg import hamilton_segmenter, correct_rpeaks, extract_heartbeats, ecg as biosppyECG
-from numpy import linspace
+from numpy import linspace, ndarray
 
-from biosignals.Timeseries import Timeseries, OverlappingTimeseries
+from src.biosignals.Timeseries import Timeseries, OverlappingTimeseries
 from src.biosignals.Biosignal import Biosignal
 from src.biosignals.Unit import Volt, Multiplier, BeatsPerMinute
 
@@ -53,25 +53,26 @@ class ECG(Biosignal):
     def plot_rpeaks(self, show:bool=True, save_to:str=None):
         pass  # TODO
 
-    def __r_indices(self, channel:Timeseries, algorithm_method=hamilton_segmenter) -> np.array:
-        """
-        Returns the indices of the R peaks, listed by Segment.
-        E.g. [ [30, 63, 135, ], [23, 49, 91], ... ], where [30, 63, 135, ] are the indices of the 1st Segment.
-        """
+    def __r_indices(self, channel:Timeseries, segmenter:Callable = hamilton_segmenter):
+        def biosppy_r_indices(signal, sampling_rate, algorithm_method, **kwargs) -> ndarray:
+            """
+            Returns the indices of the R peaks of a sequence of samples, using Biosppy tools.
+            This procedure joins 2 smaller procedures, that should be executed at once.
+            This procedure shall be passed to '_apply_operation_and_return'.
+            """
+            from biosppy.signals.ecg import correct_rpeaks
+            indices = algorithm_method(signal, sampling_rate, **kwargs)['rpeaks']  # Compute indices
+            corrected_indices = correct_rpeaks(signal, indices, sampling_rate)['rpeaks']  # Correct indices
+            return corrected_indices
 
-        if hasattr(channel.segments[0], 'r_indices'):  # If previously computed, they were stored
-            return [segment._r_indices for segment in channel.segments]
+        r_indices = channel._apply_operation_and_return(biosppy_r_indices,
+                                                        sampling_rate=channel.sampling_frequency,
+                                                        algorithm_method=segmenter)
 
-        else:
-            res = []
-            for segment in channel:
-                indices = algorithm_method(segment.samples, channel.sampling_frequency)['rpeaks']  # Compute indices
-                from biosppy.signals.ecg import correct_rpeaks
-                corrected_indices = correct_rpeaks(segment.samples, indices, channel.sampling_frequency)['rpeaks']  # Correct indices
-                res.append(corrected_indices)
-            return res
+        # E.g. [ [30, 63, 135, ], [23, 49, 91], ... ], where [30, 63, 135, ] are the indices of the 1st Segment.
+        return r_indices
 
-    def r_timepoints(self, algorithm='hamilton') -> np.array:
+    def r_timepoints(self, algorithm='hamilton') -> tuple:
         """
         Finds the timepoints of the R peaks.
 
@@ -83,36 +84,39 @@ class ECG(Biosignal):
         Note: Index one channel first.
         """
 
+        if len(self) > 1:
+            raise ValueError("Too many channels. Index a channel first, in order to get its R peaks.")
+
         # Get segmenter function
-        if algorithm is 'ssf':
+        if algorithm == 'ssf':
             from biosppy.signals.ecg import ssf_segmenter
             segmenter = ssf_segmenter
-        elif algorithm is 'christov':
+        elif algorithm == 'christov':
             from biosppy.signals.ecg import christov_segmenter
             segmenter = christov_segmenter
-        elif algorithm is 'engzee':
+        elif algorithm == 'engzee':
             from biosppy.signals.ecg import engzee_segmenter
             segmenter = engzee_segmenter
-        elif algorithm is 'gamboa':
+        elif algorithm == 'gamboa':
             from biosppy.signals.ecg import gamboa_segmenter
             segmenter = gamboa_segmenter
-        elif algorithm is 'hamilton':
+        elif algorithm == 'hamilton':
             segmenter = hamilton_segmenter
-        elif algorithm is 'asi':
+        elif algorithm == 'asi':
             from biosppy.signals.ecg import ASI_segmenter
             segmenter = ASI_segmenter
         else:
             raise ValueError(
                 "Give an 'algorithm' from the following: 'ssf', 'christov', 'engzee', 'gamboa', 'hamilton', or 'asi'.")
 
-        channel = tuple(self._Biosignal__timeseries.values())[0]
+        channel: Timeseries = tuple(self._Biosignal__timeseries.values())[0]
         r_indices = self.__r_indices(channel, segmenter)
-        all_timepoints = []
-        for x in r_indices:
-            timepoints = np.divide(x, channel.sampling_frequency)  # Transform to timepoints
-            all_timepoints += [timedelta(seconds=tp) for tp in timepoints]  # Append them all
 
-        return np.array(all_timepoints)
+        # Convert from indices to timepoints
+        timepoints = channel._indices_to_timepoints(indices = r_indices)
+
+        return timepoints
+
 
     def heartbeats(self, before=0.2, after=0.4):
         """
@@ -127,28 +131,39 @@ class ECG(Biosignal):
             Window size to include after the R peak (seconds).
 
         Returns
-        -------
+        ----------
         heartbeats : ECG
             Biosignal segmented where each Segment is a heartbeat.
 
+        Note
+        ----------
+        If filtered, the raw samples are not recoverable by 'undo_filters'.
         """
 
         from biosppy.signals.ecg import extract_heartbeats
 
         all_heartbeat_channels = {}
         for channel_name in self.channel_names:
-            channel = self._Biosignal__timeseries[channel_name]
-            all_heartbeats = []
+
+            channel:Timeseries = self._Biosignal__timeseries[channel_name]
             r_indices = self.__r_indices(channel)
-            for segment, indices in zip(channel, r_indices):
-                heartbeats = extract_heartbeats(segment.samples, indices, channel.sampling_frequency, before, after)['templates']
-                time_offset = segment.initial_datetime - timedelta(seconds=before)
-                for hb, r_index in zip(heartbeats, indices):
-                    all_heartbeats.append(Timeseries.Segment(hb, timedelta(seconds=r_index/channel.sampling_frequency)+time_offset, channel.sampling_frequency))
 
-            all_heartbeat_channels[channel_name] = OverlappingTimeseries(all_heartbeats, True, channel.sampling_frequency, channel.units, 'Heartbeats of ' + channel.name, equally_segmented=False)
+            new = channel._segment_and_new(extract_heartbeats, 'templates', 'rpeaks',
+                                     iterate_over_each_segment_key='rpeaks',
+                                     initial_datetimes_shift= timedelta(seconds = -before),
+                                     equally_segmented=True,
+                                     overlapping_segments=True,
+                                     # **kwargs
+                                     rpeaks = r_indices,
+                                     sampling_rate = channel.sampling_frequency,
+                                     before = before,
+                                     after = after
+                                     )
 
-        return ECG(all_heartbeat_channels, self.source, self._Biosignal__patient, self.acquisition_location, 'Heartbeats of ' + self.name)
+            new.name = 'Heartbeats of ' + channel.name
+            all_heartbeat_channels[channel_name] = new
+
+        return self._new(all_heartbeat_channels, name= 'Heartbeats of ' + self.name)
 
     def hr(self, smooth_length: float = None):
         """
@@ -174,7 +189,7 @@ class ECG(Biosignal):
             for segment in channel:
                 indices = np.array([int((timepoint - segment.initial_datetime).total_seconds() * self.sampling_frequency) for timepoint in self.r_timepoints])
                 hr = get_heart_rate(indices, channel.sampling_frequency, smooth = (smooth_length is not None), size=smooth_length)['heart_rate']
-                all_hr.append(Timeseries.Segment(hr, segment.initial_datetime, channel.sampling_frequency))
+                all_hr.append(Timeseries.__Segment(hr, segment.initial_datetime, channel.sampling_frequency))
 
             all_hr_channels[channel_name] = Timeseries(all_hr, True, channel.sampling_frequency, BeatsPerMinute(), 'Heart Rate of ' + channel.name, equally_segmented=False)
 
@@ -203,10 +218,11 @@ class ECG(Biosignal):
             for segment in channel:
                 indices = np.array([int((timepoint - segment.initial_datetime).total_seconds() * self.sampling_frequency) for timepoint in self.r_timepoints])
                 nni = np.diff(indices)
-                all_nii.append(Timeseries.Segment(nni, segment.initial_datetime, channel.sampling_frequency))
+                all_nii.append(Timeseries.__Segment(nni, segment.initial_datetime, channel.sampling_frequency))
 
             all_nni_channels[channel_name] = Timeseries(all_nii, True, channel.sampling_frequency, None, 'NNI of ' + channel.name, equally_segmented=channel.is_equally_segmented)
 
-        return NNI(all_nni_channels, self.source, self._Biosignal__patient, self.acquisition_location, 'NNI of ' + self.name, original_signal=self)
+        # FIXME
+        #return NNI(all_nni_channels, self.source, self._Biosignal__patient, self.acquisition_location, 'NNI of ' + self.name, original_signal=self)
 
 
