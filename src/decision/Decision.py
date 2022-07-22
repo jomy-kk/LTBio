@@ -2,11 +2,11 @@
 
 # ===================================
 
-# IT - PreEpiSeizures
+# IT - LongTermBiosignals
 
 # Package: decision
-# File: Decision
-# Description: Abstract class representing how decisions are made.
+# Module: Decision
+# Description: Abstract class Decision, representing how decisions are made.
 
 # Contributors: João Saraiva
 # Created: 10/06/2022

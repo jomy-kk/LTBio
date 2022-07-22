@@ -1,20 +1,24 @@
-###################################
+# -*- encoding: utf-8 -*-
 
-# IT - PreEpiSeizures
+# ===================================
+
+# IT - LongTermBiosignals
 
 # Package: ml
-# File: SupervisedTrainReport
-# Description: Class representing reporter for Trainer that performs supervised trainings.
+# Module: SupervisedTrainReport
+# Description: Class SupervisedTrainReport, produces a PDF report for a SupervisingTrainer.
 
 # Contributors: João Saraiva
 # Created: 6/05/2022
 
-###################################
+# ===================================
 
 from datetime import datetime
+
 from fpdf.fpdf import FPDF
 
-from src.ml.models.SupervisedModel import SupervisedModel
+from ml.models.SupervisedModel import SupervisedModel
+
 
 class SupervisedTrainReport(FPDF):
     def __init__(self):

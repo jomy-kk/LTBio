@@ -1,21 +1,24 @@
-###################################
+# -*- encoding: utf-8 -*-
 
-# IT - PreEpiSeizures
+# ===================================
+
+# IT - LongTermBiosignals
 
 # Package: features
-# File: FeatureExtractor
-# Description: Class to extract features from a Timeseries
+# Module: FeatureExtractor
+# Description: Class FeatureExtractor, a type of PipelineUnit that extracts features from a Timeseries.
 
 # Contributors: João Saraiva
 # Created: 03/06/2022
+# Last Updated: 22/07/2022
 
-###################################
+# ===================================
 
 from typing import Collection, Dict, Callable
 
-from src.biosignals.Unit import Unitless
-from src.pipeline.PipelineUnit import SinglePipelineUnit
-from src.biosignals.Timeseries import Timeseries
+from biosignals.timeseries.Timeseries import Timeseries
+from biosignals.timeseries.Unit import Unitless
+from pipeline.PipelineUnit import SinglePipelineUnit
 
 
 class FeatureExtractor(SinglePipelineUnit):

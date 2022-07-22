@@ -1,23 +1,26 @@
-###################################
+# -*- encoding: utf-8 -*-
 
-# IT - PreEpiSeizures
+# ===================================
+
+# IT - LongTermBiosignals
 
 # Package: processing
-# File: Segmenter
-# Description: Class to segment Timeseries
+# Module: Segmenter
+# Description: Class Segmenter, a type of PipelineUnit that segments Timeseries.
 
 # Contributors: João Saraiva
 # Created: 01/06/2022
-# Last updated: 11/07/2022
+# Last Updated: 22/07/2022
 
-###################################
+# ===================================
 
 from datetime import timedelta
+
 from biosppy.signals.tools import windower
 
-from src.pipeline.PipelineUnit import SinglePipelineUnit
-from src.biosignals.Timeseries import Timeseries
-from src.biosignals.Frequency import Frequency
+from biosignals.timeseries.Frequency import Frequency
+from biosignals.timeseries.Timeseries import Timeseries
+from pipeline.PipelineUnit import SinglePipelineUnit
 
 
 class Segmenter(SinglePipelineUnit):

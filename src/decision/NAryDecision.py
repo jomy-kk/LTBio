@@ -2,11 +2,11 @@
 
 # ===================================
 
-# IT - PreEpiSeizures
+# IT - LongTermBiosignals
 
 # Package: decision
-# File: NAryDecision
-# Description: Class that forces 'evaluate' to return an integer value corresponding to a decision.
+# Module: NAryDecision
+# Description: Class NAryDecision, a type of Decision that returns an integer value on 'evaluate'.
 
 # Contributors: João Saraiva
 # Created: 10/06/2022
@@ -14,8 +14,8 @@
 # ===================================
 from typing import Callable
 
-from src.biosignals.Timeseries import Timeseries
-from src.decision.Decision import Decision
+from biosignals.timeseries.Timeseries import Timeseries
+from decision.Decision import Decision
 
 
 class NAryDecision(Decision):

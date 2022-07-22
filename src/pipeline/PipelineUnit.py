@@ -1,23 +1,25 @@
-###################################
+# -*- encoding: utf-8 -*-
 
-# IT - PreEpiSeizures
+# ===================================
+
+# IT - LongTermBiosignals
 
 # Package: pipeline
-# File: PipelineUnit
-# Description: Abstract class representing units of a processing pipeline.
+# Module: PipelineUnit
+# Description: Classes PipelineUnit, SinglePipelineUnit, PipelineUnitsUnion, ApplyTogether, and ApplySeparately.
 
 # Contributors: João Saraiva
 # Created: 02/06/2022
-# Last Updated: 03/07/2022
+# Last Updated: 07/07/2022
 
-###################################
+# ===================================
 
 from abc import ABC, abstractmethod
 from inspect import signature, Parameter
-from typing import Collection, Dict, Iterable, Callable, Tuple
+from typing import Collection, Dict, Iterable, Tuple
 
-from src.biosignals.Timeseries import Timeseries
-from src.pipeline.Packet import Packet
+from biosignals.timeseries.Timeseries import Timeseries
+from pipeline.Packet import Packet
 
 
 class PipelineUnit(ABC):
@@ -53,7 +55,7 @@ class PipelineUnit(ABC):
         '''
         Defines the >> operator, the fastest shortcut to create a Pipeline
         '''
-        from src.pipeline.Pipeline import Pipeline
+        from pipeline.Pipeline import Pipeline
         if isinstance(other, PipelineUnit):  # concatenate self.Unit + other.Unit = res.Pipeline
             res = Pipeline()
             res.add(self)
@@ -67,7 +69,7 @@ class PipelineUnit(ABC):
     @staticmethod
     def _unpack_separately(packet:Packet, unit) -> Tuple[Iterable[str], Iterable[Dict]]:
         """
-        Auxiliary class procedure.
+        Auxiliary class procedures.
         Receives a Packet and returns a Tuple of Iterables, (x, y), where:
         - y are dictionaries with the necessary inputs, each with one Timeseries.
         - x are the original labels of each Timeseries in the receiving Packet.
@@ -111,7 +113,7 @@ class PipelineUnit(ABC):
     @staticmethod
     def _unpack_as_is(packet: Packet, unit) -> Dict:
         """
-        Auxiliary class procedure.
+        Auxiliary class procedures.
         Receives a Packet and returns an input dictionaries with all necessary parameters
         """
 

@@ -1,23 +1,25 @@
-###################################
+# -*- encoding: utf-8 -*-
 
-# IT - PreEpiSeizures
+# ===================================
+
+# IT - LongTermBiosignals
 
 # Package: features
-# File: Features
-# Description: Classes with methods to extract and store extracted features.
+# Module: Features
+# Description: Static procedures to extract features from sequences of samples, organized by classes.
 
 # Contributors: João Saraiva
 # Created: 03/06/2022
+# Last Updated: 22/07/2022
 
-###################################
+# ===================================
 
 from abc import ABC
-from typing import Dict
 
 import numpy as np
 from numpy import ndarray
 
-from src.biosignals.Timeseries import Timeseries
+from biosignals.timeseries.Timeseries import Timeseries
 
 
 class Features():
@@ -71,12 +73,10 @@ class HRVFeatures(ABC):
 
     @staticmethod
     def r_indices(segment:ndarray) -> float:
-        from biosppy.signals.tools import get_heart_rate
-        from biosppy.signals.ecg import ssf_segmenter
+        pass
 
     @staticmethod
     def hr(segment:ndarray) -> float:
-        from biosppy.signals.tools import get_heart_rate
-        from biosppy.signals.ecg import ssf_segmenter
+        pass
 
 
