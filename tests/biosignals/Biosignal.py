@@ -5,10 +5,11 @@ from os import remove
 from src.biosignals.EDA import EDA
 from src.biosignals.Biosignal import Biosignal
 from src.biosignals.Timeseries import Timeseries
+from src.biosignals.Frequency import Frequency
 from src.biosignals.Unit import *
 from src.clinical.BodyLocation import BodyLocation
 from src.clinical.Epilepsy import Epilepsy
-from src.clinical.Patient import Patient
+from src.clinical.Patient import Patient, Sex
 from src.biosignals.ECG import ECG
 from src.biosignals.HSM import HSM
 
@@ -18,15 +19,15 @@ class BiosignalTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.condition = Epilepsy()
-        cls.patient = Patient(101, "João Miguel Areias Saraiva", 23, (cls.condition,), tuple(), tuple())
-        cls.sf = 1
+        cls.patient = Patient(101, "João Miguel Areias Saraiva", 23, Sex.M, (cls.condition,), tuple(), tuple())
+        cls.sf = Frequency(1)
         cls.initial1 = datetime(2021, 5, 4, 15, 56, 30, 866915)
         cls.samples1 = [506.0, 501.0, 497.0, 374.5, 383.4, 294.2]
         cls.samples2 = [502.0, 505.0, 505.0, 924.3, 293.4, 383.5]
         cls.samples3 = [527.0, 525.0, 525.0, 849.2, 519.5, 103.4]
-        cls.ts1 = Timeseries([Timeseries.Segment(cls.samples1, cls.initial1, cls.sf), ], True, cls.sf, Volt(Multiplier.m))
-        cls.ts2 = Timeseries([Timeseries.Segment(cls.samples2, cls.initial1, cls.sf), ], True, cls.sf, Volt(Multiplier.m))
-        cls.ts3 = Timeseries([Timeseries.Segment(cls.samples3, cls.initial1, cls.sf), ], True, cls.sf, Volt(Multiplier.m))
+        cls.ts1 = Timeseries(cls.samples1, cls.initial1, cls.sf, Volt(Multiplier.m))
+        cls.ts2 = Timeseries(cls.samples2, cls.initial1, cls.sf, Volt(Multiplier.m))
+        cls.ts3 = Timeseries(cls.samples3, cls.initial1, cls.sf, Volt(Multiplier.m))
         cls.testpath = 'resources/HSM_EDF_tests'
         cls.images_testpath = 'resources/plots_tests'
 
@@ -139,9 +140,9 @@ class BiosignalTestCase(unittest.TestCase):
         cls.assertEqual(ecg2.channel_names, x.channel_names)
 
         # It should be able to access these ...
-        cls.assertEqual(x["a"][a:b].segments[0].samples, cls.samples1[2:5])
-        cls.assertEqual(x["b"][a:b].segments[0].samples, cls.samples2[2:5])
-        cls.assertEqual(x["c"][a:b].segments[0].samples, cls.samples3[2:5])
+        cls.assertTrue(all(x["a"][a:b].segments[0].samples == cls.samples1[2:5]))
+        cls.assertTrue(all(x["b"][a:b].segments[0].samples == cls.samples2[2:5]))
+        cls.assertTrue(all(x["c"][a:b].segments[0].samples == cls.samples3[2:5]))
 
         # ... but not these
         with cls.assertRaises(IndexError):
@@ -164,9 +165,9 @@ class BiosignalTestCase(unittest.TestCase):
         cls.assertEqual(ecg3.channel_names, x.channel_names)
 
         # It should be able to access these ...
-        cls.assertEqual(x[BodyLocation.V1][a:b].segments[0][:], cls.samples1[2:5])
-        cls.assertEqual(x[BodyLocation.V2][a:b].segments[0][:], cls.samples2[2:5])
-        cls.assertEqual(x[BodyLocation.V3][a:b].segments[0][:], cls.samples3[2:5])
+        cls.assertTrue(all(x[BodyLocation.V1][a:b].segments[0].samples == cls.samples1[2:5]))
+        cls.assertTrue(all(x[BodyLocation.V2][a:b].segments[0].samples == cls.samples2[2:5]))
+        cls.assertTrue(all(x[BodyLocation.V3][a:b].segments[0].samples == cls.samples3[2:5]))
 
         # ... but not these
         with cls.assertRaises(IndexError):
@@ -183,10 +184,10 @@ class BiosignalTestCase(unittest.TestCase):
             x["c"][cls.initial1 + timedelta(seconds=6)]
 
 
-    def test_concatenate_two_biosignals(cls):
+    def test_temporally_concatenate_two_biosignals(cls):
         initial2 = cls.initial1+timedelta(days=1)
-        ts4 = Timeseries([Timeseries.Segment(cls.samples3, initial2, cls.sf), ], True, cls.sf, Volt(Multiplier.m))
-        ts5 = Timeseries([Timeseries.Segment(cls.samples1, initial2, cls.sf), ], True, cls.sf, Volt(Multiplier.m))
+        ts4 = Timeseries(cls.samples3, initial2, cls.sf, Volt(Multiplier.m))
+        ts5 = Timeseries(cls.samples1, initial2, cls.sf, Volt(Multiplier.m))
         ecg1 = ECG({"a": cls.ts1, "b": cls.ts2}, patient=cls.patient, acquisition_location=BodyLocation.V1)
         ecg2 = ECG({"a": ts4, "b": ts5}, patient=cls.patient, acquisition_location=BodyLocation.V1)
 
@@ -208,11 +209,37 @@ class BiosignalTestCase(unittest.TestCase):
         with cls.assertRaises(ArithmeticError):  # different patient codes
             ecg3 = ECG({"a": ts4, "b": ts5}, patient=Patient(code=27462))
             ecg1 + ecg3
-        with cls.assertRaises(ArithmeticError):  # different acquisition locations
-            ecg3 = ECG({"a": ts4, "b": ts5}, acquisition_location=BodyLocation.V2)
-            ecg1 + ecg3
         with cls.assertRaises(ArithmeticError): # later + earlier
             ecg2 + ecg1
+
+    def test_concatenate_channels_of_two_biosignals(cls):
+        initial2 = cls.initial1+timedelta(days=1)
+        ts4 = Timeseries(cls.samples3, initial2, cls.sf, Volt(Multiplier.m))
+        ts5 = Timeseries(cls.samples1, initial2, cls.sf, Volt(Multiplier.m))
+        ecg1 = ECG({"a": cls.ts1, "b": cls.ts2}, patient=cls.patient, acquisition_location=BodyLocation.V1)
+        ecg2 = ECG({"c": ts4, "d": ts5}, patient=cls.patient, acquisition_location=BodyLocation.V1)
+
+        # This should work
+        ecg3 = ecg1 + ecg2
+        cls.assertEqual(len(ecg3), 4)  # it has the 4 channels
+        cls.assertEqual(set(ecg3.channel_names), set(ecg1.channel_names + ecg2.channel_names))  # with the same names
+        cls.assertEqual(ecg3["a"][cls.initial1], cls.samples1[0])
+        cls.assertEqual(ecg3["c"][initial2], cls.samples3[0])
+        cls.assertEqual(ecg3["b"][cls.initial1], cls.samples2[0])
+        cls.assertEqual(ecg3["d"][initial2], cls.samples1[0])
+        cls.assertEqual(ecg3.initial_datetime, cls.initial1)
+        cls.assertEqual(ecg3.final_datetime, cls.ts3.final_datetime+timedelta(days=1))
+
+        # This should not work
+        with cls.assertRaises(TypeError): # different types; e.g. ecg + eda
+            ecg1 + EDA(dict())
+        with cls.assertRaises(ArithmeticError): # conflicting channel sets; e.g. 'a'
+            ecg3 = ECG({"a": ts4, "c": ts5})
+            ecg1 + ecg3
+        with cls.assertRaises(ArithmeticError):  # different patient codes
+            ecg3 = ECG({"a": ts4, "b": ts5}, patient=Patient(code=27462))
+            ecg1 + ecg3
+
 
     def test_plot_spectrum(cls):
         ecg = ECG(cls.testpath, HSM)
@@ -242,7 +269,9 @@ class BiosignalTestCase(unittest.TestCase):
 
         ecg.resample(150.0)  # resample to 150 Hz
         self.assertEqual(ecg.sampling_frequency, 150.0)
-        self.assertEqual(len(ecg._Biosignal__timeseries["POL Ecg"]), 1800)  # 15% of samples
+        self.assertEqual(ecg._Biosignal__timeseries["POL Ecg"].segments[0]._Segment__sampling_frequency, 150.0)
+        self.assertEqual(ecg._Biosignal__timeseries["POL Ecg"].segments[0]._Segment__sampling_frequency, 150.0)
+        self.assertEqual(len(ecg._Biosignal__timeseries["POL  ECG-"]), 1800)  # 15% of samples
         self.assertEqual(len(ecg._Biosignal__timeseries["POL  ECG-"]), 1800)
 
 if __name__ == '__main__':

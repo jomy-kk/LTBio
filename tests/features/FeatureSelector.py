@@ -3,6 +3,8 @@ from datetime import datetime
 from statistics import mean
 from typing import Dict
 
+from numpy import ndarray
+
 from src.features.FeatureSelector import FeatureSelector
 from src.biosignals.Timeseries import Timeseries
 
@@ -24,14 +26,14 @@ class FeatureSelectorTestCase(unittest.TestCase):
         cls.features = {}
         cls.feature_names = ('mean', 'variance', 'deviation')
         for i in range(cls.n_features):
-            f = Timeseries([Timeseries.Segment(cls.samples[i], cls.initial, cls.sf), ], True, cls.sf)
+            f = Timeseries(cls.samples[i], cls.initial,  cls.sf)
             cls.features[cls.feature_names[i]] = f
 
 
     def test_select_based_on_average_being_higher_than(self):
 
-        def selection_function(segment: Timeseries.Segment) -> bool:
-            if mean(segment.samples) > 0.5:
+        def selection_function(samples: ndarray) -> bool:
+            if mean(samples) > 0.5:
                 print('keep')
                 return True  # A selection function should evaluate some criteria and return True if the feature is to be kept.
 
@@ -43,8 +45,8 @@ class FeatureSelectorTestCase(unittest.TestCase):
         self.assertEqual(len(selected_features), 2)
         self.assertTrue('variance' in selected_features)
         self.assertTrue('deviation' in selected_features)
-        self.assertEqual(selected_features['variance'].segments[0].samples, self.samples[1])
-        self.assertEqual(selected_features['deviation'].segments[0].samples, self.samples[2])
+        self.assertTrue(all(selected_features['variance'].to_array() == self.samples[1]))
+        self.assertTrue(all(selected_features['deviation'].to_array() == self.samples[2]))
 
 
 

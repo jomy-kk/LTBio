@@ -1,11 +1,11 @@
 import unittest
 from datetime import datetime
-from os import rmdir, mkdir
 
 from src.clinical.Epilepsy import Epilepsy
-from src.clinical.Patient import Patient
+from src.clinical.Patient import Patient, Sex
 from src.biosignals.Unit import *
 from src.biosignals.Timeseries import Timeseries
+from src.biosignals.Frequency import Frequency
 from src.biosignals import (HSM, ECG)
 
 class HSMTestCase(unittest.TestCase):
@@ -14,7 +14,7 @@ class HSMTestCase(unittest.TestCase):
     def setUpClass(cls):
         cls.HSM = HSM.HSM()  # Have to instantiate to directly test _read and _write methods.
         cls.testpath = 'resources/HSM_EDF_tests/' # This is a test directory with EDF files in the HSM structure,
-        cls.patient = Patient(101, "João Miguel Areias Saraiva", 23, (Epilepsy(),), tuple(), tuple())
+        cls.patient = Patient(101, "João Miguel Areias Saraiva", 23, Sex.M, (Epilepsy(),), tuple(), tuple())
 
         cls.samplesx1, cls.samplesx2, cls.samplesy1, cls.samplesy2 = [0.00023582690935384015, 0.00023582690935384015,
                                                                           0.00023582690935384015], \
@@ -25,11 +25,8 @@ class HSMTestCase(unittest.TestCase):
                                                                          [0.0001709850882900646, 0.0001709850882900646,
                                                                           0.0001709850882900646]
         cls.initial1, cls.initial2 = datetime(2019, 2, 28, 8, 7, 16), datetime(2019, 2, 28, 10, 7, 31)  # 1/1/2022 4PM and 3/1/2022 9AM
-        cls.sf = 1000
-        cls.segmentx1, cls.segmentx2 = Timeseries.Segment(cls.samplesx1, cls.initial1, cls.sf), \
-                                         Timeseries.Segment(cls.samplesx2, cls.initial2, cls.sf)
-        cls.segmenty1, cls.segmenty2 = Timeseries.Segment(cls.samplesy1, cls.initial1, cls.sf), \
-                                         Timeseries.Segment(cls.samplesy2, cls.initial2, cls.sf)
+        cls.sf = Frequency(1000)
+
         cls.units = Volt(Multiplier.m)
 
         cls.n_samplesx = 12000
@@ -37,8 +34,6 @@ class HSMTestCase(unittest.TestCase):
 
 
         cls.channelx, cls.channely = "POL Ecg", "POL  ECG-"
-        cls.tsx = Timeseries([cls.segmentx1, cls.segmentx2], True, cls.sf, cls.units)
-        cls.tsy = Timeseries([cls.segmenty1, cls.segmenty2], True, cls.sf, cls.units)
 
 
     def verify_data(cls, x):

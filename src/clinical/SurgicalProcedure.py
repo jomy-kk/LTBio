@@ -16,7 +16,7 @@ from datetime import datetime
 
 class SurgicalProcedure(ABC):
 
-    def __init__(self, date: datetime = None, outcome=bool):
+    def __init__(self, date: datetime = None, outcome:bool=None):
         self.outcome = outcome
         self.date = date
 

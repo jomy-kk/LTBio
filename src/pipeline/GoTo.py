@@ -12,10 +12,10 @@
 # Created: 11/06/2022
 
 # ===================================
-from src.pipeline.PipelineUnit import PipelineUnit
+from src.pipeline.PipelineUnit import SinglePipelineUnit
 
 
-class GoTo(PipelineUnit):
+class GoTo(SinglePipelineUnit):
     def __init__(self, name=None):
         super().__init__(name)
 

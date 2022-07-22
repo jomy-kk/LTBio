@@ -9,12 +9,12 @@
       "labels": {
         "1": "Gel",
         "2": "Resp Band",
-        "3":  "Band",
+        "3": "Band",
         "4": "x",
         "5": "y",
         "6": "z"
       },
-      "location": "Chest"
+      "location": "BodyLocation.CHEST"
     },
 
   "run_arm":
@@ -25,11 +25,11 @@
         "PPG": [4]
       },
       "labels": {
-        "Bicep": 2,
-        "Wrist": 3,
-        "Index finger": 4
+        "2": "BodyLocation.BICEP_L",
+        "3": "Gel",
+        "4": "BodyLocation.INDEX_L"
       },
-      "location": "Left arm"
+      "location": "BodyLocation.ARM_L"
     }
 }
 

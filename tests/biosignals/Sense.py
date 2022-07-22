@@ -33,15 +33,15 @@ class SenseTestCase(unittest.TestCase):
 
     def test_read_ECG(self):
         x = self.Sense._read(self.data_path, ECG.ECG)
-        self.verify_data(x, ('Gel', 'Band' ), 1000.0, 189200, None, (1904.0, 1708.0))
+        self.verify_data(x, ('Gel', 'Band' ), 1000.0, 899000, None, (1904.0, 1708.0))
 
     def test_read_RESP(self):
         x = self.Sense._read(self.data_path, RESP.RESP)
-        self.verify_data(x, ('Resp Band', ), 1000.0, 189200, None, (2214.0, ))
+        self.verify_data(x, ('Resp Band', ), 1000.0, 899000, None, (2214.0, ))
 
     def test_read_ACC(self):
         x = self.Sense._read(self.data_path, ACC.ACC)
-        self.verify_data(x, ('x', 'y', 'z'), 1000.0, 189200, None, (1392., 2322., 1821.))
+        self.verify_data(x, ('x', 'y', 'z'), 1000.0, 899000, None, (1392., 2322., 1821.))
 
 
 if __name__ == '__main__':

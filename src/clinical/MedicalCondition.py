@@ -15,8 +15,8 @@ from abc import ABC, abstractmethod
 
 class MedicalCondition(ABC):
 
-    def __init__(self):
-        self.__years_since_diagnosis = None  # not defined
+    def __init__(self, years_since_diagnosis:float = None):
+        self.__years_since_diagnosis = years_since_diagnosis  # not defined
 
     @property
     def years_since_diagnosis(self):
@@ -26,11 +26,8 @@ class MedicalCondition(ABC):
     def years_since_diagnosis(self, years: int):
         self.__years_since_diagnosis = years
 
-    @property
     @abstractmethod
-    def name(self):
+    def __str__(self):
         '''Get the name of the condition. This getter should be overwritten in every subclass.'''
         pass
-
-
 

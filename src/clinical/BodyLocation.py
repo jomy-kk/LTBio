@@ -14,13 +14,18 @@ class BodyLocation(str, Enum):
     RL = "Right leg (RL) lead"
     LL = "Left leg (LL) lead"
     MLII = 'Modified Limb Lead II'
-
     ABDOMEN = "Abdomen"
+
     WRIST_L = "Left Wrist"
     WRIST_R = "Right Wrist"
     BICEP_L = "Left Bicep"
     BICEP_R = "Right Bicep"
-
+    FOREARM_L = "Left Forearm"
+    FOREARM_R = "Right Forearm"
+    UPPERARM_L = "Left Upper Arm"
+    UPPERARM_R = "Right Upper Arm"
+    ARM_L = "Left Arm"
+    ARM_R = "Right Arm"
     INDEX_L = "Left index finger"
     INDEX_R = "Right index finger"
 

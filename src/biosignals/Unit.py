@@ -69,6 +69,16 @@ class Unit(ABC):
         pass
 
 
+class Unitless(Unit):
+    def __init__(self):
+        super().__init__(multiplier=Multiplier._)
+
+    def short(self):
+        return "(no unit)"
+
+    def convert_to(self, unit):
+        pass
+
 class G(Unit):
     def __init__(self, multiplier=Multiplier._):
         super().__init__(multiplier)
