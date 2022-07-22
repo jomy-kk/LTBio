@@ -1,19 +1,22 @@
-###################################
+# -*- encoding: utf-8 -*-
 
-# IT - PreEpiSeizures
+# ===================================
+
+# IT - LongTermBiosignals
 
 # Package: ml
-# File: SupervisedModel
-# Description: Abstract Class representing a generic machine learning model.
+# Module: SupervisedModel
+# Description: Abstract Class SupervisedModel, representing a generic machine learning supervised model.
 
 # Contributors: João Saraiva
 # Created: 31/05/2022
+# Last Updated: 07/06/2022
 
-###################################
+# ===================================
 
 from abc import ABC, abstractmethod
 
-from src.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
+from ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
 
 
 class SupervisedModel(ABC):

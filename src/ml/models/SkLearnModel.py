@@ -1,23 +1,27 @@
-###################################
+# -*- encoding: utf-8 -*-
 
-# IT - PreEpiSeizures
+# ===================================
+
+# IT - LongTermBiosignals
 
 # Package: ml
-# File: SupervisedModel
-# Description: Abstract Class representing a generic machine learning model.
+# Module: SkLearnModel
+# Description: Class SkLearnModel, that encapsulates the API of SKLearn supervised models.
 
 # Contributors: João Saraiva and code from https://scikit-learn.org/
-# Created: 4/05/2022
+# Created: 05/06/2022
+# Last Updated: 25/06/2022
 
-###################################
+# ===================================
 
-from numpy import zeros, arange, argsort, array
 from matplotlib import pyplot as plt
+from numpy import zeros, arange, argsort, array
 from sklearn.metrics import mean_squared_error
 
-from src.ml.trainers.SupervisedTrainResults import SupervisedTrainResults
-from src.ml.models.SupervisedModel import SupervisedModel
-from src.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
+from ml.models.SupervisedModel import SupervisedModel
+from ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
+from ml.trainers.SupervisedTrainResults import SupervisedTrainResults
+
 
 class SkLearnModel(SupervisedModel):
 

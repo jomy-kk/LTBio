@@ -2,20 +2,21 @@
 
 # ===================================
 
-# IT - PreEpiSeizures
+# IT - LongTermBiosignals
 
 # Package: decision
-# File: BinaryDecision
-# Description: Class that forces boolean return on 'evaluate'
+# Module: BinaryDecision
+# Description: Class BinaryDecision, a type of Decision that returns a boolean on 'evaluate'.
 
 # Contributors: João Saraiva
 # Created: 10/06/2022
 
 # ===================================
+
 from typing import Callable
 
-from src.biosignals.Timeseries import Timeseries
-from src.decision.Decision import Decision
+from biosignals.timeseries.Timeseries import Timeseries
+from decision.Decision import Decision
 
 
 class BinaryDecision(Decision):

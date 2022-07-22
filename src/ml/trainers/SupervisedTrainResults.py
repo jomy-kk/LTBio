@@ -1,18 +1,22 @@
-###################################
+# -*- encoding: utf-8 -*-
 
-# IT - PreEpiSeizures
+# ===================================
+
+# IT - LongTermBiosignals
 
 # Package: ml
-# File: SupervisedTrainResults
-# Description: Class holding the results of supervised trains.
+# Module: SupervisedTrainResults
+# Description: Class SupervisedTrainResults, that holds of supervised trains performed by a SupervisingTrainer.
 
 # Contributors: João Saraiva
-# Created: 4/05/2022
+# Created: 04/05/2022
 
-###################################
+# ===================================
 
 from typing import Dict
+
 from numpy import shape
+
 
 class SupervisedTrainResults():
 

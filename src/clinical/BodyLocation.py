@@ -1,3 +1,19 @@
+# -*- encoding: utf-8 -*-
+
+# ===================================
+
+# IT - LongTermBiosignals
+
+# Package: clinical
+# Module: Patient
+# Description: Enumeration BodyLocation, with multiple common locations of the human body.
+
+# Contributors: João Saraiva, Mariana Abreu
+# Created: 25/04/2022
+# Last update: 09/07/2022
+
+# ===================================
+
 from enum import unique, Enum
 
 @unique

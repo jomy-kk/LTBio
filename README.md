@@ -10,7 +10,7 @@
 
 #### Description
 Python library for easy managing and processing of large Long-Term Biosignals.
-All rights reserved. No code in this repository is licessenced. This repository is object of evaluation of some Master's and Doctoral's theses.
+This repository is object of evaluation of some Master's and Doctoral's theses.
 
 #### Language and Dependencies
 Developed and tested on Python 3.10.4. See Python dependencies in `requirements.txt`, and install the following on your machine if needed:
@@ -31,3 +31,10 @@ Full reference documentarion comming soon.
 
 ## Getting Started
 
+________
+
+## Copyright Notice
+
+There is no license for the content of this repository.
+
+2022, All rights reserved. This means content of this repository cannot be reproduced nor distributed, and no work can be derived from this work without explicit and written permission from the authors.

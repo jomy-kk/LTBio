@@ -2,17 +2,19 @@
 
 # ===================================
 
-# IT - PreEpiSeizures
+# IT - LongTermBiosignals
 
 # Package: pipeline
-# File: GoTo
-# Description: Class representing a pipeline unit that does flow control.
+# Module: GoTo
+# Description: Class GoTo, a type of PipelineUnit that introduces flow control.
 
 # Contributors: João Saraiva
 # Created: 11/06/2022
+# Last Updated: 07/07/2022
 
 # ===================================
-from src.pipeline.PipelineUnit import SinglePipelineUnit
+
+from pipeline.PipelineUnit import SinglePipelineUnit
 
 
 class GoTo(SinglePipelineUnit):

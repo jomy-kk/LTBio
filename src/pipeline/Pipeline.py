@@ -2,23 +2,25 @@
 
 # ===================================
 
-# IT - PreEpiSeizures
+# IT - LongTermBiosignals
 
 # Package: pipeline
-# File: Pipeline
-# Description: Class representing a pipeline of steps that works on biosignals.
+# Module: Pipeline
+# Description: Class Pipeline, representing a pipeline of steps to process Biosignals.
 
 # Contributors: João Saraiva
 # Created: 11/06/2022
+# Last Updated: 07/07/2022
 
 # ===================================
+
 from inspect import signature
 from typing import List, Collection
 
-from src.pipeline.Input import Input
-from src.pipeline.Packet import Packet
-from src.biosignals.Biosignal import Biosignal
-from src.pipeline.PipelineUnit import PipelineUnit, SinglePipelineUnit, PipelineUnitsUnion
+from biosignals.modalities.Biosignal import Biosignal
+from pipeline.Input import Input
+from pipeline.Packet import Packet
+from pipeline.PipelineUnit import PipelineUnit, SinglePipelineUnit, PipelineUnitsUnion
 
 
 class Pipeline():

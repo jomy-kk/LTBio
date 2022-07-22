@@ -2,17 +2,19 @@
 
 # ===================================
 
-# IT - PreEpiSeizures
+# IT - LongTermBiosignals
 
-# Package: src/pipeline 
-# File: AddData
-# Description: 
+# Package: pipeline
+# Module: Input
+# Description: Class Input, a type of PipelineUnit that introduces new data to the flow.
 
 # Contributors: João Saraiva
 # Created: 25/06/2022
+# Last Updated: 07/07/2022
 
 # ===================================
-from src.pipeline.PipelineUnit import SinglePipelineUnit
+
+from pipeline.PipelineUnit import SinglePipelineUnit
 
 
 class Input(SinglePipelineUnit):

@@ -2,24 +2,22 @@
 
 # ===================================
 
-# IT - PreEpiSeizures
+# IT - LongTermBiosignals
 
 # Package: pipeline
-# File: Packet
-# Description: Class Packet transports inputs and outputs between Pipeline Units.
+# Module: Packet
+# Description: Class Packet, that holds and transports any content between Pipeline Units.
 
 # Contributors: João Saraiva
 # Created: 12/06/2022
+# Last Updated: 07/07/2022
 
 # ===================================
 
-from typing import Collection, Dict, Tuple
 from inspect import stack
+from typing import Collection, Dict
 
-from src.biosignals.Timeseries import Timeseries
-
-
-
+from biosignals.timeseries.Timeseries import Timeseries
 
 
 class Packet():

@@ -2,19 +2,19 @@
 
 # ===================================
 
-# IT - PreEpiSeizures
+# IT - LongTermBiosignals
 
 # Package: decision
-# File: DecisionMaker
-# Description: A pipeline unit to make decisions.
+# Module: DecisionMaker
+# Description: Class DecisionMaker, a type of PipelineUnit that makes decisions.
 
 # Contributors: João Saraiva
 # Created: 10/06/2022
 
 # ===================================
-from src.biosignals.Timeseries import Timeseries
-from src.decision.Decision import Decision
-from src.pipeline.PipelineUnit import SinglePipelineUnit
+from biosignals.timeseries.Timeseries import Timeseries
+from decision.Decision import Decision
+from pipeline.PipelineUnit import SinglePipelineUnit
 
 class DecisionMaker(SinglePipelineUnit):
 

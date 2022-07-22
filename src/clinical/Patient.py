@@ -1,21 +1,25 @@
-###################################
+# -*- encoding: utf-8 -*-
 
-# IT - PreEpiSeizures
+# ===================================
+
+# IT - LongTermBiosignals
 
 # Package: clinical
-# File: Patient
-# Description: Class Patient to describe their clinical metadata.
+# Module: Patient
+# Description: Enumeration Sex and class Patient, to describe patients' clinical metadata.
 
 # Contributors: João Saraiva
-# Last update: 23/04/2022
+# Created: 22/04/2022
+# Last update: 09/07/2022
 
-###################################
+# ===================================
+
 from enum import unique, Enum
 from typing import Tuple
 
-from src.clinical.MedicalCondition import MedicalCondition
-from src.clinical.Medication import Medication
-from src.clinical.SurgicalProcedure import SurgicalProcedure
+from clinical.conditions.MedicalCondition import MedicalCondition
+from clinical.medications.Medication import Medication
+from clinical.procedures.SurgicalProcedure import SurgicalProcedure
 
 
 @unique
@@ -38,7 +42,7 @@ class Patient():
         :param sex: The patient's biological sex.
         :param conditions: A tuple of objects of type MedicalCondition, e.g. Epilepsy. These objects contain information about the condition.
         :param medications: A tuple of objects of type Medication, e.g. Benzodiazepine.
-        :param procedures: A tuple of objects of type SurgicalProcedure, e.g. EpilepsySurgery. These objects contain information about the procedure.
+        :param procedures: A tuple of objects of type SurgicalProcedure, e.g. EpilepsySurgery. These objects contain information about the procedures.
         """
         self.__procedures = procedures
         self.__medications = medications

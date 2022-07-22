@@ -1,22 +1,25 @@
-###################################
+# -*- encoding: utf-8 -*-
 
-# IT - PreEpiSeizures
+# ===================================
+
+# IT - LongTermBiosignals
 
 # Package: features
-# File: FeatureSelect
-# Description: Class to select some features from a Features object
+# Module: FeatureSelector
+# Description: Class FeatureSelector, a type of PipelineUnit that selects features from collection of them.
 
 # Contributors: João Saraiva
 # Created: 04/06/2022
+# Last Updated: 22/07/2022
 
-###################################
+# ===================================
 
 from typing import Callable, Dict
 
 from numpy import ndarray
 
-from src.biosignals.Timeseries import Timeseries
-from src.pipeline.PipelineUnit import SinglePipelineUnit
+from biosignals.timeseries.Timeseries import Timeseries
+from pipeline.PipelineUnit import SinglePipelineUnit
 
 
 class FeatureSelector(SinglePipelineUnit):

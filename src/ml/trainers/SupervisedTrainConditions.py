@@ -1,16 +1,18 @@
-###################################
+# -*- encoding: utf-8 -*-
 
-# IT - PreEpiSeizures
+# ===================================
+
+# IT - LongTermBiosignals
 
 # Package: ml
-# File: ModelTrainer
-# Description: Class to train machine learning models
+# Module: SupervisedTrainConditions
+# Description: Class SupervisedTrainConditions, that holds values of parameters to train a model in a specific manner.
 
 # Contributors: João Saraiva
 # Created: 04/06/2022
+# Last Updated: 07/06/2022
 
-###################################
-
+# ===================================
 
 class SupervisedTrainConditions():
     def __init__(self, **conditions):

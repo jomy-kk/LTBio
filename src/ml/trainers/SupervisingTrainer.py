@@ -1,25 +1,30 @@
-###################################
+# -*- encoding: utf-8 -*-
 
-# IT - PreEpiSeizures
+# ===================================
+
+# IT - LongTermBiosignals
 
 # Package: ml
-# File: SupervisingTrainer
-# Description: Class to train supervised machine learning models.
+# Module: SupervisingTrainer
+# Description: Class SupervisingTrainer, a type of PipelineUnit that trains supervised machine learning models.
 
 # Contributors: João Saraiva
 # Created: 04/06/2022
+# Last Updated: 07/07/2022
 
-###################################
+# ===================================
 
 from typing import Collection
-from sklearn.model_selection import train_test_split
-from numpy import array
 
-from src.ml.trainers.SupervisedTrainReport import SupervisedTrainReport
-from src.ml.models.SupervisedModel import SupervisedModel
-from src.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
-from src.pipeline.PipelineUnit import SinglePipelineUnit
-from src.biosignals.Timeseries import Timeseries
+from numpy import array
+from sklearn.model_selection import train_test_split
+
+from biosignals.timeseries.Timeseries import Timeseries
+from ml.models.SupervisedModel import SupervisedModel
+from ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
+from ml.trainers.SupervisedTrainReport import SupervisedTrainReport
+from pipeline.PipelineUnit import SinglePipelineUnit
+
 
 class SupervisingTrainer(SinglePipelineUnit):
 
