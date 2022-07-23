@@ -1,15 +1,15 @@
 import unittest
 from datetime import timedelta, datetime
 
-from biosignals.modalities.ECG import ECG
-from biosignals.timeseries.Timeseries import Timeseries
-from decision.DecisionMaker import DecisionMaker
-from decision.NAryDecision import NAryDecision
-from features.FeatureExtractor import FeatureExtractor
-from features.Features import TimeFeatures
-from pipeline.Pipeline import Pipeline
-from pipeline.PipelineUnit import ApplySeparately
-from processing.Segmenter import Segmenter
+from ltbio.biosignals.modalities.ECG import ECG
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.decision.DecisionMaker import DecisionMaker
+from ltbio.decision.NAryDecision import NAryDecision
+from ltbio.features.FeatureExtractor import FeatureExtractor
+from ltbio.features.Features import TimeFeatures
+from ltbio.pipeline.Pipeline import Pipeline
+from ltbio.pipeline.PipelineUnit import ApplySeparately
+from ltbio.processing.formaters.Segmenter import Segmenter
 
 
 class PipelineTestCase(unittest.TestCase):

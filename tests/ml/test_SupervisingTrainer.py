@@ -4,10 +4,10 @@ from datetime import datetime
 from sklearn.datasets import load_diabetes
 from sklearn.ensemble import GradientBoostingRegressor
 
-from biosignals.timeseries.Timeseries import Timeseries
-from ml.models.SkLearnModel import SkLearnModel
-from ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
-from ml.trainers.SupervisingTrainer import SupervisingTrainer
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.ml.models.SkLearnModel import SkLearnModel
+from ltbio.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
+from ltbio.ml.trainers.SupervisingTrainer import SupervisingTrainer
 
 
 class SupervisingTrainerTestCase(unittest.TestCase):

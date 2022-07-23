@@ -1,20 +1,20 @@
 import unittest
 from datetime import datetime
 
-from biosignals.modalities import ECG
-from biosignals.sources import HEM
-from biosignals.timeseries.Frequency import Frequency
-from biosignals.timeseries.Timeseries import Timeseries
-from biosignals.timeseries.Unit import *
-from clinical.conditions.Epilepsy import Epilepsy
-from clinical.Patient import Patient, Sex
+from ltbio.biosignals.modalities import ECG
+from ltbio.biosignals.sources import HEM
+from ltbio.biosignals.timeseries.Frequency import Frequency
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.clinical.conditions.Epilepsy import Epilepsy
+from ltbio.clinical.Patient import Patient, Sex
+from ltbio.biosignals.timeseries.Unit import *
 
 
 class HEMTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.HEM = HEM.HEM() # HEM needs to be instantiated only to test _read and _write methods, for they are protected.
+        cls.HEM = HEM() # HEM needs to be instantiated only to test _read and _write methods, for they are protected.
         cls.testpath = 'resources/HEM_TRC_tests/' # This is a test directory with TRC files in the HEM structure,
         cls.channelx, cls.channely = "ecg", "ECG" # containing ECG channels with these names,
 
@@ -54,7 +54,7 @@ class HEMTestCase(unittest.TestCase):
         cls.assertEqual((x[cls.channely])[cls.initial1], cls.samplesy1[0])
 
     def test_read_ECG(cls):
-        x = cls.HEM._read(cls.testpath, ECG.ECG)
+        x = cls.HEM._read(cls.testpath, ECG)
         cls.verify_data(x)
 
     # TODO

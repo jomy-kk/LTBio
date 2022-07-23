@@ -4,9 +4,9 @@ from random import randint
 from statistics import mean
 from typing import Dict
 
-from biosignals.timeseries.Timeseries import Timeseries
-from features.FeatureExtractor import FeatureExtractor
-from features.Features import TimeFeatures
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.features.FeatureExtractor import FeatureExtractor
+from ltbio.features.Features import TimeFeatures
 
 
 class FeatureExtractorTestCase(unittest.TestCase):

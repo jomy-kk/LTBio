@@ -1,17 +1,17 @@
 import unittest
 from datetime import datetime
 
-from biosignals.modalities import ECG
-from biosignals.sources import MITDB
-from biosignals.timeseries.Frequency import Frequency
-from biosignals.timeseries.Timeseries import Timeseries
-from biosignals.timeseries.Unit import *
+from ltbio.biosignals.modalities import ECG
+from ltbio.biosignals.sources import MITDB
+from ltbio.biosignals.timeseries.Frequency import Frequency
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.biosignals.timeseries.Unit import *
 
 
 class MITDBTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.MITDB = MITDB.MITDB()  # Have to instantiate to directly test _read and _write methods.
+        self.MITDB = MITDB()  # Have to instantiate to directly test _read and _write methods.
         self.testpath = 'resources/MITDB_DAT_tests/' # This is a test directory with DAT files in the MIT-DB structure,
 
         self.samplesy, self.samplesx = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.215, 0.235, 0.24, 0.24, 0.245, 0.265], [-0.15, -0.15, -0.15, -0.15, -0.15, -0.15, -0.15, -0.15, -0.145, -0.135, -0.11, -0.08, -0.04, 0.0, 0.125]
@@ -50,7 +50,7 @@ class MITDBTestCase(unittest.TestCase):
         self.assertEqual((x[self.channely]).segments[0].samples.tolist()[:15], self.samplesy)
 
     def test_read_ECG(self):
-        x = self.MITDB._read(self.testpath, ECG.ECG)
+        x = self.MITDB._read(self.testpath, ECG)
         self.verify_data(x)
 
 

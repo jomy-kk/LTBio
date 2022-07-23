@@ -3,9 +3,9 @@ from datetime import datetime, timedelta
 
 from numpy import array, allclose
 
-from biosignals.modalities.ECG import ECG
-from biosignals.sources.HEM import HEM
-from processing.filters.TimeDomainFilter import TimeDomainFilter, ConvolutionOperation
+from ltbio.biosignals.modalities import ECG
+from ltbio.biosignals.sources import HEM
+from ltbio.processing.filters.TimeDomainFilter import TimeDomainFilter, ConvolutionOperation
 
 
 class TimeDomainFilterTestCase(unittest.TestCase):

@@ -1,17 +1,17 @@
 import unittest
 from datetime import datetime
 
-from biosignals.modalities.ACC import ACC
-from biosignals.modalities.ECG import ECG
-from biosignals.modalities.EDA import EDA
-from biosignals.modalities.MultimodalBiosignal import MultimodalBiosignal
-from biosignals.sources.HSM import HSM
-from biosignals.sources.Sense import Sense
-from biosignals.timeseries.Timeseries import Timeseries
-from biosignals.timeseries.Unit import *
-from clinical.conditions.Epilepsy import Epilepsy
-from clinical.BodyLocation import BodyLocation
-from clinical.Patient import Patient, Sex
+from ltbio.biosignals.timeseries.Unit import *
+from ltbio.biosignals.modalities.ACC import ACC
+from ltbio.biosignals.modalities.ECG import ECG
+from ltbio.biosignals.modalities.EDA import EDA
+from ltbio.biosignals.modalities.MultimodalBiosignal import MultimodalBiosignal
+from ltbio.biosignals.sources.HSM import HSM
+from ltbio.biosignals.sources.Sense import Sense
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.clinical.conditions.Epilepsy import Epilepsy
+from ltbio.clinical.BodyLocation import BodyLocation
+from ltbio.clinical.Patient import Patient, Sex
 
 
 class MultimodalBiosignalTestCase(unittest.TestCase):

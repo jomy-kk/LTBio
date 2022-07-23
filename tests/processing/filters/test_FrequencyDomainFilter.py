@@ -4,9 +4,9 @@ from os import remove
 
 from numpy import array, allclose
 
-from biosignals.modalities.ECG import ECG
-from biosignals.sources.HEM import HEM
-from processing.filters.FrequencyDomainFilter import FrequencyDomainFilter, FrequencyResponse, BandType
+from ltbio.biosignals.modalities.ECG import ECG
+from ltbio.biosignals.sources.HEM import HEM
+from ltbio.processing.filters.FrequencyDomainFilter import FrequencyDomainFilter, FrequencyResponse, BandType
 
 
 class FrequencyDomainFilterTestCase(unittest.TestCase):

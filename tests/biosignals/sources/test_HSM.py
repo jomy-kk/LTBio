@@ -1,20 +1,19 @@
 import unittest
 from datetime import datetime
 
-from biosignals.modalities import ECG
-from biosignals.sources import HSM
-from biosignals.timeseries.Frequency import Frequency
-from biosignals.timeseries.Timeseries import Timeseries
-from biosignals.timeseries.Unit import *
-from clinical.conditions.Epilepsy import Epilepsy
-from clinical.Patient import Patient, Sex
-
+from ltbio.biosignals.modalities import ECG
+from ltbio.biosignals.sources import HSM
+from ltbio.biosignals.timeseries.Frequency import Frequency
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.clinical.conditions.Epilepsy import Epilepsy
+from ltbio.clinical.Patient import Patient, Sex
+from ltbio.biosignals.timeseries.Unit import *
 
 class HSMTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.HSM = HSM.HSM()  # Have to instantiate to directly test _read and _write methods.
+        cls.HSM = HSM()  # Have to instantiate to directly test _read and _write methods.
         cls.testpath = 'resources/HSM_EDF_tests/' # This is a test directory with EDF files in the HSM structure,
         cls.patient = Patient(101, "João Miguel Areias Saraiva", 23, Sex.M, (Epilepsy(),), tuple(), tuple())
 
@@ -60,7 +59,7 @@ class HSMTestCase(unittest.TestCase):
         cls.assertEqual((x[cls.channely])[cls.initial1], cls.samplesy1[0])
 
     def test_read_ECG(cls):
-        x = cls.HSM._read(cls.testpath, ECG.ECG)
+        x = cls.HSM._read(cls.testpath, ECG)
         cls.verify_data(x)
 
     # TODO

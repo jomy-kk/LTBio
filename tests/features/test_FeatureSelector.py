@@ -5,8 +5,8 @@ from typing import Dict
 
 from numpy import ndarray
 
-from biosignals.timeseries.Timeseries import Timeseries
-from features.FeatureSelector import FeatureSelector
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.features.FeatureSelector import FeatureSelector
 
 
 class FeatureSelectorTestCase(unittest.TestCase):

@@ -1,14 +1,14 @@
 import unittest
 from datetime import datetime, timedelta
 
-from biosignals.timeseries.Timeseries import Timeseries
-from decision.DecisionMaker import DecisionMaker
-from decision.NAryDecision import NAryDecision
-from features.FeatureExtractor import FeatureExtractor
-from features.FeatureSelector import FeatureSelector
-from features.Features import TimeFeatures
-from pipeline.Packet import Packet
-from processing.Segmenter import Segmenter
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.decision.DecisionMaker import DecisionMaker
+from ltbio.decision.NAryDecision import NAryDecision
+from ltbio.features.FeatureExtractor import FeatureExtractor
+from ltbio.features.FeatureSelector import FeatureSelector
+from ltbio.features.Features import TimeFeatures
+from ltbio.pipeline.Packet import Packet
+from ltbio.processing.formaters.Segmenter import Segmenter
 
 
 class SinglePipelineUnitTestCase(unittest.TestCase):

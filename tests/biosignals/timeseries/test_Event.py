@@ -1,9 +1,9 @@
 import unittest
 from datetime import datetime, timedelta
 
-from biosignals.modalities.ECG import ECG
-from biosignals.timeseries.Event import Event
-from biosignals.timeseries.Timeseries import Timeseries
+from ltbio.biosignals.modalities.ECG import ECG
+from ltbio.biosignals.timeseries.Event import Event
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
 
 
 class EventTestCase(unittest.TestCase):

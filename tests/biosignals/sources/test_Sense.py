@@ -1,9 +1,10 @@
 import unittest
 from datetime import datetime
 
-from biosignals.modalities import RESP, ACC, ECG
-from biosignals.sources import Sense
-from biosignals.timeseries.Timeseries import Timeseries
+from ltbio.biosignals.modalities import ACC, ECG
+from ltbio.biosignals.modalities import RESP
+from ltbio.biosignals.sources import Sense
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
 
 
 class SenseTestCase(unittest.TestCase):
@@ -13,7 +14,7 @@ class SenseTestCase(unittest.TestCase):
         cls.data_path = 'resources/Sense_CSV_tests/'  # This is a test directory with CSV files in the Sense structure,
         cls.defaults_path = 'resources/Sense_CSV_tests/sense_defaults.json'  # Path to default mappings
         cls.device_id = 'run_chest'  # Device id corresponding to the mapping to be used
-        cls.Sense = Sense.Sense(cls.device_id, cls.defaults_path)
+        cls.Sense = Sense(cls.device_id, cls.defaults_path)
         cls.initial = datetime(2022, 6, 20, 19, 18, 57, 426000)
 
     def verify_data(self, x, label, sf, n_samples, unit, first_sample):
@@ -33,15 +34,15 @@ class SenseTestCase(unittest.TestCase):
             self.assertEqual(float((x[l])[self.initial]), float(first_sample[i]))
 
     def test_read_ECG(self):
-        x = self.Sense._read(self.data_path, ECG.ECG)
+        x = self.Sense._read(self.data_path, ECG)
         self.verify_data(x, ('Gel', 'Band' ), 1000.0, 899000, None, (1904.0, 1708.0))
 
     def test_read_RESP(self):
-        x = self.Sense._read(self.data_path, RESP.RESP)
+        x = self.Sense._read(self.data_path, RESP)
         self.verify_data(x, ('Resp Band', ), 1000.0, 899000, None, (2214.0, ))
 
     def test_read_ACC(self):
-        x = self.Sense._read(self.data_path, ACC.ACC)
+        x = self.Sense._read(self.data_path, ACC)
         self.verify_data(x, ('x', 'y', 'z'), 1000.0, 899000, None, (1392., 2322., 1821.))
 
 

@@ -1,8 +1,8 @@
 import unittest
 from datetime import datetime
 
-from biosignals.timeseries.Timeseries import Timeseries
-from pipeline.Packet import Packet
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.pipeline.Packet import Packet
 
 
 class PacketTestCase(unittest.TestCase):

@@ -1,9 +1,9 @@
 import unittest
 from datetime import datetime, timedelta
 
-from biosignals.timeseries.Frequency import Frequency
-from biosignals.timeseries.Timeseries import Timeseries
-from biosignals.timeseries.Unit import *
+from ltbio.biosignals.timeseries.Frequency import Frequency
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.biosignals.timeseries.Unit import *
 
 
 class TimeseriesTestCase(unittest.TestCase):

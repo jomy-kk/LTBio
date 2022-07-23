@@ -1,10 +1,10 @@
 import unittest
 from datetime import datetime
 
-from biosignals.timeseries.Timeseries import Timeseries
-from decision.BinaryDecision import BinaryDecision
-from decision.DecisionMaker import DecisionMaker
-from decision.NAryDecision import NAryDecision
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.decision.BinaryDecision import BinaryDecision
+from ltbio.decision.DecisionMaker import DecisionMaker
+from ltbio.decision.NAryDecision import NAryDecision
 
 
 class DecisionMakerTestCase(unittest.TestCase):

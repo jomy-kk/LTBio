@@ -1,0 +1,1 @@
+# Quick shortcuts to classes

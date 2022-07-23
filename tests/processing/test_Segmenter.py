@@ -1,10 +1,10 @@
 import unittest
 from datetime import datetime, timedelta
 
-from biosignals.modalities.ECG import ECG
-from biosignals.sources.MITDB import MITDB
-from biosignals.timeseries.Timeseries import OverlappingTimeseries
-from processing.Segmenter import Segmenter
+from ltbio.biosignals.modalities.ECG import ECG
+from ltbio.biosignals.sources.MITDB import MITDB
+from ltbio.biosignals.timeseries.Timeseries import OverlappingTimeseries
+from ltbio.processing.formaters.Segmenter import Segmenter
 
 
 class SegmenterTestCase(unittest.TestCase):

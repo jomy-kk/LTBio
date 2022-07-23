@@ -3,9 +3,9 @@ from datetime import timedelta
 
 import numpy as np
 
-from biosignals.modalities.ECG import ECG
-from biosignals.sources.MITDB import MITDB
-from processing.filters.FrequencyDomainFilter import FrequencyDomainFilter, FrequencyResponse, BandType
+from ltbio.biosignals.modalities.ECG import ECG
+from ltbio.biosignals.sources.MITDB import MITDB
+from ltbio.processing.filters.FrequencyDomainFilter import FrequencyDomainFilter, FrequencyResponse, BandType
 
 
 class ECGTestCase(unittest.TestCase):

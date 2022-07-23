@@ -1,20 +1,20 @@
 import unittest
 from datetime import timedelta, datetime
 
-from biosignals.modalities.ACC import ACC
-from biosignals.modalities.ECG import ECG
-from biosignals.modalities.EDA import EDA
-from biosignals.timeseries.Timeseries import Timeseries
-from features.FeatureExtractor import FeatureExtractor
-from features.FeatureSelector import FeatureSelector
-from features.Features import TimeFeatures
-from ml.models.SkLearnModel import SkLearnModel
-from ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
-from ml.trainers.SupervisingTrainer import SupervisingTrainer
-from pipeline.Input import Input
-from pipeline.Packet import Packet
-from pipeline.Pipeline import Pipeline
-from processing.Segmenter import Segmenter
+from ltbio.biosignals.modalities.ACC import ACC
+from ltbio.biosignals.modalities.ECG import ECG
+from ltbio.biosignals.modalities.EDA import EDA
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.features.FeatureExtractor import FeatureExtractor
+from ltbio.features.FeatureSelector import FeatureSelector
+from ltbio.features.Features import TimeFeatures
+from ltbio.ml.models.SkLearnModel import SkLearnModel
+from ltbio.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
+from ltbio.ml.trainers.SupervisingTrainer import SupervisingTrainer
+from ltbio.pipeline.Input import Input
+from ltbio.pipeline.Packet import Packet
+from ltbio.pipeline.Pipeline import Pipeline
+from ltbio.processing.formaters.Segmenter import Segmenter
 
 
 class PipelineIntegrationTests(unittest.TestCase):

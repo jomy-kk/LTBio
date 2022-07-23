@@ -2,16 +2,16 @@ import unittest
 from datetime import datetime, timedelta
 from os import remove
 
-from biosignals.modalities.Biosignal import Biosignal
-from biosignals.modalities.ECG import ECG
-from biosignals.modalities.EDA import EDA
-from biosignals.sources.HSM import HSM
-from biosignals.timeseries.Frequency import Frequency
-from biosignals.timeseries.Timeseries import Timeseries
-from biosignals.timeseries.Unit import *
-from clinical.conditions.Epilepsy import Epilepsy
-from clinical.BodyLocation import BodyLocation
-from clinical.Patient import Patient, Sex
+from ltbio.biosignals.timeseries.Unit import *
+from ltbio.biosignals.modalities.Biosignal import *
+from ltbio.biosignals.modalities.ECG import ECG
+from ltbio.biosignals.modalities.EDA import EDA
+from ltbio.biosignals.sources.HSM import HSM
+from ltbio.biosignals.timeseries.Frequency import Frequency
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.clinical.conditions.Epilepsy import Epilepsy
+from ltbio.clinical.BodyLocation import BodyLocation
+from ltbio.clinical.Patient import Patient, Sex
 
 
 class BiosignalTestCase(unittest.TestCase):

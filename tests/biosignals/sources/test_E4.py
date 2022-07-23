@@ -1,15 +1,16 @@
 import unittest
 from datetime import datetime
 
-from biosignals.modalities import EDA, ACC, TEMP, PPG
-from biosignals.sources import E4
-from biosignals.timeseries.Timeseries import Timeseries
+from ltbio.biosignals.modalities import EDA, ACC
+from ltbio.biosignals.modalities import PPG, TEMP
+from ltbio.biosignals.sources import E4
+from ltbio.biosignals.timeseries.Timeseries import Timeseries
 
 
 class E4TestCase(unittest.TestCase):
 
     def setUp(self):
-        self.E4 = E4.E4() # E4 needs to be instantiated only to test _read and _write methods, for they are protected.
+        self.E4 = E4() # E4 needs to be instantiated only to test _read and _write methods, for they are protected.
         self.testpath = 'resources/E4_CSV_tests/' # This is a test directory with CSV files in the E4 structure,
         self.initial1 = datetime(2022, 6, 2, 16, 16, 56)
         self.initial2 = datetime(2022, 6, 11, 19, 8, 28)
@@ -36,19 +37,19 @@ class E4TestCase(unittest.TestCase):
             self.assertEqual(float((x[l])[self.initial2]), float(first_samples[1][i]))
 
     def test_read_EDA(self):
-        x = self.E4._read(self.testpath, EDA.EDA)
+        x = self.E4._read(self.testpath, EDA)
         self.verify_data(x, ('eda', ), 4.0, 6084, None, ((0.0, ), (0.0, )) )
 
     def test_read_PPG(self):
-        x = self.E4._read(self.testpath, PPG.PPG)
+        x = self.E4._read(self.testpath, PPG)
         self.verify_data(x, ('bvp', ), 64.0, 97361, None, ((0.0, ), (0.0, )) )
 
     def test_read_TEMP(self):
-        x = self.E4._read(self.testpath, TEMP.TEMP)
+        x = self.E4._read(self.testpath, TEMP)
         self.verify_data(x, ('temp', ), 4.0, 6080, None, ((34.630001068115234, ), (36.77000045776367, )) )
 
     def test_read_ACC(self):
-        x = self.E4._read(self.testpath, ACC.ACC)
+        x = self.E4._read(self.testpath, ACC)
         self.verify_data(x, ('x', 'y', 'z'), 32.0, 48684, None, ((26,-33,47), (-60,-26,-16)) )
 
     def test_get_events(self):
