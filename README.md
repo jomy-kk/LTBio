@@ -1,5 +1,7 @@
 ## IT - Long Term Biosignals Framework
 
+[![Test Biosignals Package](https://img.shields.io/pypi/v/LongTermBiosignals)](https://pypi.org/project/LongTermBiosignals)
+
 [![Test Biosignals Package](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-biosignals-package.yml/badge.svg?branch=main&event=push)](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-biosignals-package.yml)
  [![Test Processing Package](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-processing-package.yml/badge.svg)](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-processing-package.yml)
 [![Features](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-features-package.yml/badge.svg)](https://github.com/jomy-kk/IT-PreEpiSeizures/actions/workflows/test-features-package.yml)
