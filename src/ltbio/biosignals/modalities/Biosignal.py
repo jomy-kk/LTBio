@@ -77,7 +77,7 @@ class Biosignal(ABC):
             self.__acquisition_location = acquisition_location  # override with user input
 
     def __copy__(self):
-        return type(self)([ts.__copy__() for ts in self.__timeseries], self.__source, self.__patient, self.__acquisition_location, str(self.__name))
+        return type(self)({ts: self.__timeseries[ts].__copy__() for ts in self.__timeseries}, self.__source, self.__patient, self.__acquisition_location, str(self.__name))
 
     def _new(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | Tuple[datetime] = None, source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, events:Collection[Event]=None):
         timeseries = [ts.__copy__() for ts in self.__timeseries] if timeseries is None else timeseries  # copy
