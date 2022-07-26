@@ -518,6 +518,13 @@ class Timeseries():
         return self.__segments
 
     @property
+    def samples(self) -> list | ndarray:
+        if len(self.__segments) == 1:
+            return self.__segments[0].samples.copy()
+        else:
+            return [segment.samples.copy() for segment in self.__segments]
+
+    @property
     def initial_datetime(self) -> datetime:
         """The date and time of the first sample."""
         return self.__segments[0].initial_datetime  # Is the initial datetime of the first Segment.
@@ -560,6 +567,11 @@ class Timeseries():
     def name(self, name: str):
         """Set or reset a name for the Timeseries."""
         self.__name = name
+
+    @property
+    def is_contiguous(self) -> bool:
+        """The logic value stating if there are no interruptions in time."""
+        return len(self.__segments) == 1
 
     @property
     def is_equally_segmented(self) -> bool:
@@ -1014,18 +1026,32 @@ class Timeseries():
     def _apply_operation_and_new(self, operation, sampling_frequency: float = None, units: Unit = None,
                                  name: str = None, equally_segmented: bool = None,
                                  overlapping_segments: bool = None,
-                                 events: Collection[Event] = None, **kwargs):
+                                 events: Collection[Event] = None,
+                                 iterate_over_each_segment_key: str = None, **kwargs):
         """
         For outside usage. Who uses is not aware of Segment.
         Creates new Segments from the existing ones, using Segment._new().
+
+        If there is one item in '**kwargs' that has input to be iteratively passed to 'method',
+        indicate its key in 'iterate_over_each_segment_key'.
         """
+
         # Sampling frequency
         sampling_frequency = self.__sampling_frequency if sampling_frequency is None else sampling_frequency
+
         # Apply operation
         all_new_segments = []
-        for segment in self:
-            all_new_segments.append(
-                segment._apply_operation_and_new(operation, sampling_frequency=sampling_frequency, **kwargs))
+        if iterate_over_each_segment_key is not None:
+            items = kwargs[iterate_over_each_segment_key]
+            for segment, item in zip(self, items):
+                kwargs[iterate_over_each_segment_key] = item
+                new_segment = segment._apply_operation_and_new(operation, sampling_frequency=sampling_frequency, **kwargs)
+                all_new_segments.append(new_segment)
+        else:
+            for segment in self:
+                new_segment = segment._apply_operation_and_new(operation, sampling_frequency=sampling_frequency, **kwargs)
+                all_new_segments.append(new_segment)
+
         # Get new Timeseries
         return self.__new(all_new_segments, sampling_frequency=sampling_frequency, units=units, name=name,
                           equally_segmented=equally_segmented, overlapping_segments=overlapping_segments,
