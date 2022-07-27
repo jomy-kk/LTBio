@@ -19,9 +19,12 @@ from datetime import datetime, timedelta
 from typing import Dict, Tuple, Collection, Set, ClassVar
 
 import matplotlib.pyplot as plt
+import numpy as np
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime, ParserError
+from numpy import ndarray
 
+from ltbio.biosignals.timeseries.Unit import Unitless
 from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
 from ltbio.biosignals.timeseries.Event import Event
 from ltbio.biosignals import Timeseries
@@ -29,6 +32,7 @@ from ltbio.clinical.conditions.MedicalCondition import MedicalCondition
 from ltbio.processing.filters.FrequencyDomainFilter import Filter
 from ltbio.clinical.BodyLocation import BodyLocation
 from ltbio.clinical.Patient import Patient
+from ltbio.processing.noises.Noise import Noise
 
 
 class Biosignal(ABC):
@@ -46,7 +50,7 @@ class Biosignal(ABC):
         self.__patient = patient
         self.__acquisition_location = acquisition_location
         self.__associated_events = {}
-
+        self.__added_noise = None
 
         # Handle timeseries
         if isinstance(timeseries, str): # this should be a filepath -> read samples from file
@@ -70,8 +74,16 @@ class Biosignal(ABC):
 
         if isinstance(timeseries, datetime): # this should be a time interval -> fetch from database
             pass # TODO
+
         if isinstance(timeseries, dict): # this should be the {chanel name: Timeseries} -> save samples directly
             self.__timeseries = timeseries
+            # Check if Timeseries come with Events associated
+            for ts in timeseries.values():
+                for event in ts.events:
+                    if event.name in self.__associated_events and self.__associated_events[event.name] != event:
+                        raise AssertionError("There are different Events with the same name among the Timeseries given.")
+                    else:
+                        self.__associated_events[event.name] = event
 
         if self.__acquisition_location is not None:
             self.__acquisition_location = acquisition_location  # override with user input
@@ -79,7 +91,7 @@ class Biosignal(ABC):
     def __copy__(self):
         return type(self)({ts: self.__timeseries[ts].__copy__() for ts in self.__timeseries}, self.__source, self.__patient, self.__acquisition_location, str(self.__name))
 
-    def _new(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | Tuple[datetime] = None, source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, events:Collection[Event]=None):
+    def _new(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | Tuple[datetime] = None, source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, events:Collection[Event]=None, added_noise=None):
         timeseries = [ts.__copy__() for ts in self.__timeseries] if timeseries is None else timeseries  # copy
         source = self.__source if source is None else source  # no copy
         patient = self.__patient if patient is None else patient  # no copy
@@ -87,12 +99,43 @@ class Biosignal(ABC):
         name = str(self.__name) if name is None else name  # copy
 
         new = type(self)(timeseries, source, patient, acquisition_location, name)
-        new.associate(self.__associated_events if events is None else events)  # Associate events; no need to copy
+
+        # Associate events; no need to copy
+        if events is None:
+            new.associate(self.__associated_events)
+        else:
+            # Check if some event can be associated
+            for event in events:
+                try:
+                    new.associate(event)
+                except ValueError:  # outside the domain of every channel
+                    pass  # no problem; the Event will not be associated
+
+        # Associate added noise reference:
+        if added_noise is not None:
+            new._Biosignal__added_noise = added_noise
+
         return new
+
+    def _apply_operation_and_new(self, operation,
+                                 source:BiosignalSource.__subclasses__()=None, patient:Patient=None,
+                                 acquisition_location:BodyLocation=None, name:str=None, events:Collection[Event]=None,
+                                 **kwargs):
+        new_channels = {}
+        for channel_name in self.channel_names:
+            new_channels[channel_name] = self.__timeseries[channel_name]._apply_operation_and_new(operation, **kwargs)
+        return self._new(new_channels, source=source, patient=patient, acquisition_location=acquisition_location,
+                         name=name, events=events)
 
     @property
     def __has_single_channel(self) -> bool:
         return len(self) == 1
+
+    def _get_channel(self, channel_name:str):
+        if channel_name in self.channel_names:
+            return self.__timeseries[channel_name]
+        else:
+            AttributeError(f"No channel named '{channel_name}'.")
 
     def __getitem__(self, item):
         '''The built-in slicing and indexing operations.'''
@@ -304,6 +347,13 @@ class Biosignal(ABC):
                     raise AttributeError("Biosignal contains 2+ channels, all not necessarly with the same sampling frequency.")
             return common_sf
 
+    @property
+    def added_noise(self):
+        '''Returns a reference to the noisy component, if the Biosignal was created with added noise; else the property does not exist.'''
+        if self.__added_noise is not None:
+            return self.__added_noise
+        else:
+            raise AttributeError("No noise was added to this Biosignal.")
 
     def __len__(self):
         '''Returns the number of channels.'''
@@ -571,6 +621,157 @@ class Biosignal(ABC):
             del self.__associated_events[event_name]
         else:
             raise NameError(f"There's no Event '{event_name}' associated to this Biosignal.")
+
+    @classmethod
+    def withAdditiveNoise(cls, original, noise, name:str = None):
+        """
+        Creates a new Biosignal from 'original' with added 'noise'.
+
+        :param original: (Biosignal) The original Biosignal to be contaminated with noise.
+        :param noise: (Noise | Timeseries | Biosignal) The noise to add to the original Biosignal.
+        :param name: (str) The name to associate to the resulting Biosignal.
+
+        When 'noise' is a Noise:
+            - A trench of noise, with the duration of the channel, will be generated to be added to each channel.
+            - 'noise' should be configured with the same sampling frequency has the channels.
+
+        When 'noise' is a Biosignal:
+            When it has the same set of channels as 'original', sampled at the same frequency:
+                - Each noisy channel will be added to the corresponding channel of 'original', in a template-wise manner.
+            When it has a unique channel:
+                - That noisy channel will be added to every channel of 'original', in a template-wise manner.
+                - That noisy channel should have the same sampling frequency has every channel of 'original'.
+            - If 'noise' has multiple segments, they are concatenated to make a hyper-template.
+            - Exception: in the case where both Timeseries having the same domain, the noisy samples will be added in a
+                segment-wise manner.
+
+        When 'noise' is a Timeseries sampled at the same frequency of 'original':
+            - Its samples will be added to every channel of 'original', in a template-wise manner.
+            - If 'noise' has multiple segments, they are concatenated to make a hyper-template.
+            - Exception: in the case where both Timeseries having the same domain, the noisy samples will be added in a
+                segment-wise manner.
+            - 'noise' should have been sampled at the same frequency as 'original'.
+
+        What is "template-wise manner"?
+            - If the template segment is longer than any original segment, the template segment will be trimmed accordingly.
+            - If the template segment is shorter than any original segment, the template will repeated in time.
+            - If the two segments are of equal length, they are added as they are.
+
+        :return: A Biosignal with the same properties as the 'original', but with noise added to the samples of every channel.
+        :rtype: Biosignal subclass
+        """
+
+        if not isinstance(original, Biosignal):
+            raise TypeError(f"Parameter 'original' must be of type Biosignal; but {type(original)} was given.")
+
+        if not isinstance(noise, (Noise, Timeseries, Biosignal)):
+            raise TypeError(f"Parameter 'noise' must be of types Noise, Timeseries or Biosignal; but {type(noise)} was given.")
+
+        if name is not None and not isinstance(name, str):
+            raise TypeError(
+                f"Parameter 'name' must be of type str; but {type(name)} was given.")
+
+        def __add_template_noise(samples: ndarray, template: ndarray):
+            # Case A
+            if len(samples) < len(template):
+                _template = template[:len(samples)]  # cut where it is enough
+                return samples + _template  # add values
+            # Case B
+            elif len(samples) > len(template):
+                _template = np.tile(template, int(len(samples)/len(template)))  # repeat full-pattern
+                _template = _template[:len(samples)]  # cut where it is enough
+                return samples + _template  # add values
+            # Case C
+            else:  # equal lengths
+                return samples + template  # add values
+
+        def __noisy_timeseries(original:Timeseries, noise:Timeseries) -> Timeseries:
+            # Case 1: Segment-wise
+            if original.domain == noise.domain:
+                template = [noise.samples, ] if noise.is_contiguous else noise.samples
+                return original._apply_operation_and_new(__add_template_noise, template=template,
+                                                         iterate_over_each_segment_key='template')
+            # Case 2: Template-wise
+            elif noise.is_contiguous:
+                template = noise.samples
+                return original._apply_operation_and_new(__add_template_noise, template=template)
+            # Case 3: Template-wise, with hyper-template
+            else:
+                template = np.concatenate(noise.samples)  # concatenate as a hyper-template
+                return original._apply_operation_and_new(__add_template_noise, template=template)
+
+        noisy_channels = {}
+
+        # Case Noise
+        if isinstance(noise, Noise):
+            for channel_name in original.channel_names:
+                channel = original._get_channel(channel_name)
+                if channel.sampling_frequency == noise.sampling_frequency:
+                    template = noise[channel.duration]
+                    noisy_channels[channel_name] = channel._apply_operation_and_new(__add_template_noise, template=template)
+                else:
+                    raise AssertionError(
+                        f"Noise does not have the same sampling frequency as channel '{channel_name}' of 'original'."
+                        f"Suggestion: Resample one of them first.")
+
+        # Case Timeseries
+        elif isinstance(noise, Timeseries):
+            for channel_name in original.channel_names:
+                channel = original._get_channel(channel_name)
+                if channel.units != noise.units and channel.units != None and channel.units != Unitless and noise.units != None and noise.units != Unitless:
+                    raise AssertionError(
+                        f"Noise does not have the same units as channel '{channel_name}' of 'original'."
+                        f"Suggestion: If possible, convert one of them first or drop units.")
+                if channel.sampling_frequency == noise.sampling_frequency:
+                    noisy_channel = __noisy_timeseries(channel, noise)
+                    noisy_channels[channel_name] = noisy_channel
+                else:
+                    raise AssertionError(
+                        f"Noise does not have the same sampling frequency as channel '{channel_name}' of 'original'."
+                        f"Suggestion: Resample one of them first.")
+
+
+        elif isinstance(noise, Biosignal):
+            # Case Biosignal channel-wise
+            if set(original.channel_names) == set(noise.channel_names):
+                for channel_name in original.channel_names:
+                    original_channel = original._get_channel(channel_name)
+                    noise_channel = noise._get_channel(channel_name)
+                    if original_channel.units != noise_channel.units and original_channel.units != None and original_channel.units != Unitless and noise_channel.units != None and noise_channel.units != Unitless:
+                        raise AssertionError(
+                            f"Noise does not have the same units as channel '{channel_name}' of 'original'."
+                            f"Suggestion: If possible, convert one of them first or drop units.")
+                    if original_channel.sampling_frequency == noise_channel.sampling_frequency:
+                        noisy_channel = __noisy_timeseries(original_channel, noise_channel)
+                        noisy_channels[channel_name] = noisy_channel
+                    else:
+                        raise AssertionError(f"Channels '{channel_name}' do not have the same sampling frequency in 'original' and 'noise'."
+                                             f"Suggestion: Resample one of them first.")
+
+            # Case Biosignal unique channel
+            elif len(noise) == 1:
+                x = tuple(iter(noise))[0]
+                for channel_name in original.channel_names:
+                    channel = original._get_channel(channel_name)
+                    if channel.units != x.units and channel.units != None and channel.units != Unitless and x.units != None and x.units != Unitless:
+                        raise AssertionError(
+                            f"Noise does not have the same units as channel '{channel_name}' of 'original'."
+                            f"Suggestion: If possible, convert one of them first or drop units.")
+                    if channel.sampling_frequency == x.sampling_frequency:
+                        noisy_channel = __noisy_timeseries(channel, x)
+                        noisy_channels[channel_name] = noisy_channel
+                    else:
+                        raise AssertionError(f"Noise does not have the same sampling frequency as channel '{channel_name}' of 'original'."
+                                             f"Suggestion: Resample one of them first.")
+
+            else:
+                raise ArithmeticError("Noise should have 1 channel only (to be added to every channel of 'original')"
+                                      "or the same channels as 'original' (for each to be added to the corresponding channel of 'original'.")
+
+        events = set.union(set(original.events), set(noise.events)) if isinstance(noise, (Biosignal, Timeseries)) else None
+
+        return original._new(timeseries = noisy_channels, name = name if name is not None else 'Noisy ' + original.name,
+                             events = events, added_noise=noise)
 
 
     EXTENSION = '.biosignal'
