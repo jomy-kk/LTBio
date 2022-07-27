@@ -737,7 +737,7 @@ class Timeseries():
             except IndexError:
                 raise ValueError(
                     f"Event '{event.name}' is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
-            if event.name in self.__associated_events:
+            if event.name in self.__associated_events and event != self.__associated_events[event.name]:
                 raise NameError(
                     f"There is already another Event named with '{events.name}'. Cannot have two Events with the same name.")
             else:
