@@ -337,8 +337,17 @@ class Biosignal(ABC):
         else:
             raise TypeError(f'Cannot apply this operation with {type(item)}.')
 
+    def __mul__(self, other):
+        if isinstance(other, (float, int)):
+            suffix = f' (dilated up by {str(other)})' if other > 1 else f' (compressed up by {str(other)})'
+            return self._apply_operation_and_new(lambda x: x*other, name=self.name + suffix)
+
     def __add__(self, other):
-        ''' Two functionalities:
+        """
+        If a float or int:
+            Add constant to every channel. Up-translation of the signal.
+
+        If Biosignals, Two functionalities:
             - A: Temporally concatenates two Biosignal, if they have the same set of channel names.
             - B: Joins the channels of two Biosignals of the same, if they do not have the same set of channel names.
         Requisites:
@@ -351,50 +360,56 @@ class Biosignal(ABC):
             - TypeError if Biosignals are not of the same type.
             - ArithmeticError if Biosignals are not associated to the same patient, if any.
             - ArithmeticError if, when temporally concatenating Biosignals, the second comes before the first.
-        '''
+        """
 
-        # Check for possible arithmetic errors
+        if isinstance(other, (float, int)):
+            return self._apply_operation_and_new(lambda x: x+other, name=self.name + f' (shifted up by) {str(other)}')
 
-        if self.type != other.type:
-            raise TypeError("Cannot add a {0} to a {1}".format(other.type.__name__, self.type.__name__))
+        if isinstance(other, Biosignal):
+            # Check for possible arithmetic errors
 
-        if self.patient_code != other.patient_code:
-            raise ArithmeticError("Cannot add two Biosignals with different associated patient codes.")
+            if self.type != other.type:
+                raise TypeError("Cannot add a {0} to a {1}".format(other.type.__name__, self.type.__name__))
 
-        # Prepare common metadata
+            if self.patient_code != other.patient_code:
+                raise ArithmeticError("Cannot add two Biosignals with different associated patient codes.")
 
-        acquisition_location = self.acquisition_location if self.acquisition_location == other.acquisition_location else None
+            # Prepare common metadata
 
-        source = type(self.source) if ((isinstance(self.source, ABCMeta) and isinstance(other.source, ABCMeta)
-                                       and self.source == other.source) or
-                                       (type(self.source) == type(other.source))
-                                       ) else None
+            acquisition_location = self.acquisition_location if self.acquisition_location == other.acquisition_location else None
 
-        name = f"{self.name} and {other.name}"
+            source = type(self.source) if ((isinstance(self.source, ABCMeta) and isinstance(other.source, ABCMeta)
+                                           and self.source == other.source) or
+                                           (type(self.source) == type(other.source))
+                                           ) else None
 
-        res_timeseries = {}
+            name = f"{self.name} and {other.name}"
 
-        # Functionality A:
-        if set(self.channel_names) == set(other.channel_names):
-            if other.initial_datetime < self.final_datetime:
-                raise ArithmeticError("The second Biosignal comes before (in time) the first Biosignal.")
+            res_timeseries = {}
+
+            # Functionality A:
+            if set(self.channel_names) == set(other.channel_names):
+                if other.initial_datetime < self.final_datetime:
+                    raise ArithmeticError("The second Biosignal comes before (in time) the first Biosignal.")
+                else:
+                    # Perform addition
+                    for channel_name in self.channel_names:
+                        res_timeseries[channel_name] = self._to_dict()[channel_name] + other._to_dict()[channel_name]
+
+            # Functionality B
+            elif not set(self.channel_names) in set(other.channel_names) and not set(other.channel_names) in set(self.channel_names):
+                res_timeseries.update(self._to_dict())
+                res_timeseries.update(other._to_dict())
+
+            # No functionality accepted
             else:
-                # Perform addition
-                for channel_name in self.channel_names:
-                    res_timeseries[channel_name] = self._to_dict()[channel_name] + other._to_dict()[channel_name]
+                raise ArithmeticError("No new channels were given nor the same set of channels to concatenate.")
 
-        # Functionality B
-        elif not set(self.channel_names) in set(other.channel_names) and not set(other.channel_names) in set(self.channel_names):
-            res_timeseries.update(self._to_dict())
-            res_timeseries.update(other._to_dict())
+            events = set(self.events).union(set(other.events))
+            new = self._new(timeseries=res_timeseries, source=source, acquisition_location=acquisition_location, name=name, events=events)
+            return new
 
-        # No functionality accepted
-        else:
-            raise ArithmeticError("No new channels were given nor the same set of channels to concatenate.")
-
-        events = set(self.events).union(set(other.events))
-        new = self._new(timeseries=res_timeseries, source=source, acquisition_location=acquisition_location, name=name, events=events)
-        return new
+        raise TypeError(f"Addition operation not valid with Biosignal and object of type {type(other)}.")
 
     def set_channel_name(self, current:str|BodyLocation, new:str|BodyLocation):
         if current in self.__timeseries.keys():

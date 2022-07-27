@@ -240,6 +240,12 @@ class BiosignalTestCase(unittest.TestCase):
             ecg3 = ECG({"a": ts4, "b": ts5}, patient=Patient(code=27462))
             ecg1 + ecg3
 
+    def test_multiply_by_value(self):
+        ecg1 = ECG({"a":self.ts1, "b":self.ts2, "c":self.ts3})
+        ecg2 = ecg1 * 1.5
+        self.assertTrue(all(ecg2._Biosignal__timeseries['a'].samples[:10] == np.array(self.samples1) * 1.5))
+        self.assertTrue(all(ecg2._Biosignal__timeseries['b'].samples[:10] == np.array(self.samples2) * 1.5))
+        self.assertTrue(all(ecg2._Biosignal__timeseries['c'].samples[:10] == np.array(self.samples3) * 1.5))
 
     def test_plot_spectrum(cls):
         ecg = ECG(cls.testpath, HSM)
