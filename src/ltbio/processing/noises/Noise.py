@@ -19,7 +19,7 @@ from matplotlib import pyplot as plt
 from numpy import ndarray, array
 from scipy.signal import resample
 
-from ltbio.biosignals.modalities.Biosignal import Biosignal
+import ltbio.biosignals.modalities as modalities
 from ltbio.biosignals.timeseries.Frequency import Frequency
 
 
@@ -78,8 +78,8 @@ class Noise():
 
     def __add__(self, other):
         """The built-in sum operation (+) adds this noise, in an additive way, to a Biosignal."""
-        if isinstance(other, Biosignal):
-            return Biosignal.withAdditiveNoise(original=other, noise=self)
+        if isinstance(other, modalities.Biosignal):
+            return modalities.Biosignal.withAdditiveNoise(original=other, noise=self)
 
         raise TypeError("Trying to add noise to an object of type {}. Expected type: Biosignal.".format(type(other)))
 
