@@ -15,11 +15,11 @@ class ECGTestCase(unittest.TestCase):
         cls.ecg = ECG('resources/MITDB_DAT_tests', MITDB)
 
     def test_plotting_summary_biosppy_filtering_default(self):
-        self.ecg['2000-01-01 00:00:15':'2000-01-01 00:00:45']['V2'].plot_summary(show=True)
+        self.ecg['2000-01-01 00:00:15':'2000-01-01 00:00:45']['V2'].plot_summary(show=False)
 
     def test_plotting_summary_own_filtering(self):
         self.ecg.filter(FrequencyDomainFilter(FrequencyResponse.FIR, BandType.LOWPASS, cutoff=20, order=4))
-        self.ecg['2000-01-01 00:00:15':'2000-01-01 00:00:45']['V2'].plot_summary(show=True)
+        self.ecg['2000-01-01 00:00:15':'2000-01-01 00:00:45']['V2'].plot_summary(show=False)
         self.ecg.undo_filters()
 
     def test_r_peaks(self):

@@ -53,12 +53,12 @@ class NoiseTestCase(unittest.TestCase):
 
     def test_plot_example(self):
         noise = GaussianNoise(0, 1, self.sf)
-        noise.plot()
+        noise.plot(show=False)
 
     def test_plot_last_samples(self):
         noise = GaussianNoise(0, 1, self.sf)
         x = noise[timedelta(minutes=2)]
-        noise.plot()
+        noise.plot(show=False)
 
 
 if __name__ == '__main__':
