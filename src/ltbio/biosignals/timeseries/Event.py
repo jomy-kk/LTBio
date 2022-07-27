@@ -89,6 +89,9 @@ class Event():
         else:
             return self.__name + ': [' + self.__onset.strftime("%d %b, %H:%M:%S") + '; ' + self.__offset.strftime("%d %b, %H:%M:%S") + ']'
 
+    def __hash__(self):
+        return hash((self.__name, self.__onset, self.__offset))
+
     def __eq__(self, other):
         return self.__name == other.name and self.__onset == other._Event__onset and self.__offset == other._Event__offset
 
