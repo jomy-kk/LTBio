@@ -773,6 +773,43 @@ class Biosignal(ABC):
         return original._new(timeseries = noisy_channels, name = name if name is not None else 'Noisy ' + original.name,
                              events = events, added_noise=noise)
 
+    @classmethod
+    def fromNoise(cls, noises: Noise | Dict[str|BodyLocation, Noise], time_interval: DateTimeRange, name: str = None):
+        """
+        Creates a type of Biosignal from a noise source.
+
+        :param noises:
+            - If a Noise object is given, the Biosignal will have 1 channel for the specified time interval.
+            - If a dictionary of Noise objects is given, the Biosignal will have multiple channels, with different
+            generated samples, for the specified time interval, named after the dictionary keys.
+
+        :param time_interval: Interval [x, y[ where x will be the initial date and time of every channel, and y will be
+        the final date and time of every channel.
+
+        :param name: The name to be associated to the Biosignal. Optional.
+
+        :return: Biosignal subclass
+        """
+
+        if not isinstance(time_interval, DateTimeRange):
+            raise TypeError(f"Parameter 'time_interval' should be of type DateTimeRange.")
+        duration = time_interval.timedelta
+
+        channels = {}
+
+        if isinstance(noises, Noise):
+            samples = noises[duration]
+            channels[noises.name] = Timeseries(samples, time_interval.start_datetime, noises.sampling_frequency,
+                                                units=Unitless(), name=noises.name)
+        elif isinstance(noises, dict):
+            channels = {}
+            for channel_name, noise in noises.items():
+                samples = noise[duration]
+                channels[channel_name] = Timeseries(samples, time_interval.start_datetime, noise.sampling_frequency,
+                                                    units=Unitless(), name=noise.name)
+
+        return cls(channels, name=name)
+
 
     EXTENSION = '.biosignal'
 
