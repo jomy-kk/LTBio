@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from numpy import array, concatenate, allclose
 
@@ -237,6 +237,25 @@ class BiosignalWithNoiseTestCase(unittest.TestCase):
                          '3': Timeseries(self.samples1, self.initial1, 3.)})
         with self.assertRaises(AssertionError):
             noisy_ecg = Biosignal.withAdditiveNoise(original=self.ecg13, noise=bad_noise)
+
+
+    # PLOTS
+
+    from ltbio.biosignals.modalities.Biosignal import plot_comparison
+
+    def test_plot_before_and_after(self):
+        from ltbio.biosignals.sources import MITDB
+        ecg = ECG('resources/MITDB_DAT_tests', MITDB)
+        noise = GaussianNoise(0, 0.2, ecg.sampling_frequency, name='White Noise')
+        noisy_ecg = Biosignal.withAdditiveNoise(original=ecg, noise=noise)
+        self.assertTrue(noisy_ecg.added_noise, noise)
+
+        from ltbio.biosignals import plot_comparison
+        start, end = ecg.initial_datetime, ecg.initial_datetime + timedelta(seconds=6)
+
+        ecg[start:end].plot(show=False)
+        noisy_ecg[start:end].plot(show=False)
+        plot_comparison((noisy_ecg[start:end], ecg[start:end]), show=False)
 
 if __name__ == '__main__':
     unittest.main()

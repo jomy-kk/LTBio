@@ -16,6 +16,7 @@
 
 from abc import ABC, abstractmethod, ABCMeta
 from datetime import datetime, timedelta
+from math import ceil
 from typing import Dict, Tuple, Collection, Set, ClassVar
 
 import matplotlib.pyplot as plt
@@ -678,7 +679,7 @@ class Biosignal(ABC):
                 return samples + _template  # add values
             # Case B
             elif len(samples) > len(template):
-                _template = np.tile(template, int(len(samples)/len(template)))  # repeat full-pattern
+                _template = np.tile(template, ceil(len(samples)/len(template)))  # repeat full-pattern
                 _template = _template[:len(samples)]  # cut where it is enough
                 return samples + _template  # add values
             # Case C
@@ -832,3 +833,54 @@ class Biosignal(ABC):
         with open(filepath, 'rb') as f:
             from _pickle import load  # _pickle is cPickle
             return load(f)
+
+
+def plot_comparison(biosignals: Collection[Biosignal], show: bool = True, save_to: str = None):
+    # Check parameters
+    if not isinstance(biosignals, Collection):
+        raise TypeError("Parameter 'biosignals' should be a collection of Biosignal objects.")
+
+    channel_names = None
+    for item in biosignals:
+        if not isinstance(item, Biosignal):
+            raise TypeError("Parameter 'biosignals' should be a collection of Biosignal objects.")
+        if channel_names is None:
+            channel_names = set(item.channel_names)
+        else:
+            if set(item.channel_names) != channel_names:
+                raise AssertionError("The set of channel names of all Biosignals must be the same for comparison.")
+
+
+    fig = plt.figure()
+
+    for i, channel_name in zip(range(len(channel_names)), channel_names):
+        ax = plt.subplot(100 * (len(channel_names)) + 10 + i + 1, title=channel_name)
+        ax.title.set_size(8)
+        ax.margins(x=0)
+        ax.set_xlabel('Time', fontsize=6, rotation=0, loc="right")
+        ax.set_ylabel('Amplitude', fontsize=6, rotation=90, loc="top")
+        plt.xticks(fontsize=6)
+        plt.yticks(fontsize=6)
+        ax.grid()
+
+        domain = None
+        for biosignal in biosignals:
+            channel = biosignal._get_channel(channel_name)
+            if domain is None:
+                domain = channel.domain
+            else:
+                if channel.domain != domain:
+                    raise AssertionError("The corresponding channels of each Biosignal must have the same domain for comparison."
+                                         f"Channel {channel_name} of {biosignal.name} has a different domain from the"
+                                         "corresponding channels of the other Biosignals."
+                                         f"\n> Common domain: {domain}\n> Different domain: {channel.domain}")
+            channel._plot(label=biosignal.name)
+        ax.legend()
+
+    biosignal_names = ", ".join([b.name for b in biosignals])
+
+    fig.suptitle('Comparison of Biosignals ' + biosignal_names, fontsize=10)
+    fig.tight_layout()
+    if save_to is not None:
+        fig.savefig(save_to)
+    plt.show() if show else plt.close()

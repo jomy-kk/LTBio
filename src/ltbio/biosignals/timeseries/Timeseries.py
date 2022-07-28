@@ -853,7 +853,7 @@ class Timeseries():
             plt.plot(x, y, alpha=0.6, linewidth=0.5,
                      label='From {0} to {1}'.format(segment.initial_datetime, segment.final_datetime))
 
-    def _plot(self):
+    def _plot(self, label:str = None):
         xticks, xticks_labels = [], []  # to store the initial and final ticks of each Segment
         SPACE = int(self.__sampling_frequency) * 2  # the empty space between each Segment
 
@@ -863,7 +863,7 @@ class Timeseries():
             if i > 0:  # except for the first Segment
                 x = array(x) + (xticks[-1] + SPACE)  # shift right in time
                 plt.gca().axvspan(x[0] - SPACE, x[0], alpha=0.05, color='black')  # add empty space in between Segments
-            plt.gca().plot(x, y, linewidth=0.5)
+            plt.gca().plot(x, y, linewidth=0.5, alpha=0.7, label=label)
 
             xticks += [x[0], x[-1]]  # add positions of the first and last samples of this Segment
 
