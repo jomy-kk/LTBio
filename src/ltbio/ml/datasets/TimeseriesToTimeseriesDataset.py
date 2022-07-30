@@ -25,6 +25,14 @@ class TimeseriesToTimeseriesDataset(Dataset):
 
     def __init__(self, object:Collection[Timeseries], target:Collection[Timeseries], name: str = None):
 
+        # Assert all Timeseries have the same domain
+        objects_domain = tuple(object.values())[0].domain
+        if any([x.domain != objects_domain for x in object.values()]):
+            raise AssertionError("All object Timeseries must have the same domain in a TimeseriesToTimeseriesDataset.")
+        targets_domain = tuple(target.values())[0].domain
+        if any([x.domain != targets_domain for x in target.values()]):
+            raise AssertionError("All target Timeseries must have the same domain in a TimeseriesToTimeseriesDataset.")
+
         # Gets samples from each Segment of each Timeseries.
         object_all_segments = np.array([timeseries._to_array() for timeseries in object.values()])
         target_all_segments = np.array([timeseries._to_array() for timeseries in target.values()])
@@ -37,8 +45,8 @@ class TimeseriesToTimeseriesDataset(Dataset):
         self.name = name
 
     def __getitem__(self, index) -> tuple[Tensor, Tensor]:
-        o = self.__objects(index)
-        t = self.__targets(index)
+        o = self.__objects[index]
+        t = self.__targets[index]
         return from_numpy(o).float(), from_numpy(t).float()
 
     def __len__(self):
