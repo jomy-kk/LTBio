@@ -765,15 +765,6 @@ class Timeseries():
         else:
             raise NameError(f"There's no Event '{event_name}' associated to this Timeseries.")
 
-    def to_array(self):
-        """
-        Converts Timeseries to numpy.ndarray, only if it contains just one Segment.
-        :return: An array with the Timeseries' samples.
-        :rtype: numpy.ndarray
-        """
-        assert len(self.__segments) == 1
-        return array(self.__segments[0].samples)
-
     # ===================================
     # INTERNAL USAGE - Convert indexes <-> timepoints && Get Samples
 
@@ -840,6 +831,14 @@ class Timeseries():
             timepoints = divide(index, self.__sampling_frequency)  # Transform to timepoints
             all_timepoints += [segment.initial_datetime + timedelta(seconds=tp) for tp in timepoints]  # Append them all
         return tuple(all_timepoints)
+
+    def _to_array(self) -> list[ndarray]:
+        """
+        Converts Timeseries to list of numpy.ndarray.
+        :return: A list with the Timeseries' samples of each segment.
+        :rtype: list[numpy.ndarray]
+        """
+        return [segment.samples.copy() for segment in self.__segments]
 
     # ===================================
     # INTERNAL USAGE - Plots

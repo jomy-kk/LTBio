@@ -26,8 +26,8 @@ class TimeseriesToTimeseriesDataset(Dataset):
     def __init__(self, object:Collection[Timeseries], target:Collection[Timeseries], name: str = None):
 
         # Gets samples from each Segment of each Timeseries.
-        object_all_segments = np.array([[segment.samples for segment in timeseries.segments] for timeseries in object])
-        target_all_segments = np.array([[segment.samples for segment in timeseries.segments] for timeseries in target])
+        object_all_segments = np.array([timeseries._to_array() for timeseries in object.values()])
+        target_all_segments = np.array([timeseries._to_array() for timeseries in target.values()])
 
         # VStacks the segments of all Timeseries. Each item is a sample to be fed to the model.
         self.__objects = object_all_segments.swapaxes(0, 1)
