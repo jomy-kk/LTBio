@@ -992,7 +992,7 @@ class Timeseries():
         elif overlapping_segments is True:
             new = OverlappingTimeseries(segments, initial_datetime, sampling_frequency, units, name)
         else:
-            new = OverlappingTimeseries(segments, initial_datetime, sampling_frequency, units, name)
+            new = Timeseries(segments, initial_datetime, sampling_frequency, units, name)
 
         new._Timeseries__is_equally_segmented = equally_segmented
         new.associate(events)
