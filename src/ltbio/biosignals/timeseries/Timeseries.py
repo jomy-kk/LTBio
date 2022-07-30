@@ -16,13 +16,14 @@
 # ===================================
 
 from datetime import datetime, timedelta
+from math import ceil
 from typing import List, Iterable, Collection, Dict, Tuple, Callable
 
 import matplotlib.pyplot as plt
 from biosppy.signals.tools import power_spectrum
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime
-from numpy import array, append, ndarray, divide
+from numpy import array, append, ndarray, divide, concatenate
 from scipy.signal import resample
 
 from ltbio.biosignals.timeseries.Event import Event
@@ -1139,6 +1140,34 @@ class Timeseries():
 
         return self.__new(segments=res_trimmed_segments, equally_segmented=equally_segmented,
                           overlapping_segments=overlapping_segments)
+
+    # ===================================
+    # INTERNAL USAGE - Reshape
+
+    def _concatenate_segments(self):
+        if len(self.__segments) > 1:
+            self.__segments = [concatenate(self._to_array()), ]
+        else:
+            pass  # no need
+
+    def _partition(self, time_intervals:tuple[DateTimeRange]):
+        assert len(self.__segments) == 1
+        samples = self.__segments[0]
+        partitions = []
+        i = 0
+        for x in time_intervals:
+            n_samples_required = int(x.timedelta.total_seconds() * self.__sampling_frequency)
+            if n_samples_required > len(samples):
+                samples = np.tile(samples, ceil(n_samples_required/len(samples)))  # repeat
+                samples = samples[:n_samples_required]  # cut where it is enough
+                partitions.append(Timeseries.__Segment(samples, x.start_datetime, self.__sampling_frequency))
+                i = 0
+            else:
+                f = i + n_samples_required
+                partitions.append(Timeseries.__Segment(samples[i: f], x.start_datetime, self.__sampling_frequency))
+                i += f
+
+        self.__segments = partitions
 
 
 class OverlappingTimeseries(Timeseries):
