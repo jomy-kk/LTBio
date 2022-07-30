@@ -32,13 +32,13 @@ class TimeDomainFilterTestCase(unittest.TestCase):
     def check_samples(cls, targetx1, targetx2, targety1, targety2):
         # Check sizes
         cls.assertEquals(len(cls.biosignal), 2)
-        cls.assertEquals(len(cls.biosignal[cls.channelx][:]), cls.n_samplesx)
-        cls.assertEquals(len(cls.biosignal[cls.channely][:]), cls.n_samplesy)
+        cls.assertEquals(len(cls.biosignal._get_channel(cls.channelx)[:]), cls.n_samplesx)
+        cls.assertEquals(len(cls.biosignal._get_channel(cls.channely)[:]), cls.n_samplesy)
         # Check first 10 samples of each segment
-        cls.assertTrue(allclose(cls.biosignal[cls.channelx][cls.initial1:cls.initial1 + timedelta(seconds=16 / cls.sf)].segments[0][:], targetx1))
-        cls.assertTrue(allclose(cls.biosignal[cls.channelx][cls.initial2:cls.initial2 + timedelta(seconds=16 / cls.sf)].segments[0][:], targetx2))
-        cls.assertTrue(allclose(cls.biosignal[cls.channely][cls.initial1:cls.initial1 + timedelta(seconds=16 / cls.sf)].segments[0][:], targety1))
-        cls.assertTrue(allclose(cls.biosignal[cls.channely][cls.initial2:cls.initial2 + timedelta(seconds=16 / cls.sf)].segments[0][:], targety2))
+        cls.assertTrue(allclose(cls.biosignal._get_channel(cls.channelx)[cls.initial1:cls.initial1 + timedelta(seconds=16 / cls.sf)].segments[0][:], targetx1))
+        cls.assertTrue(allclose(cls.biosignal._get_channel(cls.channelx)[cls.initial2:cls.initial2 + timedelta(seconds=16 / cls.sf)].segments[0][:], targetx2))
+        cls.assertTrue(allclose(cls.biosignal._get_channel(cls.channely)[cls.initial1:cls.initial1 + timedelta(seconds=16 / cls.sf)].segments[0][:], targety1))
+        cls.assertTrue(allclose(cls.biosignal._get_channel(cls.channely)[cls.initial2:cls.initial2 + timedelta(seconds=16 / cls.sf)].segments[0][:], targety2))
 
     def test_create_filter(cls):
         filter = TimeDomainFilter(ConvolutionOperation.MEDIAN, window_length=timedelta(seconds=0.1), overlap_length=timedelta(seconds=0.05))

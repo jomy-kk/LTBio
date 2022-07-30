@@ -140,9 +140,9 @@ class BiosignalTestCase(unittest.TestCase):
         cls.assertEqual(ecg2.channel_names, x.channel_names)
 
         # It should be able to access these ...
-        cls.assertTrue(all(x["a"][a:b].segments[0].samples == cls.samples1[2:5]))
-        cls.assertTrue(all(x["b"][a:b].segments[0].samples == cls.samples2[2:5]))
-        cls.assertTrue(all(x["c"][a:b].segments[0].samples == cls.samples3[2:5]))
+        cls.assertTrue(all(x._get_channel('a')[a:b].segments[0].samples == cls.samples1[2:5]))
+        cls.assertTrue(all(x._get_channel('b')[a:b].segments[0].samples == cls.samples2[2:5]))
+        cls.assertTrue(all(x._get_channel('c')[a:b].segments[0].samples == cls.samples3[2:5]))
 
         # ... but not these
         with cls.assertRaises(IndexError):
@@ -165,9 +165,9 @@ class BiosignalTestCase(unittest.TestCase):
         cls.assertEqual(ecg3.channel_names, x.channel_names)
 
         # It should be able to access these ...
-        cls.assertTrue(all(x[BodyLocation.V1][a:b].segments[0].samples == cls.samples1[2:5]))
-        cls.assertTrue(all(x[BodyLocation.V2][a:b].segments[0].samples == cls.samples2[2:5]))
-        cls.assertTrue(all(x[BodyLocation.V3][a:b].segments[0].samples == cls.samples3[2:5]))
+        cls.assertTrue(all(x._get_channel(BodyLocation.V1)[a:b].segments[0].samples == cls.samples1[2:5]))
+        cls.assertTrue(all(x._get_channel(BodyLocation.V2)[a:b].segments[0].samples == cls.samples2[2:5]))
+        cls.assertTrue(all(x._get_channel(BodyLocation.V3)[a:b].segments[0].samples == cls.samples3[2:5]))
 
         # ... but not these
         with cls.assertRaises(IndexError):
