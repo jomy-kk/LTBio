@@ -539,22 +539,22 @@ class Biosignal(ABC):
         @param save_to: A path to save the plot as an image file; If none is provided, it is not saved.
         @return:
         '''
-        fig = plt.figure()
+        fig = plt.figure(figsize=(13, 6))
 
         for i, channel_name in zip(range(len(self)), self.channel_names):
             channel = self.__timeseries[channel_name]
             ax = plt.subplot(100 * (len(self)) + 10 + i + 1, title=channel_name)
-            ax.title.set_size(8)
+            ax.title.set_size(10)
             ax.margins(x=0)
-            ax.set_xlabel(xlabel, fontsize=6, rotation=0, loc="right")
-            ax.set_ylabel(ylabel, fontsize=6, rotation=90, loc="top")
-            plt.xticks(fontsize=6)
-            plt.yticks(fontsize=6)
+            ax.set_xlabel(xlabel, fontsize=8, rotation=0, loc="right")
+            ax.set_ylabel(ylabel, fontsize=8, rotation=90, loc="top")
+            plt.xticks(fontsize=9)
+            plt.yticks(fontsize=9)
             if grid_on:
                 ax.grid()
             timeseries_plotting_method(self=channel)
 
-        fig.suptitle((title + ' ' if title is not None else '') + self.name + ' from patient ' + str(self.patient_code), fontsize=10)
+        fig.suptitle((title + ' ' if title is not None else '') + self.name + ' from patient ' + str(self.patient_code), fontsize=11)
         fig.tight_layout()
         if save_to is not None:
             fig.savefig(save_to)
@@ -898,16 +898,16 @@ def plot_comparison(biosignals: Collection[Biosignal], show: bool = True, save_t
                 raise AssertionError("The set of channel names of all Biosignals must be the same for comparison.")
 
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(13, 6))
 
     for i, channel_name in zip(range(len(channel_names)), channel_names):
         ax = plt.subplot(100 * (len(channel_names)) + 10 + i + 1, title=channel_name)
-        ax.title.set_size(8)
+        ax.title.set_size(10)
         ax.margins(x=0)
-        ax.set_xlabel('Time', fontsize=6, rotation=0, loc="right")
-        ax.set_ylabel('Amplitude', fontsize=6, rotation=90, loc="top")
-        plt.xticks(fontsize=6)
-        plt.yticks(fontsize=6)
+        ax.set_xlabel('Time', fontsize=8, rotation=0, loc="right")
+        ax.set_ylabel('Amplitude', fontsize=8, rotation=90, loc="top")
+        plt.xticks(fontsize=9)
+        plt.yticks(fontsize=9)
         ax.grid()
 
         domain = None
@@ -926,7 +926,7 @@ def plot_comparison(biosignals: Collection[Biosignal], show: bool = True, save_t
 
     biosignal_names = ", ".join([b.name for b in biosignals])
 
-    fig.suptitle('Comparison of Biosignals ' + biosignal_names, fontsize=10)
+    fig.suptitle('Comparison of Biosignals ' + biosignal_names, fontsize=11)
     fig.tight_layout()
     if save_to is not None:
         fig.savefig(save_to)

@@ -879,7 +879,7 @@ class Timeseries():
         plt.tick_params(axis='x', direction='in')
 
         if self.units is not None:  # override ylabel
-            plt.gca().set_ylabel("Amplitude ({})".format(self.units))
+            plt.gca().set_ylabel("Amplitude ({})".format(str(self.units)))
 
     # ===================================
     # INTERNAL USAGE - Accept methods
