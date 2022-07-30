@@ -699,6 +699,26 @@ class Timeseries():
     # ===================================
     # Methods
 
+    def overlap(self, other) -> Tuple[DateTimeRange]:
+        if isinstance(other, Timeseries):
+            domain1:Tuple[DateTimeRange] = self.domain
+            domain2:Tuple[DateTimeRange] = other.domain
+
+        elif isinstance(other, tuple) and all(isinstance(x, DateTimeRange) for x in other):
+            domain1: Tuple[DateTimeRange] = self.domain
+            domain2: Tuple[DateTimeRange] = other
+
+        else:
+            raise TypeError("Overlap method must be used with another Timeseries or a union of intervals (Tuple[DateTimeRange]).")
+
+        intersections = []  # Union of the intervals fom both Timeseries that intersect
+        for interval1 in domain1:
+            for interval2 in domain2:
+                if interval1.is_intersection(interval2):
+                    intersections.append(interval1.intersection(interval2))
+
+        return tuple(intersections)
+
     def append(self, initial_datetime: datetime, samples: ndarray | list | tuple):
         """
         Appends a new sequence of samples in a separate Segment.
