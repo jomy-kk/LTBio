@@ -50,18 +50,20 @@ class Unit(ABC):
 
     @property
     def prefix(self) -> str:
-        return self.__multiplier.name
+        if self.__multiplier is Multiplier._:
+            return ''
+        else:
+            return self.__multiplier.name
+
+    SHORT: str
+    # Subclasses should override the conventional shorter version of writing a unit. Perhaps one-three letters.
 
     @property
-    @abstractmethod
     def short(self) -> str:
-        """
-        Subclasses should return the conventional shorter version of writing a unit. Perhaps one-three letters.
-        """
-        pass
+        return self.SHORT
 
     def __str__(self):
-       return str(self.prefix) + str(self.short)
+       return str(self.prefix) + str(self.SHORT)
 
     @abstractmethod
     def convert_to(self, unit:type) -> Callable[[array], array]:
@@ -75,8 +77,7 @@ class Unitless(Unit):
     def __init__(self):
         super().__init__(multiplier=Multiplier._)
 
-    def short(self):
-        return "(no unit)"
+    SHORT = 'n.d.'
 
     def convert_to(self, unit):
         pass
@@ -85,8 +86,7 @@ class G(Unit):
     def __init__(self, multiplier=Multiplier._):
         super().__init__(multiplier)
 
-    def short(self):
-        return "G"
+    SHORT = "G"
 
     def convert_to(self, unit):
        pass
@@ -95,8 +95,7 @@ class Volt(Unit):
     def __init__(self, multiplier=Multiplier.m):
         super().__init__(multiplier)
 
-    def short(self):
-        return "V"
+    SHORT = "V"
 
     def convert_to(self, unit):
         pass
@@ -105,8 +104,7 @@ class Siemens(Unit):
     def __init__(self, multiplier=Multiplier.u):
         super().__init__(multiplier)
 
-    def short(self):
-        return "S"
+    SHORT = "S"
 
     def convert_to(self, unit):
         pass
@@ -115,8 +113,7 @@ class DegreeCelsius(Unit):
     def __init__(self, multiplier=Multiplier._):
         super().__init__(multiplier)
 
-    def short(self):
-        return "ºC"
+    SHORT = "ºC"
 
     def convert_to(self, unit):
         pass
@@ -125,8 +122,7 @@ class BeatsPerMinute(Unit):
     def __init__(self, multiplier=Multiplier._):
         super().__init__(multiplier)
 
-    def short(self):
-        return "bpm"
+    SHORT = "bpm"
 
     def convert_to(self, unit):
         pass
