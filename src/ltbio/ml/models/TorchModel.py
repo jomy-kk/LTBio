@@ -24,11 +24,11 @@ from torch.optim.optimizer import Optimizer
 from torch.utils.data import random_split
 from torch.utils.data.dataloader import DataLoader
 
-from ml.datasets.TimeseriesToTimeseriesDataset import TimeseriesToTimeseriesDataset
+from ltbio.ml.datasets.TimeseriesToTimeseriesDataset import TimeseriesToTimeseriesDataset
 
-from biosignals import Timeseries
-from ml.models.SupervisedModel import SupervisedModel
-from ml.trainers import SupervisedTrainConditions
+from ltbio.biosignals import Timeseries
+from ltbio.ml.models.SupervisedModel import SupervisedModel
+from ltbio.ml.trainers import SupervisedTrainConditions
 
 
 class TorchModel(SupervisedModel):
@@ -50,19 +50,19 @@ class TorchModel(SupervisedModel):
         self.__loss = train_conditions.loss
         if not isinstance(self.__loss, _Loss):
             raise ValueError("The loss function given in 'train_conditions' is not a valid PyTorch loss function."
-                             "Give an instance of one of the listed here: https://pytorch.org/docs/stable/nn.html#loss-functions")
+                             " Give an instance of one of the listed here: https://pytorch.org/docs/stable/nn.html#loss-functions")
 
         # Check optimizer algorithms
         self.__optimizer = train_conditions.optimizer
         if not isinstance(self.__optimizer, Optimizer):
             raise ValueError("The optimizer algorithm given in 'train_conditions' is not a valid PyTorch optimizer."
-                             "Give an instance of one of the listed here: https://pytorch.org/docs/stable/optim.html#algorithms")
+                             " Give an instance of one of the listed here: https://pytorch.org/docs/stable/optim.html#algorithms")
 
         # Get hyperparameters
         self.__epochs = train_conditions.epochs
         self.__batch_size = train_conditions.batch_size
         self.__learning_rate = train_conditions.learning_rate
-        self.__validation_ratio = train_conditions.valtidation_ratio
+        self.__validation_ratio = train_conditions.validation_ratio
 
         # Learning rate is a property of the optimizer
         self.__optimizer.lr = self.__learning_rate
@@ -78,14 +78,14 @@ class TorchModel(SupervisedModel):
             dataset = TimeseriesToTimeseriesDataset(object, target)
 
             # Divide dataset into 2 smaller train and validation datasets
-            validation_size = len(dataset) * self.__validation_ratio
+            validation_size = int(len(dataset) * self.__validation_ratio)
             train_size = len(dataset) - validation_size
             self.__train_dataset , self.__validation_dataset = random_split(dataset, (train_size, validation_size), generator=torch.Generator().manual_seed(42))  # Docs recommend to fix the generator seed for reproducible results
 
             # Decide on shuffling between epochs
             epoch_shuffle = False
-            if 'epoch_shuffle' in self.last_train_conditions:  # Shuffle in every epoch
-                epoch_shuffle = self.last_train_conditions['epoch_shuffle']
+            if self.last_train_conditions.epoch_shuffle is True:  # Shuffle in every epoch
+                epoch_shuffle = True
 
             # Create DataLoaders
             train_dataloader = DataLoader(dataset=self.__train_dataset, batch_size=self.__batch_size, shuffle=epoch_shuffle)
@@ -106,25 +106,25 @@ class TorchModel(SupervisedModel):
 
                 # Backpropagation
                 self.__optimizer.zero_grad()
-                self.__loss.backward()
+                loss.backward()
                 self.__optimizer.step()
 
                 if batch % 100 == 0:
                     loss, current = loss.item(), batch * len(X)
                     print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
-            return loss  # returns the last loss
+            return loss.data.item()  # returns the last loss
 
         def __validate(dataloader: DataLoader) -> float:
             size = len(dataloader.dataset)
             num_batches = len(dataloader)
             self.design.eval()  # Sets the module in evaluation mode
-            test_loss, correct = 0, 0
+            test_loss, correct = 0., 0
             with torch.no_grad():
                 for X, y in dataloader:
                     # X, y = X.to(device), y.to(device)  # TODO: pass to cuda if available
                     pred = self.design(X)
-                    test_loss += self.__loss(pred, y).item()
+                    test_loss += self.__loss(pred, y).data.item()
                     correct += (pred.argmax(1) == y).type(torch.float).sum().item()
             test_loss /= num_batches
             correct /= size
@@ -204,13 +204,13 @@ class TorchModel(SupervisedModel):
 
     @property
     def non_trainable_parameters(self):
-        pass
+        return {}
 
     def save(self, path:str = '.', epoch:int = None):
         if not exists(path):
             makedirs(path)
 
-        self.design.cpu()
+        #self.design.cpu()
         torch.save({'train_dataset': self.__train_dataset,
                     'validation_dataset': self.__validation_dataset,
                     'state_dict': self.design.state_dict(),
