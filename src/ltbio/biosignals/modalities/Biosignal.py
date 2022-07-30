@@ -132,11 +132,22 @@ class Biosignal(ABC):
     def __has_single_channel(self) -> bool:
         return len(self) == 1
 
-    def _get_channel(self, channel_name:str):
+    def _get_channel(self, channel_name:str|BodyLocation):
         if channel_name in self.channel_names:
             return self.__timeseries[channel_name]
         else:
-            AttributeError(f"No channel named '{channel_name}'.")
+            raise AttributeError(f"No channel named '{channel_name}'.")
+
+    @property
+    def preview(self):
+        """Returns 20 seconds of the middle of the signal."""
+        domain = self.domain
+        middle_of_domain:DateTimeRange = domain[len(domain)//2]
+        middle = middle_of_domain.start_datetime + (middle_of_domain.timedelta / 2)
+        try:
+            return self[middle - timedelta(seconds=10) : middle + timedelta(seconds=10)]
+        except IndexError:
+            raise AssertionError(f"The middle segment does not have at least 20 seconds to return a preview.")
 
     def __getitem__(self, item):
         '''The built-in slicing and indexing operations.'''
@@ -146,7 +157,7 @@ class Biosignal(ABC):
                 raise IndexError("This Biosignal has multiple channels. Index the channel before indexing the datetime.")
             return self.__timeseries[self.channel_names[0]][item]
 
-        if isinstance(item, str):
+        if isinstance(item, (str, BodyLocation)):
             if item in self.channel_names:
                 if len(self) == 1:
                     raise IndexError("This Biosignal only has 1 channel. Index only the datetimes.")
@@ -197,7 +208,8 @@ class Biosignal(ABC):
             if self.__has_single_channel:  # one channel
                 channel_name = self.channel_names[0]
                 channel = self.__timeseries[channel_name]
-                return channel[item]
+                return self._new(timeseries={channel_name: channel[item]})
+
             else:  # multiple channels
                 ts = {}
                 events = set()
@@ -232,12 +244,12 @@ class Biosignal(ABC):
 
                 new = self._new(timeseries=ts, events=events)
 
-                """
+
                 try:  # to associate events, if they are inside the domain
                     new.associate(events)
                 except ValueError:
                     pass
-                """
+
 
                 return new
 
@@ -329,7 +341,14 @@ class Biosignal(ABC):
         if len(self) == 1:
             return tuple(self.__timeseries.values())[0].domain
         else:
-            raise AttributeError("Index 1 channel to get its domain.")
+            channels = tuple(self.__timeseries.values())
+            cumulative_intersection:Tuple[DateTimeRange]
+            for k in range(1, len(self)):
+                if k == 1:
+                    cumulative_intersection = channels[k].overlap(channels[k-1])
+                else:
+                    cumulative_intersection = channels[k].overlap(cumulative_intersection)
+            return cumulative_intersection
 
     @property
     def events(self):
@@ -766,7 +785,7 @@ class Biosignal(ABC):
                                              f"Suggestion: Resample one of them first.")
 
             else:
-                raise ArithmeticError("Noise should have 1 channel only (to be added to every channel of 'original')"
+                raise ArithmeticError("Noise should have 1 channel only (to be added to every channel of 'original') "
                                       "or the same channels as 'original' (for each to be added to the corresponding channel of 'original'.")
 
         events = set.union(set(original.events), set(noise.events)) if isinstance(noise, (Biosignal, Timeseries)) else None
@@ -774,8 +793,22 @@ class Biosignal(ABC):
         return original._new(timeseries = noisy_channels, name = name if name is not None else 'Noisy ' + original.name,
                              events = events, added_noise=noise)
 
+    def restructure_domain(self, time_intervals:tuple[DateTimeRange]):
+        domain = self.domain
+        if len(domain) >= len(time_intervals):
+            for channel in self:
+                # 1. Concatenate segments
+                channel._concatenate_segments()
+                # 2. Partition according to new domain
+                channel._partition(time_intervals)
+        else:
+            NotImplementedError("Not yet implemented.")
+
     @classmethod
-    def fromNoise(cls, noises: Noise | Dict[str|BodyLocation, Noise], time_interval: DateTimeRange, name: str = None):
+    def fromNoise(cls,
+                  noises: Noise | Dict[str|BodyLocation, Noise],
+                  time_intervals: DateTimeRange | tuple[DateTimeRange],
+                  name: str = None):
         """
         Creates a type of Biosignal from a noise source.
 
@@ -785,29 +818,43 @@ class Biosignal(ABC):
             generated samples, for the specified time interval, named after the dictionary keys.
 
         :param time_interval: Interval [x, y[ where x will be the initial date and time of every channel, and y will be
-        the final date and time of every channel.
+        the final date and time of every channel; on a union of intervals, in case a tuple is given.
 
         :param name: The name to be associated to the Biosignal. Optional.
 
         :return: Biosignal subclass
         """
 
-        if not isinstance(time_interval, DateTimeRange):
-            raise TypeError(f"Parameter 'time_interval' should be of type DateTimeRange.")
-        duration = time_interval.timedelta
+        if not isinstance(time_intervals, DateTimeRange) and isinstance(time_intervals, tuple) and \
+                not all([isinstance(x, DateTimeRange) for x in time_intervals]):
+            raise TypeError(f"Parameter 'time_interval' should be of type DateTimeRange or a tuple of them.")
+
+        if isinstance(time_intervals, tuple) and len(time_intervals) == 1:
+            time_intervals = time_intervals[0]
 
         channels = {}
 
         if isinstance(noises, Noise):
-            samples = noises[duration]
-            channels[noises.name] = Timeseries(samples, time_interval.start_datetime, noises.sampling_frequency,
-                                                units=Unitless(), name=noises.name)
+            if isinstance(time_intervals, DateTimeRange):
+                samples = noises[time_intervals.timedelta]
+                channels[noises.name] = Timeseries(samples, time_intervals.start_datetime, noises.sampling_frequency,
+                                                    units=Unitless(), name=noises.name)
+            else:
+                segments = {x.start_datetime: noises[x.timedelta] for x in time_intervals}
+                channels[noises.name] = Timeseries.withDiscontiguousSegments(segments, noises.sampling_frequency,
+                                                   units=Unitless(), name=noises.name)
+
         elif isinstance(noises, dict):
-            channels = {}
-            for channel_name, noise in noises.items():
-                samples = noise[duration]
-                channels[channel_name] = Timeseries(samples, time_interval.start_datetime, noise.sampling_frequency,
-                                                    units=Unitless(), name=noise.name)
+            if isinstance(time_intervals, DateTimeRange):
+                for channel_name, noise in noises.items():
+                    samples = noise[time_intervals.timedelta]
+                    channels[channel_name] = Timeseries(samples, time_intervals.start_datetime, noise.sampling_frequency,
+                                                        units=Unitless(), name=noise.name)
+            else:
+                for channel_name, noise in noises.items():
+                    segments = {x.start_datetime: noise[x.timedelta] for x in time_intervals}
+                    channels[channel_name] = Timeseries.withDiscontiguousSegments(segments, noise.sampling_frequency,
+                                                        units=Unitless(), name=noise.name)
 
         return cls(channels, name=name)
 
