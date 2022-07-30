@@ -1,6 +1,8 @@
 import unittest
 from datetime import datetime, timedelta
 
+from numpy import allclose
+
 from ltbio.biosignals.modalities.ECG import ECG
 from ltbio.biosignals.sources.MITDB import MITDB
 from ltbio.biosignals.timeseries.Timeseries import OverlappingTimeseries
@@ -32,21 +34,9 @@ class NormalizerTestCase(unittest.TestCase):
                                          0.8989297166808298,
                                          1.398167661042927]
 
-        cls.samples_after_minmax_norm = [0.3448849104859335,
-                                         0.3448849104859335,
-                                         0.3448849104859335,
-                                         0.3448849104859335,
-                                         0.3448849104859335,
-                                         0.3448849104859335,
-                                         0.3448849104859335,
-                                         0.3448849104859335,
-                                         0.3498849104859335,
-                                         0.3598849104859335,
-                                         0.38488491048593354,
-                                         0.4148849104859335,
-                                         0.45488491048593355,
-                                         0.4948849104859335,
-                                         0.6198849104859335]
+        cls.samples_after_minmax_norm = [0.45652174, 0.45652174, 0.45652174, 0.45652174, 0.45652174, 0.45652174,
+                                         0.45652174, 0.45652174, 0.45780051, 0.46035806, 0.46675192, 0.47442455,
+                                         0.48465473, 0.49488491, 0.52685422]
 
         cls.initial = datetime(2000, 1, 1, 0, 0, 0)  # 1/1/2000 0 AM
         cls.sf = 360.
@@ -76,7 +66,7 @@ class NormalizerTestCase(unittest.TestCase):
         self.assertTrue(all(self.timeseries.segments[0].samples[:15] == self.samples_before))
         self.assertEqual(len(self.timeseries), self.n_samples)
         normalizer.apply(self.timeseries)
-        self.assertTrue(all(self.timeseries.segments[0].samples[:15] == self.samples_after_minmax_norm))
+        self.assertTrue(allclose(self.timeseries.segments[0].samples[:15], self.samples_after_minmax_norm))
         self.assertEqual(len(self.timeseries), self.n_samples)
 
     def test_unrecognized_method_gives_error(self):
