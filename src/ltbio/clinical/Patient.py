@@ -33,6 +33,9 @@ class Sex(str, Enum):
 
 
 class Patient():
+
+    __SERIALVERSION: int = 1
+
     def __init__(self, code, name:str=None, age:int=None, sex:Sex=Sex._, conditions:Tuple[MedicalCondition]=(), medications:Tuple[Medication]=(), procedures:Tuple[SurgicalProcedure]=()):
         """
         Instantiates a patient.
@@ -79,3 +82,25 @@ class Patient():
         if (not self.__locked):
             return
         """
+
+    def __getstate__(self):
+        """
+        1: code
+        2: name (str)
+        3: age (int)
+        4: sex (Sex)
+        5: conditions (tuple)
+        6: medications (tuple)
+        7: procedures (tuple)
+        8: notes (list)
+        """
+        return (self.__SERIALVERSION, self.__code, self.__name, self.__age, self.__sex,
+                self.__conditions, self.__medications, self.__procedures, self.__notes)
+
+    def __setstate__(self, state):
+        if state[0] == 1:
+            self.__code, self.__name, self.__age, self.__sex = state[1], state[2], state[3], state[4]
+            self.__conditions, self.__medications, self.__procedures, self.__notes = state[5], state[6], state[7], state[8]
+        else:
+            raise IOError(f'Version of Patient object not supported. Serialized version: {state[0]};'
+                          f'Supported versions: 1.')

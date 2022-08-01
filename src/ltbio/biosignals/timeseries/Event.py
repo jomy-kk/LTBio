@@ -22,6 +22,8 @@ from dateutil.parser import parse as to_datetime
 
 class Event():
 
+    __SERIALVERSION: int = 1
+
     def __init__(self, name:str, onset:datetime|str=None, offset:datetime|str=None):
         if onset is None and offset is None:  # at least one
             raise AssertionError("At least an onset or an offset must be given to create an Event.")
@@ -109,3 +111,23 @@ class Event():
     def __ge__(self, other):
         return self > other or self == other
 
+    def __getstate__(self):
+        """
+        1: name (str)
+        2: onset (datetime)
+        3: offset (datetime)
+        4: other... (dict)
+        """
+        other_attributes = self.__dict__.copy()
+        del other_attributes['_Event__name'], other_attributes['_Event__onset'], other_attributes['_Event__offset']
+        return (self.__SERIALVERSION, self.__name, self.__onset, self.__offset) if len(other_attributes) == 0 \
+            else (self.__SERIALVERSION, self.__name, self.__onset, self.__offset, other_attributes)
+
+    def __setstate__(self, state):
+        if state[0] == 1:
+            self.__name, self.__onset, self.__offset = state[1], state[2], state[3]
+            if len(state) == 5:
+                self.__dict__.update(state[4])
+        else:
+            raise IOError(f'Version of {self.__class__.__name__} object not supported. Serialized version: {state[0]};'
+                          f'Supported versions: 1.')

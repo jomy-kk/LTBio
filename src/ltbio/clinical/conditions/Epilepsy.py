@@ -42,8 +42,8 @@ class Seizure:
 
 class Epilepsy(MedicalCondition):
 
-    def __init__(self):
-        super(MedicalCondition, self).__init__()
+    def __init__(self, years_since_diagnosis:float = None):
+        super(Epilepsy, self).__init__(years_since_diagnosis)
         self.seizures = []
 
     def __str__(self):

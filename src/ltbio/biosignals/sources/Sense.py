@@ -53,6 +53,7 @@ class Sense(BiosignalSource):
 
     def __init__(self, device_id:str, defaults_path:str=None):
         super().__init__()
+        self.__device_id = device_id
         Sense.DEVICE_ID = device_id
         if defaults_path is not None:
             Sense.DEFAULTS_PATH = defaults_path
@@ -64,6 +65,7 @@ class Sense(BiosignalSource):
             #print(f"Getting default mapping from {Sense.DEFAULTS_PATH}")
             #except:
             #    raise FileNotFoundError('No defaults file for Sense devices was provided, nor a config.ini was found.')
+        self.__defaults_path = defaults_path
 
         Sense.BAD_FORMAT = False
 
