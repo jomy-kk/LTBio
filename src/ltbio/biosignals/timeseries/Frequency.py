@@ -21,6 +21,9 @@ class Frequency(float):
     def __str__(self):
         return str(self.value) + ' Hz'
 
+    def __repr__(self):
+        return self.__str__()
+
     def __eq__(self, other):
         if isinstance(other, float):
             return other == self.value
