@@ -142,13 +142,38 @@ class Bitalino(BiosignalSource):
             dump(json_string, db_file, indent=2)
         return json_string[device]['label'], json_string[device]['column'], json_string[device]['location']
 
+    @staticmethod
+    def __read_metadata(dirfile, sensor, **options):
+        """
+        Read metadata of a single file
+        Args:
+            dirfile (str): contains the file path
+            sensor (str): contains the sensor label to look for
+        Returns:
+            sensor_idx (list), sensor_names (list), device (str), header (dict)
+            **options (dict): equal to _read arg
+        """
+        # size of bitalino file
+        file_size = path.getsize(dirfile)
+        if file_size <= 50:
+            return {}
+
+        with open(dirfile) as fh:
+            next(fh)
+            header = next(fh)[2:]
+            next(fh)
+
+        header = ast.literal_eval(header)
+        sensor_idx, sensor_names, device = Bitalino.__analog_idx(header, sensor, **options)
+        return sensor_idx, sensor_names, device, header[device]
+
     # @staticmethod
-    def __read_bit(list_, metadata=False, sensor_idx=[], sensor_names=[], device='', **options):
+    def __read_bit(dirfile, sensor, sensor_idx=[], sensor_names=[], device='', **options):
         """
         Reads one edf file
         Args:
-            list_ (list): contains the file path in index 0 and sensor label in index 1
-            metadata (bool): defines whether only metadata or actual timeseries values should be returned
+            dirfile (str): contains the file path
+            sensor (str): contains the sensor label to look for
             sensor_idx (list): list of indexes that correspond to the columns of sensor to extract
             sensor_names (list): list of names that correspond to the sensor label 
                 ex: sensor='ECG', sensor_names=['ECG_chest'] 
@@ -157,22 +182,16 @@ class Bitalino(BiosignalSource):
             **options (dict): equal to _read arg 
         
         Returns:
-            if metadata: sensor_idx (list), sensor_names (list), device (str), header (dict)
-            else: sensor_data (array): 2-dimensional array of time over sensors columns
-                  date (datetime): initial datetime of array
+            sensor_data (array): 2-dimensional array of time over sensors columns
+            date (datetime): initial datetime of array
             
         Raises:
             IOError: if sensor_names is empty, meaning no channels could be retrieved for chosen sensor 
         """
-        dirfile = list_[0]
-        sensor = list_[1]
         # size of bitalino file
         file_size = path.getsize(dirfile)
         if file_size <= 50:
-            if metadata:
-                return {}
-            else:
-                return '', []
+            return '', []
         with open(dirfile) as fh:
             next(fh)
             header = next(fh)[2:]
@@ -184,13 +203,10 @@ class Bitalino(BiosignalSource):
             return None
 
         header = ast.literal_eval(header)
-        if len(sensor_idx) < 1:
-            sensor_idx, sensor_names, device = Bitalino.__analog_idx(header, sensor, **options)
-        if metadata:
-            return sensor_idx, sensor_names, device, header[device]
         if len(sensor_names) > 0:
             sensor_data = data[:, sensor_idx]
             date = Bitalino.__aux_date(header[device])
+            print(date)
             return sensor_data, date
         else:
             raise IOError(f"Sensor {sensor} was not found in this acquisition, please insert another")
@@ -215,24 +231,25 @@ class Bitalino(BiosignalSource):
             IOError: if the list of bitalino files from dir returns empty
             IOError: if header is still empty after going through all Bitalino files
         """
+        options = {'json_bool': True, 'json_dir': 'bitalino.json'}
         sensor = 'ECG' if type is modalities.ECG else 'EDA' if type is modalities.EDA else 'PPG' if type is modalities.PPG else 'ACC' if type is modalities.ACC else 'PZT' if type is modalities.RESP else 'EMG' if type is modalities.EMG else ''
         if sensor == '':
             raise IOError(f'Type {type} does not have label associated, please insert one')
         # first a list is created with all the filenames that end in .edf and are inside the chosen dir
         # this is a list of lists where the second column is the type of channel to extract
-        all_files = sorted([[path.join(dir, file), sensor] for file in listdir(dir) if startkey in file])
+        all_files = sorted([path.join(dir, file) for file in listdir(dir) if startkey in file])
         # get header and sensor positions by running the bitalino files until a header is found
         if not all_files:
             raise IOError(f'No files in dir="{dir}" that start with {startkey}')
         header, h = {}, 0
         while len(header) < 1:
-            ch_idx, channels, device, header = Bitalino.__read_bit(all_files[h], metadata=True, **options)
+            ch_idx, channels, device, header = Bitalino.__read_metadata(all_files[h], sensor, **options)
             h += 1
         if header == {}:
             raise IOError(f'The files in {dir} did not contain a bitalino type {header}')
         new_dict = {}
-        segments = [Bitalino.__read_bit(file, sensor_idx=ch_idx, sensor_names=channels, device=device, **options)
-                    for file in all_files[h-1:]]
+        segments = [Bitalino.__read_bit(file, sensor=sensor, sensor_idx=ch_idx, sensor_names=channels,
+                                        device=device, **options) for file in all_files[h-1:]]
         for ch, channel in enumerate(channels):
 
             samples = {segment[1]: segment[0][:, ch] for segment in segments if segment}
