@@ -40,6 +40,8 @@ class Biosignal(ABC):
     Amplitude and spectrum plots can be displayed and saved.
     '''
 
+    __SERIALVERSION: int = 1
+
     def __init__(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | Tuple[datetime], source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None):
         self.__name = name
         self.__source = source
@@ -557,6 +559,31 @@ class Biosignal(ABC):
         else:
             raise NameError(f"There's no Event '{event_name}' associated to this Biosignal.")
 
+    # ===================================
+    # SERIALIZATION
+
+    def __getstate__(self):
+        """
+        1: __name (str)
+        2: __source (BiosignalSource subclass (instantiated or not))
+        3: __patient (Patient)
+        4: __acquisition_location (BodyLocation)
+        5: __associated_events (tuple)
+        6: __timeseries (dict)
+        """
+        return (self.__SERIALVERSION, self.__name, self.__source, self.__patient, self.__acquisition_location,
+                tuple(self.__associated_events.values()), self.__timeseries)
+
+    def __setstate__(self, state):
+        if state[0] == 1:
+            self.__name, self.__source, self.__patient, self.__acquisition_location = state[1:5]
+            self.__timeseries = state[6]
+            self.__associated_events = {}
+            self.associate(state[5])
+        else:
+            raise IOError(
+                f'Version of {self.__class__.__name__} object not supported. Serialized version: {state[0]};'
+                f'Supported versions: 1.')
 
     EXTENSION = '.biosignal'
 
@@ -566,8 +593,9 @@ class Biosignal(ABC):
             save_to += Biosignal.EXTENSION
 
         # Write
-        with open(save_to, 'wb') as f:
-            from _pickle import dump  # _pickle is cPickle
+        from bz2 import BZ2File
+        from _pickle import dump
+        with BZ2File(save_to, 'w') as f:
             dump(self, f)
 
     @classmethod
@@ -576,6 +604,8 @@ class Biosignal(ABC):
         if not filepath.endswith(Biosignal.EXTENSION):
             raise IOError("Only .biosignal files are allowed.")
 
-        with open(filepath, 'rb') as f:
-            from _pickle import load  # _pickle is cPickle
-            return load(f)
+        # Read
+        from bz2 import BZ2File
+        from _pickle import load
+        data = BZ2File(filepath, 'rb')
+        return load(data)

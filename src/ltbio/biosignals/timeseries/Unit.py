@@ -38,6 +38,8 @@ from abc import ABC, abstractmethod
 
 class Unit(ABC):
 
+    __SERIALVERSION: int = 1
+
     def __init__(self, multiplier:Multiplier):
         self.__multiplier = multiplier
 
@@ -69,6 +71,21 @@ class Unit(ABC):
         Subclasses should return a function that receives an array of samples in the 'self' unit and return a converted array in the unit specified.
         """
         pass
+
+    def __getstate__(self):
+        """
+        1: __multiplier (Multiplier)
+        """
+        return (self.__SERIALVERSION, self.__multiplier)
+
+    def __setstate__(self, state):
+        if state[0] == 1:
+            self.__multiplier = state[1]
+        else:
+            raise IOError(
+                f'Version of {self.__class__.__name__} object not supported. Serialized version: {state[0]};'
+                f'Supported versions: 1.')
+
 
 
 class Unitless(Unit):

@@ -25,6 +25,8 @@ from ltbio.biosignals.timeseries.Event import Event
 
 class BiosignalSource(ABC):
 
+    __SERIALVERSION: int = 1
+
     def __init__(self):
         pass
 
@@ -53,3 +55,18 @@ class BiosignalSource(ABC):
     @abstractmethod
     def _transfer(samples:array, type) -> array:
         pass
+
+    def __getstate__(self):
+        """
+        1: other... (dict)
+        """
+        other_attributes = self.__dict__.copy()
+        return (self.__SERIALVERSION, ) if len(other_attributes) == 0 else (self.__SERIALVERSION, other_attributes)
+
+    def __setstate__(self, state):
+        if state[0] == 1:
+            if len(state) == 2:
+                self.__dict__.update(state[1])
+        else:
+            raise IOError(f'Version of {self.__class__.__name__} object not supported. Serialized version: {state[0]};'
+                          f'Supported versions: 1.')

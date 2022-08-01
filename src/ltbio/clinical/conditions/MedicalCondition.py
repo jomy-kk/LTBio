@@ -18,6 +18,8 @@ from abc import ABC, abstractmethod
 
 class MedicalCondition(ABC):
 
+    __SERIALVERSION: int = 1
+
     def __init__(self, years_since_diagnosis:float = None):
         self.__years_since_diagnosis = years_since_diagnosis  # not defined
 
@@ -34,3 +36,21 @@ class MedicalCondition(ABC):
         '''Get the name of the condition. This getter should be overwritten in every subclass.'''
         pass
 
+    def __getstate__(self):
+        """
+        1: __years_since_diagnosis (float)
+        2: other... (dict)
+        """
+        other_attributes = self.__dict__.copy()
+        del other_attributes['_MedicalCondition__years_since_diagnosis']
+        return (self.__SERIALVERSION, self.__years_since_diagnosis) if len(other_attributes) == 0 \
+            else (self.__SERIALVERSION, self.__years_since_diagnosis, other_attributes)
+
+    def __setstate__(self, state):
+        if state[0] == 1:
+            self.__years_since_diagnosis = state[1]
+            if len(state) == 3:
+                self.__dict__.update(state[2])
+        else:
+            raise IOError(f'Version of MedicalCondition object not supported. Serialized version: {state[0]};'
+                          f'Supported versions: 1.')
