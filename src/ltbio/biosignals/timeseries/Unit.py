@@ -126,3 +126,12 @@ class BeatsPerMinute(Unit):
 
     def convert_to(self, unit):
         pass
+
+class Decibels(Unit):
+    def __init__(self, multiplier=Multiplier._):
+        super().__init__(multiplier)
+
+    SHORT = "dB"
+
+    def convert_to(self, unit):
+        pass
