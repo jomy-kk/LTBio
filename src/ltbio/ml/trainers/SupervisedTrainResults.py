@@ -10,28 +10,31 @@
 
 # Contributors: João Saraiva
 # Created: 04/05/2022
+# Updated: 02/08/2022
 
 # ===================================
 
-from typing import Dict
-
-from numpy import shape
+from ltbio.ml.trainers.PredictionResults import PredictionResults
 
 
 class SupervisedTrainResults():
+    """Stores the results of a training session of a supervised ML model."""
 
-    def __init__(self, object, target, predicted):
-        self.predicted = predicted
-        self.target = target
-        self.object = object
+    def __init__(self, train_losses:list, validation_losses:list, test_results:PredictionResults = None):
+        self.train_losses = train_losses
+        self.validation_losses = validation_losses
+        self.__test_results = test_results
 
-        self.__n_timeseries = shape(object)[0]
-        self.__n_samples = shape(object)[1]
+    @property
+    def metrics(self):
+        if self.__test_results is not None:
+            return self.__test_results.metrics
+        else:
+            raise AttributeError("No test was made.")
 
-        self.__metrics:Dict[str:float] = {}
-
-    def __getitem__(self, metric):
-        return self.__metrics[metric]
-
-    def __setitem__(self, metric, value):
-        self.__metrics[metric] = value
+    @property
+    def test_results(self):
+        if self.__test_results is not None:
+            return self.__test_results
+        else:
+            raise AttributeError("No test was made.")
