@@ -36,7 +36,7 @@ class BiosignalTestCase(unittest.TestCase):
         ecg1 = ECG({"a": cls.ts1}, HSM, cls.patient, BodyLocation.CHEST, "Test")
         cls.assertEqual(ecg1.type, ECG)
         cls.assertEqual(len(ecg1), 1)
-        cls.assertEqual(ecg1.channel_names, ("a", ))
+        cls.assertEqual(ecg1.channel_names, {"a", })
         cls.assertEqual(ecg1.patient_code, 101)
         cls.assertEqual(ecg1.patient_conditions[0], cls.condition)
         cls.assertEqual(ecg1.source, HSM)
@@ -47,7 +47,7 @@ class BiosignalTestCase(unittest.TestCase):
     def test_create_biosignal_adhoc(cls):
         ecg1 = ECG({"a":cls.ts1, "b":cls.ts2, "c":cls.ts3})
         cls.assertEqual(len(ecg1), 3)
-        cls.assertEqual(ecg1.channel_names, ("a", "b", "c"))
+        cls.assertEqual(ecg1.channel_names, {"a", "b", "c"})
         cls.assertTrue(isinstance(ecg1['a'], Biosignal) and ecg1['a'][cls.initial1] == cls.samples1[0])
         cls.assertTrue(isinstance(ecg1['b'], Biosignal) and ecg1['b'][cls.initial1] == cls.samples2[0])
         cls.assertTrue(isinstance(ecg1['c'], Biosignal) and ecg1['c'][cls.initial1] == cls.samples3[0])
@@ -57,14 +57,14 @@ class BiosignalTestCase(unittest.TestCase):
         ecg1 = ECG(cls.testpath, HSM) # a Video-EEG recording
         cls.assertEqual(ecg1.source, HSM)
         cls.assertEqual(len(ecg1), 2)
-        cls.assertEqual(ecg1.channel_names, ("POL Ecg", "POL  ECG-"))
+        cls.assertEqual(ecg1.channel_names, {"POL Ecg", "POL  ECG-"})
         cls.assertTrue(ecg1['POL Ecg'][datetime(2019, 2, 28, 8, 7, 16)] == 0.00023582690935384015)
 
 
     def test_create_biosignal_with_BodyLocation_on_channel_names(cls):
         ecg1 = ECG({BodyLocation.V1:cls.ts1, }, )
         cls.assertEqual(len(ecg1), 1)
-        cls.assertEqual(ecg1.channel_names[0], BodyLocation.V1)
+        cls.assertEqual(ecg1.channel_names, {BodyLocation.V1})
 
 
     def test_set_name(cls):
@@ -116,7 +116,7 @@ class BiosignalTestCase(unittest.TestCase):
         x = ecg2["a", "c"]
         cls.assertTrue(isinstance(x, ECG))
         cls.assertEqual(len(x), 2)
-        cls.assertEqual(x.channel_names, ("a", "c"))
+        cls.assertEqual(x.channel_names, {"a", "c"})
         cls.assertEqual(x["a"][cls.initial1], cls.samples1[0])
         cls.assertEqual(x["c"][cls.initial1], cls.samples3[0])
 
@@ -124,7 +124,7 @@ class BiosignalTestCase(unittest.TestCase):
         x = ecg3[BodyLocation.V2, BodyLocation.V3]
         cls.assertTrue(isinstance(x, ECG))
         cls.assertEqual(len(x), 2)
-        cls.assertEqual(x.channel_names, (BodyLocation.V2, BodyLocation.V3))
+        cls.assertEqual(x.channel_names, {BodyLocation.V2, BodyLocation.V3})
         cls.assertEqual(x[BodyLocation.V2][cls.initial1], cls.samples2[0])
         cls.assertEqual(x[BodyLocation.V3][cls.initial1], cls.samples3[0])
 
@@ -222,7 +222,7 @@ class BiosignalTestCase(unittest.TestCase):
         # This should work
         ecg3 = ecg1 + ecg2
         cls.assertEqual(len(ecg3), 4)  # it has the 4 channels
-        cls.assertEqual(set(ecg3.channel_names), set(ecg1.channel_names + ecg2.channel_names))  # with the same names
+        cls.assertEqual(ecg3.channel_names, set.union(ecg1.channel_names, ecg2.channel_names))  # with the same names
         cls.assertEqual(ecg3["a"][cls.initial1], cls.samples1[0])
         cls.assertEqual(ecg3["c"][initial2], cls.samples3[0])
         cls.assertEqual(ecg3["b"][cls.initial1], cls.samples2[0])

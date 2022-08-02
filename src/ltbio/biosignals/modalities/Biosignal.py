@@ -155,7 +155,7 @@ class Biosignal(ABC):
         if isinstance(item, datetime):
             if len(self) != 1:
                 raise IndexError("This Biosignal has multiple channels. Index the channel before indexing the datetime.")
-            return self.__timeseries[self.channel_names[0]][item]
+            return tuple(self.__timeseries.values())[0][item]
 
         if isinstance(item, (str, BodyLocation)):
             if item in self.channel_names:
@@ -206,7 +206,7 @@ class Biosignal(ABC):
 
             # Index by datetime
             if self.__has_single_channel:  # one channel
-                channel_name = self.channel_names[0]
+                channel_name = tuple(self.__timeseries.keys())[0]
                 channel = self.__timeseries[channel_name]
                 return self._new(timeseries={channel_name: channel[item]})
 
@@ -222,8 +222,7 @@ class Biosignal(ABC):
 
         if isinstance(item, DateTimeRange):  # Pass item directly to each channel
             if len(self) == 1:
-                channel_name = self.channel_names[0]
-                channel = self.__timeseries[channel_name]
+                channel = tuple(self.__timeseries.values())[0]
                 res = channel[item]
                 if res is None:
                     raise IndexError(f"Event is outside Biosignal domain.")
@@ -359,11 +358,13 @@ class Biosignal(ABC):
     def sampling_frequency(self) -> float:
         '''Returns the sampling frequency of every channel (if equal), or raises an error if they are not equal.'''
         if len(self) == 1:
-            return self.__timeseries[self.channel_names[0]].sampling_frequency
+            return tuple(self.__timeseries.values())[0].sampling_frequency
         else:
-            common_sf = self.__timeseries[self.channel_names[0]].sampling_frequency
-            for i in range(1, len(self)):
-                if self.__timeseries[self.channel_names[i]].sampling_frequency != common_sf:
+            common_sf = None
+            for channel in self:
+                if common_sf is None:
+                    common_sf = channel.sampling_frequency
+                elif channel.sampling_frequency != common_sf:
                     raise AttributeError("Biosignal contains 2+ channels, all not necessarly with the same sampling frequency.")
             return common_sf
 
@@ -458,7 +459,7 @@ class Biosignal(ABC):
             res_timeseries = {}
 
             # Functionality A:
-            if set(self.channel_names) == set(other.channel_names):
+            if self.channel_names == other.channel_names:
                 if other.initial_datetime < self.final_datetime:
                     raise ArithmeticError("The second Biosignal comes before (in time) the first Biosignal.")
                 else:
@@ -467,7 +468,7 @@ class Biosignal(ABC):
                         res_timeseries[channel_name] = self._to_dict()[channel_name] + other._to_dict()[channel_name]
 
             # Functionality B
-            elif not set(self.channel_names) in set(other.channel_names) and not set(other.channel_names) in set(self.channel_names):
+            elif not self.channel_names in other.channel_names and not other.channel_names in self.channel_names:
                 res_timeseries.update(self._to_dict())
                 res_timeseries.update(other._to_dict())
 
@@ -753,7 +754,7 @@ class Biosignal(ABC):
 
         elif isinstance(noise, Biosignal):
             # Case Biosignal channel-wise
-            if set(original.channel_names) == set(noise.channel_names):
+            if original.channel_names == noise.channel_names:
                 for channel_name in original.channel_names:
                     original_channel = original._get_channel(channel_name)
                     noise_channel = noise._get_channel(channel_name)
@@ -892,9 +893,9 @@ def plot_comparison(biosignals: Collection[Biosignal], show: bool = True, save_t
         if not isinstance(item, Biosignal):
             raise TypeError("Parameter 'biosignals' should be a collection of Biosignal objects.")
         if channel_names is None:
-            channel_names = set(item.channel_names)
+            channel_names = item.channel_names
         else:
-            if set(item.channel_names) != channel_names:
+            if item.channel_names != channel_names:
                 raise AssertionError("The set of channel names of all Biosignals must be the same for comparison.")
 
 

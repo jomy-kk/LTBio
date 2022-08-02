@@ -21,7 +21,7 @@ class BiosignalFromNoiseTestCase(unittest.TestCase):
         white_noise = ECG.fromNoise(self.noise, self.time_interval, "My first generated noise Biosignal")
 
         self.assertEqual(white_noise.type, ECG)
-        self.assertEqual(white_noise.channel_names, ('white',))
+        self.assertEqual(white_noise.channel_names, {'white',})
         self.assertTrue(allclose(self.noise.samples, white_noise._get_channel('white').samples))
         self.assertEqual(white_noise.name, "My first generated noise Biosignal")
         self.assertEqual(white_noise.sampling_frequency, self.sf)
@@ -37,7 +37,7 @@ class BiosignalFromNoiseTestCase(unittest.TestCase):
                                     "My second generated noise Biosignal")
 
         self.assertEqual(white_noise.type, ACC)
-        self.assertEqual(white_noise.channel_names, ('x', 'y', 'z'))
+        self.assertEqual(white_noise.channel_names, {'x', 'y', 'z'})
         self.assertTrue(allclose(self.noise.samples, white_noise._get_channel('z').samples))
         self.assertEqual(white_noise.name, "My second generated noise Biosignal")
         self.assertEqual(white_noise.sampling_frequency, self.sf)
