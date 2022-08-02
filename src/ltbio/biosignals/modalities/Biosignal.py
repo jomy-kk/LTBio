@@ -288,9 +288,9 @@ class Biosignal(ABC):
 
 
     @property
-    def channel_names(self) -> Tuple[str | BodyLocation]:
+    def channel_names(self) -> set[str | BodyLocation]:
         '''Returns a tuple with the labels associated to every channel.'''
-        return tuple(self.__timeseries.keys())
+        return set(self.__timeseries.keys())
 
     @property
     def name(self):
