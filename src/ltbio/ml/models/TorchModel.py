@@ -10,88 +10,31 @@
 
 # Contributors: João Saraiva and code from https://pytorch.org/tutorials/beginner/basics/optimization_tutorial
 # Created: 24/07/2022
+# Last Updated: 02/08/2022
 
 # ===================================
-from os import makedirs
-from os.path import exists, join
-from typing import Collection
 
-import numpy as np
 import torch
-from numpy import ndarray
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
 from torch.utils.data import random_split
 from torch.utils.data.dataloader import DataLoader
 
-from ltbio.ml.datasets.TimeseriesToTimeseriesDataset import TimeseriesToTimeseriesDataset
-
-from ltbio.biosignals import Timeseries
 from ltbio.ml.models.SupervisedModel import SupervisedModel
-from ltbio.ml.trainers import SupervisedTrainConditions
+from ltbio.ml.trainers.PredictionResults import PredictionResults
+from ltbio.ml.trainers.SupervisedTrainResults import SupervisedTrainResults
 
 
 class TorchModel(SupervisedModel):
 
-    def __init__(self, design: torch.nn.Module, name: str = None, version: int = None):
+    def __init__(self, design: torch.nn.Module, name: str = None):
         if not isinstance(design, torch.nn.Module):
-            raise ValueError("The design given is not a valid PyTorch module."
+            raise ValueError("The design given is not a valid PyTorch module. "
                              "Give a torch.nn.Module instance.")
 
-        super().__init__(design, name, version)
+        super().__init__(design, name)
 
-
-    def setup(self, train_conditions: SupervisedTrainConditions, **kwargs):
-        """
-        Goal here is simply to validate the objects stored in 'loss' and 'optimizer' in train_conditions.
-        """
-
-        # Check loss function
-        self.__loss = train_conditions.loss
-        if not isinstance(self.__loss, _Loss):
-            raise ValueError("The loss function given in 'train_conditions' is not a valid PyTorch loss function."
-                             " Give an instance of one of the listed here: https://pytorch.org/docs/stable/nn.html#loss-functions")
-
-        # Check optimizer algorithms
-        self.__optimizer = train_conditions.optimizer
-        if not isinstance(self.__optimizer, Optimizer):
-            raise ValueError("The optimizer algorithm given in 'train_conditions' is not a valid PyTorch optimizer."
-                             " Give an instance of one of the listed here: https://pytorch.org/docs/stable/optim.html#algorithms")
-
-        # Get hyperparameters
-        self.__epochs = train_conditions.epochs
-        self.__batch_size = train_conditions.batch_size
-        self.__learning_rate = train_conditions.learning_rate
-        self.__validation_ratio = train_conditions.validation_ratio
-
-        # Learning rate is a property of the optimizer
-        self.__optimizer.lr = self.__learning_rate
-
-        # Save train conditions
-        self.last_train_conditions = train_conditions
-
-
-    def train(self, object, target):
-
-        def __dataloaders(object: Collection[Timeseries], target: Collection[Timeseries]) -> tuple[DataLoader, DataLoader]:
-            # Create dataset
-            dataset = TimeseriesToTimeseriesDataset(object, target)
-
-            # Divide dataset into 2 smaller train and validation datasets
-            validation_size = int(len(dataset) * self.__validation_ratio)
-            train_size = len(dataset) - validation_size
-            self.__train_dataset , self.__validation_dataset = random_split(dataset, (train_size, validation_size), generator=torch.Generator().manual_seed(42))  # Docs recommend to fix the generator seed for reproducible results
-
-            # Decide on shuffling between epochs
-            epoch_shuffle = False
-            if self.last_train_conditions.epoch_shuffle is True:  # Shuffle in every epoch
-                epoch_shuffle = True
-
-            # Create DataLoaders
-            train_dataloader = DataLoader(dataset=self.__train_dataset, batch_size=self.__batch_size, shuffle=epoch_shuffle)
-            validation_dataloader = DataLoader(dataset=self.__validation_dataset, batch_size=self.__batch_size, shuffle=epoch_shuffle)
-
-            return train_dataloader, validation_dataloader
+    def train(self, dataset, conditions, verbose=True):
 
         def __train(dataloader) -> float:
 
@@ -111,7 +54,8 @@ class TorchModel(SupervisedModel):
 
                 if batch % 100 == 0:
                     loss, current = loss.item(), batch * len(X)
-                    print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+                    if verbose:
+                        print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
             return loss.data.item()  # returns the last loss
 
@@ -129,30 +73,62 @@ class TorchModel(SupervisedModel):
             test_loss /= num_batches
             correct /= size
 
-            print(f"Validation Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+            if verbose:
+                print(f"Validation Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+
             return test_loss
 
-        # Prepare dataloaders
-        train_dataloader, validation_dataloader = __dataloaders(object, target)
+        # Call super for version control
+        super().train(dataset, conditions)
+
+        # Check loss function
+        if not isinstance(conditions.loss, _Loss):
+            raise ValueError("The loss function given in 'conditions' is not a valid PyTorch loss function."
+                             " Give an instance of one of the listed here: https://pytorch.org/docs/stable/nn.html#loss-functions")
+
+        # Check optimizer algorithm
+        if not isinstance(conditions.optimizer, Optimizer):
+            raise ValueError("The optimizer algorithm given in 'conditions' is not a valid PyTorch optimizer."
+                             " Give an instance of one of the listed here: https://pytorch.org/docs/stable/optim.html#algorithms")
+
+        # Learning rate is a property of the optimizer
+        conditions.optimizer.lr = conditions.learning_rate
+
+        # Divide dataset into 2 smaller train and validation datasets
+        validation_size = int(len(dataset) * conditions.validation_ratio)
+        train_size = len(dataset) - validation_size
+        train_dataset, validation_dataset = random_split(dataset, (train_size, validation_size),
+                                                         generator=torch.Generator().manual_seed(42))  # Docs recommend to fix the generator seed for reproducible results
+
+        # Decide on shuffling between epochs
+        epoch_shuffle = False
+        if conditions.epoch_shuffle is True:  # Shuffle in every epoch
+            epoch_shuffle = True
+
+        # Create DataLoaders
+        train_dataloader = DataLoader(dataset=train_dataset, batch_size=conditions.batch_size, shuffle=epoch_shuffle)
+        validation_dataloader = DataLoader(dataset=validation_dataset, batch_size=conditions.batch_size,
+                                           shuffle=epoch_shuffle)
 
         # Repeat the train-validate process for N epochs
-        self.__train_losses, self.__validation_losses = [], []
+        train_losses, validation_losses = [], []
         try:
-            for t in range(self.__epochs):
-                print(f"Epoch {t + 1}\n-------------------------------")
+            for t in range(conditions.epochs):
+                if verbose:
+                    print(f"Epoch {t + 1}\n-------------------------------")
 
                 # Train and validate
                 train_loss = __train(train_dataloader)
                 validation_loss = __validate(validation_dataloader)
-                self.__train_losses.append(train_loss)
-                self.__validation_losses.append(validation_loss)
+                train_losses.append(train_loss)
+                validation_losses.append(validation_loss)
 
                 # Remember the smaller loss and save checkpoint
                 if t == 0:
                     best_loss = validation_loss  # defines the first
                 elif validation_loss < best_loss:
                     best_loss = validation_loss
-                    self.save(self.name + '_Best', epoch=t)
+                    self._SupervisedModel__save_parameters(self.design.state_dict(), t)
 
             print("Training finished")
 
@@ -161,8 +137,7 @@ class TorchModel(SupervisedModel):
             while True:
                 answer = input("Save Parameters? (y/n): ").lower()
                 if answer == 'y':
-                    save_name = input("Save as: ") + '_Interrupted'
-                    self.save(save_name, t)
+                    self._SupervisedModel__save_parameters(self.design.state_dict(), t)
                     print("Model and parameters saved.")
                     break
                 elif answer == 'n':
@@ -171,54 +146,45 @@ class TorchModel(SupervisedModel):
                 else:
                     continue # asking
 
+        return SupervisedTrainResults(train_losses, validation_losses)
 
-    def test(self, object, target=None):
+
+    def test(self, dataset, evaluation_metrics = None, version = None, verbose = True):
+        # Call super for version control
+        super().test(dataset, evaluation_metrics, version)
+
         # Create dataset and dataloader
-        self.__test_dataset = TimeseriesToTimeseriesDataset(object, target)
-        dataloader = DataLoader(dataset=self.__test_dataset, batch_size=self.__batch_size)
+        dataloader = DataLoader(dataset=dataset, batch_size=self._SupervisedModel__current_version.conditions.batch_size)
 
         # Test by batch
-        size = len(self.__test_dataset)
+        size = len(dataset)
         num_batches = len(dataloader)
         self.design.eval()  # Sets the module in evaluation mode
         test_loss, correct = 0, 0
+        predictions = []
         with torch.no_grad():
             for X, y in dataloader:  # for each batch
                 # X, y = X.to(device), y.to(device)  # TODO: pass to cuda if available
                 pred = self.design(X)
-                test_loss += self.__loss(pred, y).item()
+                predictions.append(pred)
+                test_loss += self._SupervisedModel__current_version.conditions.loss(pred, y).item()
                 correct += (pred.argmax(1) == y).type(torch.float).sum().item()
         test_loss /= num_batches
         correct /= size
 
-        print(f"Test Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
-        self.__test_loss = test_loss
+        if verbose:
+            print(f"Test Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+
+        return PredictionResults(test_loss, dataset, tuple(predictions), evaluation_metrics)
 
 
-    def report(self, reporter, show, save_to):
+    def __report(self, reporter, show, save_to):
         pass
 
     @property
     def trained_parameters(self):
-        pass
+        return self.design.state_dict()
 
     @property
     def non_trainable_parameters(self):
         return {}
-
-    def save(self, path:str = '.', epoch:int = None):
-        if not exists(path):
-            makedirs(path)
-
-        #self.design.cpu()
-        torch.save({'train_dataset': self.__train_dataset,
-                    'validation_dataset': self.__validation_dataset,
-                    'state_dict': self.design.state_dict(),
-                    'epoch': epoch,
-                    'optimizer': self.__optimizer,
-                    'loss_function': self.__loss,
-                    'learning_rate': self.__learning_rate
-                    }, join(path, 'model.pth'))
-
-        np.save(join(path, 'trainloss.npy'), self.__train_losses)
-        np.save(join(path, 'valloss.npy'), self.__validation_losses)
