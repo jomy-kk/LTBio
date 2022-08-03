@@ -14,58 +14,95 @@
 
 # ===================================
 
+from warnings import warn
+
 from matplotlib import pyplot as plt
 from numpy import zeros, arange, argsort, array
-from sklearn.metrics import mean_squared_error
+from sklearn.base import is_classifier, is_regressor
 
 from ltbio.ml.models.SupervisedModel import SupervisedModel
-from ltbio.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
+from ltbio.ml.trainers.PredictionResults import PredictionResults
 from ltbio.ml.trainers.SupervisedTrainResults import SupervisedTrainResults
 
 
 class SkLearnModel(SupervisedModel):
 
-    def __init__(self, design, name: str = None, version: int = None):
-        super().__init__(design, name, version)
+    def __init__(self, design, name: str = None):
+        # Check design
+        if not (is_classifier(design) or is_regressor(design)):
+            raise ValueError("The design given is not a valid SkLearn classifier or regressor.")
 
-    def setup(self, train_conditions:SupervisedTrainConditions, **kwargs):
-        params = {key: value for key, value in train_conditions.parameters.items() if key not in ('train_size', 'test_size', 'shuffle')}
-        self.design.set_params(**params)
+        super().__init__(design, name)
 
-    def train(self, object, target):
-        self.design.fit(object, target)
-
-    def test(self, object, target=None):
-        if target is None:
-            return self.design.predict(object)
+    def __set_parameter_from_condition(self, parameter_label:str, conditions_label:str, value):
+        if parameter_label in self.__required_parameters:
+            if value is not None:
+                self.design.set_params({parameter_label: value})
+            else:
+                warn(f"Omitted train condition '{conditions_label}' = {self.design.get_params()[parameter_label]} being used.")
         else:
-            y_pred = self.design.predict(object)
-            self.__last_results = SupervisedTrainResults(object, target, y_pred)
-            return y_pred
+            if value is not None:
+                warn(f"Train condition '{conditions_label}' given is not required for this model. Ignoring it.")
+            else:
+                pass
 
-    def report(self, reporter, show:bool=True, save_to:str=None):
-        mse = mean_squared_error(self.__last_results.target, self.__last_results.predicted)
-        reporter.print_textual_results(mse=mse)
-        if save_to is not None:
-            file_names = (save_to + '_loss.png', save_to + '_importance.png', save_to + '_permutation.png')
-            self.__plot_train_and_test_loss(show=show, save_to=file_names[0])
-            self.__plot_timeseries_importance(show=show, save_to=file_names[1])
-            self.__plot_timeseries_permutation_importance(show=show, save_to=file_names[2])
+    def train(self, dataset, conditions):
+        # Call super for version control
+        super().train(dataset, conditions)
 
-            reporter.print_loss_plot(file_names[0])
-            reporter.print_small_plots(file_names[1:])
+        # Set whichever model hyperparameters were defined
+        self.design.set_params(**conditions.hyperparameters)
 
-        return mse
+        # Map some train conditions to model parameters
+        self.__required_parameters = self.design.get_params().keys()
+        self.__set_parameter_from_condition('max_iter', 'epochs', conditions.epochs)
+        self.__set_parameter_from_condition('loss', 'loss', conditions.loss)
+        self.__set_parameter_from_condition('tol', 'stop_at_deltaloss', conditions.stop_at_deltaloss)
+        self.__set_parameter_from_condition('n_iter_no_change', 'patience', conditions.patience)
+        self.__set_parameter_from_condition('solver', 'optimizer', conditions.optimizer)
+        self.__set_parameter_from_condition('?', 'shuffle', conditions.shuffle)
+        self.__set_parameter_from_condition('shuffle', 'epoch_shuffle', conditions.epoch_shuffle)
+        self.__set_parameter_from_condition('batch_size', 'batch_size', conditions.batch_size)
+        self.__set_parameter_from_condition('learning_rate_init', 'learning_rate', conditions.learning_rate)
+        self.__set_parameter_from_condition('validation_fraction', 'validation_ratio', conditions.validation_ratio)
+        self.__set_parameter_from_condition('?', 'test_ratio', conditions.test_ratio)
+        self.__set_parameter_from_condition('?', 'train_ratio', conditions.train_ratio)
+        self.__set_parameter_from_condition('?', 'test_size', conditions.test_size)
+        self.__set_parameter_from_condition('?', 'train_size', conditions.train_size)
 
+        # Fits the model
+        self.design.fit(dataset.all_objects, dataset.all_targets)
+
+        # Update version
+        self._SupervisedModel__update_current_version_state(self, epochs=self.design.n_iter_)
+
+        # Create results object
+        return SupervisedTrainResults(self.design.loss_, None, None)
+
+    def test(self, dataset, evaluation_metrics = None, version = None):
+        # Call super for version control
+        super().test(dataset, evaluation_metrics, version)
+        # Make predictions about the objects
+        predictions = self.design.predict(dataset.all_objects)
+        # Create results object
+        return PredictionResults(self.design.loss_, dataset, predictions, evaluation_metrics)
 
     @property
     def trained_parameters(self):
-        return None  # TODO
+        try:
+            return self.design.coef_, self.design.intercepts_
+        except:
+            raise ReferenceError("Unfortunately cannot find the trained parameters, but the design internal state is functional.")
 
     @property
     def non_trainable_parameters(self):
         return self.design.get_params()
 
+    def _SupervisedModel__set_state(self, state):
+        self.design.__setstate__(state)
+
+    def _SupervisedModel__get_state(self):
+        return self.design.__getstate__()
 
     def __plot_train_and_test_loss(self, show:bool=True, save_to:str=None):
         """

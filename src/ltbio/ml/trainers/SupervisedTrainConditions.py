@@ -21,15 +21,8 @@ class SupervisedTrainConditions():
                  validation_ratio:float = None,
                  epochs: int = None, learning_rate:float = None, batch_size:int = None,
                  shuffle:bool=False, epoch_shuffle:bool = False,
+                 stop_at_deltaloss:float = None, patience:int = None,
                  **hyperparameters):
-        '''if len(conditions) != 0:
-            self.n_epochs = conditions['n_epochs'] if 'n_epochs' in conditions else None
-            self.batch_size = conditions['batch_size'] if 'batch_size' in conditions else None
-            self.loss_function = conditions['loss_function'] if 'loss_function' in conditions else None
-            self.train_size = conditions['train_size'] if 'train_size' in conditions else None
-            self.test_size = conditions['test_size'] if 'test_size' in conditions else None
-            self.shuffle = conditions['shuffle'] if 'shuffle' in conditions else None
-            '''
 
         # Mandatory conditions
 
@@ -123,8 +116,42 @@ class SupervisedTrainConditions():
         else:
             self.epoch_shuffle = None
 
+        if stop_at_deltaloss is not None:
+            if isinstance(stop_at_deltaloss, float):
+                self.stop_at_deltaloss = stop_at_deltaloss
+            else:
+                raise TypeError("Condition 'stop_at_deltaloss' must be a float.")
+        else:
+            self.stop_at_deltaloss = None
+
+        if patience is not None:
+            if isinstance(patience, int) and patience > 0:
+                self.patience = patience
+            else:
+                raise TypeError("Condition 'patience' must be an integer > 0.")
+        else:
+            self.patience = None
 
         self.hyperparameters = hyperparameters
+
+    @property
+    def _slots(self):
+        return {
+            'optimizer': self.optimizer,
+            'loss': self.loss,
+            'train_size': self.train_size,
+            'test_size': self.test_size,
+            'train_ratio': self.train_ratio,
+            'test_ratio': self.test_ratio,
+            'validation_ratio': self.validation_ratio,
+            'epochs': self.epochs,
+            'batch_size': self.batch_size,
+            'shuffle': self.shuffle,
+            'epoch_shuffle': self.epoch_shuffle,
+            'learning_rate': self.learning_rate,
+            'stop_at_deltaloss': self.stop_at_deltaloss,
+            'patience': self.patience,
+        }
 
     def __str__(self):
         res = f'Optimizer: {self.optimizer} | Loss Function: {self.loss}\n'
@@ -166,3 +193,22 @@ class SupervisedTrainConditions():
         res += ' | '.join([key + ' = ' + value for key, value in self.hyperparameters.items()])
 
         return res
+
+    def __copy__(self):
+        return self.__class__(self.optimizer, self.loss,
+                 self.train_size, self.train_ratio, self.test_size, self.test_ratio,
+                 self.validation_ratio,
+                 self.epochs, self.learning_rate, self.batch_size,
+                 self.shuffle, self.epoch_shuffle,
+                 **self.hyperparameters)
+
+    def __eq__(self, other):
+        if isinstance(other, SupervisedTrainConditions):
+            return self.optimizer == other.optimizer and self.loss == other.loss and \
+                 self.train_size == other.train_size and self.train_ratio == other.train_ratio and \
+                 self.test_size == other.test_size and self.test_ratio == other.test_ratio and \
+                 self.validation_ratio == other.validation_ratio and \
+                 self.epochs == other.epochs and self.learning_rate == other.learning_rate and \
+                 self.batch_size == other.batch_size and self.shuffle == other.shuffle and \
+                 self.epoch_shuffle == other.epoch_shuffle and self.hyperparameters == other.hyperparameters
+
