@@ -1127,13 +1127,12 @@ class Timeseries():
             assert len(indexes) == len(values)
             initial_datetimes = [timedelta(seconds=index / self.__sampling_frequency) + segment.initial_datetime for
                                  index in indexes]
+
             if initial_datetimes_shift is not None:
                 initial_datetimes = [idt + initial_datetimes_shift for idt in initial_datetimes]
-                trimmed_segments = [
-                    segment._new(samples=values[i], initial_datetime=initial_datetimes[i], raw_samples=raw_values) for i
-                    in range(len(values))]
-            else:
-                trimmed_segments = [segment._new(samples=values[i], raw_samples=raw_values) for i in range(len(values))]
+
+            trimmed_segments = [segment._new(samples=values[i], initial_datetime=initial_datetimes[i],
+                                             raw_samples=raw_values[i]) for i in range(len(values))]
 
             return trimmed_segments
 
