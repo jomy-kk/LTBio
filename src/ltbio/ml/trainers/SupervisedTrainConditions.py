@@ -111,7 +111,7 @@ class SupervisedTrainConditions():
             if isinstance(shuffle, bool):
                 self.shuffle = shuffle
             else:
-                raise ValueError("Condition 'shuffle' must be True or False.")
+                raise TypeError("Condition 'shuffle' must be True or False.")
         else:
             self.shuffle = None
 
@@ -119,7 +119,7 @@ class SupervisedTrainConditions():
             if isinstance(epoch_shuffle, bool):
                 self.epoch_shuffle = epoch_shuffle
             else:
-                raise ValueError("Condition 'epoch_shuffle' must be True or False.")
+                raise TypeError("Condition 'epoch_shuffle' must be True or False.")
         else:
             self.epoch_shuffle = None
 
@@ -162,7 +162,7 @@ class SupervisedTrainConditions():
 
         res += ' | '.join(other_optionals)
 
-        res += 'Hyperparameters:\n'
+        res += '\nHyperparameters:\n'
         res += ' | '.join([key + ' = ' + value for key, value in self.hyperparameters.items()])
 
         return res
