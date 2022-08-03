@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 from biosppy.signals.tools import power_spectrum
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime
-from numpy import array, append, ndarray, divide, concatenate
+from numpy import array, append, ndarray, divide, concatenate, tile
 from scipy.signal import resample
 
 from ltbio.biosignals.timeseries.Event import Event
@@ -995,7 +995,14 @@ class Timeseries():
             new = Timeseries(segments, initial_datetime, sampling_frequency, units, name)
 
         new._Timeseries__is_equally_segmented = equally_segmented
-        new.associate(events)
+
+        events = events.values() if isinstance(events, dict) else events
+        for event in events:
+            try:
+                new.associate(event)
+            except ValueError:
+                pass  # it's outside the new boundaries
+
         return new
 
     def _new(self, segments_by_time: Dict[datetime, ndarray | list | tuple] = None,
@@ -1158,7 +1165,7 @@ class Timeseries():
         for x in time_intervals:
             n_samples_required = int(x.timedelta.total_seconds() * self.__sampling_frequency)
             if n_samples_required > len(samples):
-                samples = np.tile(samples, ceil(n_samples_required/len(samples)))  # repeat
+                samples = tile(samples, ceil(n_samples_required/len(samples)))  # repeat
                 samples = samples[:n_samples_required]  # cut where it is enough
                 partitions.append(Timeseries.__Segment(samples, x.start_datetime, self.__sampling_frequency))
                 i = 0

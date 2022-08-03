@@ -102,15 +102,14 @@ class Biosignal(ABC):
         new = type(self)(timeseries, source, patient, acquisition_location, name)
 
         # Associate events; no need to copy
-        if events is None:
-            new.associate(self.__associated_events)
-        else:
-            # Check if some event can be associated
-            for event in events:
-                try:
-                    new.associate(event)
-                except ValueError:  # outside the domain of every channel
-                    pass  # no problem; the Event will not be associated
+        events = self.__associated_events if events is None else events
+        events = events.values() if isinstance(events, dict) else events
+        # Check if some event can be associated
+        for event in events:
+            try:
+                new.associate(event)
+            except ValueError:  # outside the domain of every channel
+                pass  # no problem; the Event will not be associated
 
         # Associate added noise reference:
         if added_noise is not None:
