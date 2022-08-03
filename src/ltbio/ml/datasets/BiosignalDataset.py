@@ -9,7 +9,7 @@
 # Description: 
 
 # Contributors: João Saraiva
-# Created: 02/08/2022
+# Created: 03/08/2022
 
 # ===================================
 from abc import ABC, abstractmethod
@@ -29,12 +29,11 @@ class BiosignalDataset(Dataset, ABC):
     """
 
     def __init__(self, name: str = None):
-        self.__biosignals = None
+        self.__biosignals = {}
         self.__objects = None
         self.__targets = None
         self.name = name
 
-    @abstractmethod
     def __getitem__(self, index) -> tuple[ndarray, ndarray]:
         o = self.__objects[index]
         t = self.__targets[index]
@@ -45,12 +44,15 @@ class BiosignalDataset(Dataset, ABC):
         return len(self.__objects)
 
     @property
-    def all_examples(self) -> set[tuple[ndarray, ndarray]]:
+    def all_examples(self) -> list[tuple[ndarray, ndarray]]:
         """All examples in the dataset."""
         # Pairs each object to its target
-        return set([(o, t) for o, t in zip(self.__objects, self.__targets)])
+        return [(o, t) for o, t in zip(self.__objects, self.__targets)]
 
     @property
-    def biosignals(self) -> set[Biosignal]:
+    def biosignals(self) -> dict[str, Biosignal]:
         """The Biosignals from which the dataset was populated."""
-        return set(self.__biosignals)
+        if len(self.__biosignals) != 0:
+            return self.__biosignals
+        else:
+            raise AttributeError("Dataset was not populated with Biosignals.")
