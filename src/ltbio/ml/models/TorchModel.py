@@ -15,6 +15,7 @@
 # ===================================
 
 import torch
+from torch import from_numpy
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
 from torch.utils.data import random_split
@@ -34,27 +35,28 @@ class TorchModel(SupervisedModel):
 
         super().__init__(design, name)
 
-    def train(self, dataset, conditions, verbose=True):
+    def train(self, dataset, conditions):
 
         def __train(dataloader) -> float:
 
             size = len(dataloader.dataset)
             self.design.train()  # Sets the module in training mode
             for batch, (X, y) in enumerate(dataloader):
+                X, y = X.float(), y.float()
                 # X, y = X.to(device), y.to(device)  # TODO: pass to cuda if available
 
                 # Compute prediction and loss
                 pred = self.design(X)
-                loss = self.__loss(pred, y)
+                loss = conditions.loss(pred, y)
 
                 # Backpropagation
-                self.__optimizer.zero_grad()
+                conditions.optimizer.zero_grad()
                 loss.backward()
-                self.__optimizer.step()
+                conditions.optimizer.step()
 
                 if batch % 100 == 0:
                     loss, current = loss.item(), batch * len(X)
-                    if verbose:
+                    if self.verbose:
                         print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
             return loss.data.item()  # returns the last loss
@@ -66,14 +68,15 @@ class TorchModel(SupervisedModel):
             test_loss, correct = 0., 0
             with torch.no_grad():
                 for X, y in dataloader:
+                    X, y = X.float(), y.float()
                     # X, y = X.to(device), y.to(device)  # TODO: pass to cuda if available
                     pred = self.design(X)
-                    test_loss += self.__loss(pred, y).data.item()
+                    test_loss += conditions.loss(pred, y).data.item()
                     correct += (pred.argmax(1) == y).type(torch.float).sum().item()
             test_loss /= num_batches
             correct /= size
 
-            if verbose:
+            if self.verbose:
                 print(f"Validation Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
             return test_loss
@@ -114,7 +117,7 @@ class TorchModel(SupervisedModel):
         train_losses, validation_losses = [], []
         try:
             for t in range(conditions.epochs):
-                if verbose:
+                if self.verbose:
                     print(f"Epoch {t + 1}\n-------------------------------")
 
                 # Train and validate
@@ -149,7 +152,7 @@ class TorchModel(SupervisedModel):
         return SupervisedTrainResults(train_losses, validation_losses)
 
 
-    def test(self, dataset, evaluation_metrics = None, version = None, verbose = True):
+    def test(self, dataset, evaluation_metrics = None, version = None):
         # Call super for version control
         super().test(dataset, evaluation_metrics, version)
 
@@ -164,6 +167,7 @@ class TorchModel(SupervisedModel):
         predictions = []
         with torch.no_grad():
             for X, y in dataloader:  # for each batch
+                X, y = X.float(), y.float()
                 # X, y = X.to(device), y.to(device)  # TODO: pass to cuda if available
                 pred = self.design(X)
                 predictions.append(pred)
@@ -172,13 +176,12 @@ class TorchModel(SupervisedModel):
         test_loss /= num_batches
         correct /= size
 
-        if verbose:
+        if self.verbose:
             print(f"Test Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
         return PredictionResults(test_loss, dataset, tuple(predictions), evaluation_metrics)
 
-
-    def __report(self, reporter, show, save_to):
+    def _SupervisedModel__report(self, reporter, show, save_to):
         pass
 
     @property
