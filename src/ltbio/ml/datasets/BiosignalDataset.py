@@ -50,6 +50,16 @@ class BiosignalDataset(Dataset, ABC):
         return [(o, t) for o, t in zip(self.__objects, self.__targets)]
 
     @property
+    def all_objects(self) -> ndarray:
+        """All objects in the dataset."""
+        return self.__objects.copy()
+
+    @property
+    def all_targets(self) -> ndarray:
+        """All targets in the dataset."""
+        return self.__targets.copy()
+
+    @property
     def biosignals(self) -> dict[str, Biosignal]:
         """The Biosignals from which the dataset was populated."""
         if len(self.__biosignals) != 0:
