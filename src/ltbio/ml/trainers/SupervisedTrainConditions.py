@@ -15,8 +15,8 @@
 # ===================================
 
 class SupervisedTrainConditions():
-    def __init__(self,
-                 optimizer, loss,
+    def __init__(self, loss,
+                 optimizer = None,
                  train_size:int = None, train_ratio:float = None, test_size:int = None, test_ratio:float = None,
                  validation_ratio:float = None,
                  epochs: int = None, learning_rate:float = None, batch_size:int = None,
