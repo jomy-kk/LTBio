@@ -76,7 +76,7 @@ class TorchModel(SupervisedModel):
             correct /= size
 
             if self.verbose:
-                print(f"Validation Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+                print(f"Validation Error: \n Avg loss: {test_loss:>8f} \n")
 
             return test_loss
 
@@ -179,7 +179,7 @@ class TorchModel(SupervisedModel):
         correct /= size
 
         if self.verbose:
-            print(f"Test Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+            print(f"Test Error: Avg loss: {test_loss:>8f} \n")
 
         return PredictionResults(test_loss, dataset, tuple(predictions), evaluation_metrics)
 
