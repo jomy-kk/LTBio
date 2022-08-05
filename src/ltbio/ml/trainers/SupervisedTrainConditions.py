@@ -153,6 +153,12 @@ class SupervisedTrainConditions():
             'patience': self.patience,
         }
 
+    def check_it_has(self, attributes:Iterable[str]):
+        slots = self._slots
+        for a in attributes:
+            if slots[a] == None:
+                raise ValueError(f"This type of model requires '{a}' to be defined in the given conditions.")
+
     def __str__(self):
         res = f'Optimizer: {self.optimizer} | Loss Function: {self.loss}\n'
 
