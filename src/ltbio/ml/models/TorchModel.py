@@ -10,12 +10,11 @@
 
 # Contributors: João Saraiva and code from https://pytorch.org/tutorials/beginner/basics/optimization_tutorial
 # Created: 24/07/2022
-# Last Updated: 02/08/2022
+# Last Updated: 05/08/2022
 
 # ===================================
 
 import torch
-from torch import from_numpy
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
 from torch.utils.data import random_split
@@ -84,6 +83,9 @@ class TorchModel(SupervisedModel):
         # Call super for version control
         super().train(dataset, conditions)
 
+        # Check it these optional conditions are defined
+        conditions.check_it_has(('optimizer', 'learning_rate', 'validation_ratio', 'batch_size', 'epochs'))
+
         # Check loss function
         if not isinstance(conditions.loss, _Loss):
             raise ValueError("The loss function given in 'conditions' is not a valid PyTorch loss function."
@@ -131,7 +133,7 @@ class TorchModel(SupervisedModel):
                     best_loss = validation_loss  # defines the first
                 elif validation_loss < best_loss:
                     best_loss = validation_loss
-                    self._SupervisedModel__save_parameters(self.design.state_dict(), t)
+                    self._SupervisedModel__update_current_version_state(epoch_concluded=t)
 
             print("Training finished")
 
@@ -140,7 +142,7 @@ class TorchModel(SupervisedModel):
             while True:
                 answer = input("Save Parameters? (y/n): ").lower()
                 if answer == 'y':
-                    self._SupervisedModel__save_parameters(self.design.state_dict(), t)
+                    self._SupervisedModel__update_current_version_state(epoch_concluded=t)
                     print("Model and parameters saved.")
                     break
                 elif answer == 'n':
@@ -170,7 +172,7 @@ class TorchModel(SupervisedModel):
                 X, y = X.float(), y.float()
                 # X, y = X.to(device), y.to(device)  # TODO: pass to cuda if available
                 pred = self.design(X)
-                predictions.append(pred)
+                predictions.append(pred.cpu().detach().numpy().squeeze())
                 test_loss += self._SupervisedModel__current_version.conditions.loss(pred, y).item()
                 correct += (pred.argmax(1) == y).type(torch.float).sum().item()
         test_loss /= num_batches
@@ -181,13 +183,22 @@ class TorchModel(SupervisedModel):
 
         return PredictionResults(test_loss, dataset, tuple(predictions), evaluation_metrics)
 
-    def _SupervisedModel__report(self, reporter, show, save_to):
-        pass
-
     @property
     def trained_parameters(self):
+        if not self.is_trained:
+            raise ReferenceError("This model was not yet trained.")
         return self.design.state_dict()
 
     @property
     def non_trainable_parameters(self):
-        return {}
+        if not self.is_trained:
+            return {}
+        else:
+            return self._SupervisedModel__current_version.conditions.hyperparameters
+
+    def _SupervisedModel__set_state(self, state):
+        self.design.load_state_dict(state)
+
+    def _SupervisedModel__get_state(self):
+        return self.design.state_dict()
+        # Optimizer state_dict is inside conditions.optimizer, hence also saved in Version
