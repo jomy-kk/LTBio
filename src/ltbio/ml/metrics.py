@@ -64,7 +64,10 @@ class ValueMetric(Metric, ABC):
         return int(self.__value)
 
     def __str__(self):
-        return self.name + ' = ' + str(self.__value) + str(self.unit)
+        if isinstance(self.__value, dict):
+            return self.name + ':\n' + '\n\t'.join([str(name) + ' = ' + str(value) + ' (' + str(self.unit) + ')' for name, value in self.__value.items()])
+        else:
+            return self.name + ' = ' + str(self.__value) + ' (' + str(self.unit) +')'
 
     def __repr__(self):
         return self.__str__()
