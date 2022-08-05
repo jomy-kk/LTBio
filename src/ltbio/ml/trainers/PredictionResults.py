@@ -28,3 +28,12 @@ class PredictionResults():
         self.test_dataset = test_dataset
         self.predictions = predictions
         self.metrics = [metric.fromDatasetPredictions(test_dataset, predictions) for metric in evaluation_metrics]
+
+    def __str__(self):
+        res = f'Loss = {self.loss}\n'
+        for metric in self.metrics:
+            res += str(metric) + '\n'
+        return res
+
+    def __repr__(self):
+        return self.__str__()
