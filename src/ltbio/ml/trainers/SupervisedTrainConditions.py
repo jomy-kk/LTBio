@@ -13,6 +13,9 @@
 # Last Updated: 07/06/2022
 
 # ===================================
+from copy import deepcopy
+from typing import Iterable
+
 
 class SupervisedTrainConditions():
     def __init__(self, loss,
@@ -201,20 +204,21 @@ class SupervisedTrainConditions():
         return res
 
     def __copy__(self):
-        return self.__class__(self.optimizer, self.loss,
-                 self.train_size, self.train_ratio, self.test_size, self.test_ratio,
-                 self.validation_ratio,
-                 self.epochs, self.learning_rate, self.batch_size,
-                 self.shuffle, self.epoch_shuffle,
-                 **self.hyperparameters)
+        return self.__class__(**deepcopy(self._slots), **deepcopy(self.hyperparameters))
 
     def __eq__(self, other):
         if isinstance(other, SupervisedTrainConditions):
-            return self.optimizer == other.optimizer and self.loss == other.loss and \
-                 self.train_size == other.train_size and self.train_ratio == other.train_ratio and \
-                 self.test_size == other.test_size and self.test_ratio == other.test_ratio and \
-                 self.validation_ratio == other.validation_ratio and \
-                 self.epochs == other.epochs and self.learning_rate == other.learning_rate and \
-                 self.batch_size == other.batch_size and self.shuffle == other.shuffle and \
-                 self.epoch_shuffle == other.epoch_shuffle and self.hyperparameters == other.hyperparameters
+            x_slots, y_slots = self._slots, other._slots
+
+            optimizer, loss = True, True
+            if not isinstance(x_slots['optimizer'], str):
+                optimizer = type(x_slots['optimizer']) == type(y_slots['optimizer'])
+                del x_slots['optimizer'], y_slots['optimizer']
+            if not isinstance(x_slots['loss'], str):
+                loss = type(x_slots['loss']) == type(y_slots['loss'])
+                del x_slots['loss'], y_slots['loss']
+
+            primitive_values = all([x_slots[label] == y_slots[label] for label in x_slots.keys()])
+
+            return primitive_values and optimizer and loss
 
