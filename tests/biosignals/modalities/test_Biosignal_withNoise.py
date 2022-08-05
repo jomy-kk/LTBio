@@ -60,7 +60,7 @@ class BiosignalWithNoiseTestCase(unittest.TestCase):
         self.assertFalse(all(self.samples1 == noisy_ecg._get_channel('1').samples))
         self.assertFalse(all(self.samples2 == noisy_ecg._get_channel('2').samples))
 
-        self.assertTrue(all(self.samples2 == noisy_ecg._get_channel('2').samples - self.noise.samples))
+        self.assertTrue(allclose(self.samples2, noisy_ecg._get_channel('2').samples - self.noise.samples))
 
         self.assertTrue(noisy_ecg.added_noise, self.noise)
 
@@ -71,7 +71,7 @@ class BiosignalWithNoiseTestCase(unittest.TestCase):
         self.assertFalse(all(self.samples1 == noisy_ecg._get_channel('3').samples[0]))
         self.assertFalse(all(self.samples3 == noisy_ecg._get_channel('3').samples[1]))
 
-        self.assertTrue(all(self.samples1 == noisy_ecg._get_channel('3').samples[0] - self.noise.samples[:6]))
+        self.assertTrue(allclose(self.samples1, noisy_ecg._get_channel('3').samples[0] - self.noise.samples[:6]))
         self.assertTrue(all(self.samples3 == noisy_ecg._get_channel('3').samples[1] - self.noise.samples[:12]))
 
         self.assertTrue(noisy_ecg.added_noise, self.noise)
