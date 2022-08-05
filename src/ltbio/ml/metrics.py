@@ -81,6 +81,7 @@ class Sensitivity(ValueMetric):
     def __init__(self, value):
         super().__init__(value)
 
+    @property
     def name(self):
         return 'Sensitivity'
 
@@ -90,6 +91,7 @@ class Specificity(ValueMetric):
     def __init__(self, value):
         super().__init__(value)
 
+    @property
     def name(self):
         return 'Specificity'
 
@@ -99,6 +101,7 @@ class Precision(ValueMetric):
     def __init__(self, value):
         super().__init__(value)
 
+    @property
     def name(self):
         return 'Precision'
 
@@ -108,6 +111,7 @@ class Recall(ValueMetric):
     def __init__(self, value):
         super().__init__(value)
 
+    @property
     def name(self):
         return 'Recall'
 
@@ -116,6 +120,7 @@ class Accuracy(ValueMetric):
     def __init__(self, value):
         super().__init__(value)
 
+    @property
     def name(self):
         return 'Accuracy'
 
@@ -124,6 +129,7 @@ class F1(ValueMetric):
     def __init__(self, value):
         super().__init__(value)
 
+    @property
     def name(self):
         return 'F1-Score'
 
@@ -142,6 +148,7 @@ class MSE(ValueMetric):
         else:
             return average_mse
 
+    @property
     def name(self):
         return 'Mean Squared Error'
 
@@ -150,6 +157,7 @@ class MAE(ValueMetric):
     def __init__(self, value):
         super().__init__(value)
 
+    @property
     def name(self):
         return 'Mean Absolute Error'
 
@@ -158,9 +166,11 @@ class SNR(ValueMetric):
     def __init__(self, value):
         super().__init__(value)
 
+    @property
     def name(self):
         return 'Signal-to-noise ratio'
 
+    @property
     def unit(self) -> Unit:
         return Decibels()
 
@@ -169,9 +179,11 @@ class SNRI(ValueMetric):
     def __init__(self, value):
         super().__init__(value)
 
+    @property
     def name(self):
         return 'SNR Improvement'
 
+    @property
     def unit(self) -> Unit:
         return Decibels()
 
