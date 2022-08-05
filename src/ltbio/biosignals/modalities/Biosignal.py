@@ -9,7 +9,7 @@
 # Description: The base class holding all data related to a biosignal and its channels.
 
 # Contributors: João Saraiva, Mariana Abreu
-# Last Updated: 09/07/2022
+# Last Updated: 05/08/2022
 
 # ===================================
 
@@ -360,7 +360,7 @@ class Biosignal(ABC):
             return tuple(self.__timeseries.values())[0].sampling_frequency
         else:
             common_sf = None
-            for channel in self:
+            for _, channel in self:
                 if common_sf is None:
                     common_sf = channel.sampling_frequency
                 elif channel.sampling_frequency != common_sf:
@@ -392,7 +392,7 @@ class Biosignal(ABC):
         return self.__timeseries
 
     def __iter__(self):
-        return self.__timeseries.values().__iter__()
+        return self.__timeseries.items().__iter__()
 
     def __contains__(self, item):
         if isinstance(item, str):
@@ -401,7 +401,7 @@ class Biosignal(ABC):
             if item in self.__associated_events:  # if Event occurs
                 return True
         elif isinstance(item, datetime):
-            for channel in self:
+            for _, channel in self:
                 if item in channel:  # if at least one channel defines this point in time
                     return True
         else:
@@ -605,7 +605,7 @@ class Biosignal(ABC):
 
         def __add_event(event: Event):
             n_channels_associated = 0
-            for channel in self:
+            for _, channel in self:
                 try:
                     channel.associate(event)
                     n_channels_associated += 1
@@ -633,7 +633,7 @@ class Biosignal(ABC):
         @rtype: None
         '''
         if event_name in self.__associated_events:
-            for channel in self:
+            for _, channel in self:
                 try:
                     channel.disassociate(event_name)
                 except NameError:
@@ -770,7 +770,7 @@ class Biosignal(ABC):
 
             # Case Biosignal unique channel
             elif len(noise) == 1:
-                x = tuple(iter(noise))[0]
+                _, x = tuple(iter(noise))[0]
                 for channel_name in original.channel_names:
                     channel = original._get_channel(channel_name)
                     if channel.units != x.units and channel.units != None and channel.units != Unitless and x.units != None and x.units != Unitless:
@@ -796,7 +796,7 @@ class Biosignal(ABC):
     def restructure_domain(self, time_intervals:tuple[DateTimeRange]):
         domain = self.domain
         if len(domain) >= len(time_intervals):
-            for channel in self:
+            for _, channel in self:
                 # 1. Concatenate segments
                 channel._concatenate_segments()
                 # 2. Partition according to new domain
