@@ -26,9 +26,9 @@ class SupervisingTrainerTestCase(unittest.TestCase):
         cls.model = SkLearnModel(cls.design)
 
         # Define 3 sets of training conditions
-        cls.conditions1 = SupervisedTrainConditions(loss='squared_error', learning_rate=0.02, test_size=0.2, shuffle=False)
-        cls.conditions2 = SupervisedTrainConditions(loss='squared_error', learning_rate=0.5, test_size=0.2, shuffle=False)
-        cls.conditions3 = SupervisedTrainConditions(loss='squared_error', learning_rate=0.01, test_size=0.2, shuffle=True)
+        cls.conditions1 = SupervisedTrainConditions(loss='squared_error', learning_rate=0.02, test_ratio=0.2, shuffle=False)
+        cls.conditions2 = SupervisedTrainConditions(loss='squared_error', learning_rate=0.5, test_ratio=0.2, shuffle=False)
+        cls.conditions3 = SupervisedTrainConditions(loss='squared_error', learning_rate=0.01, test_ratio=0.2, shuffle=True)
 
         # Let's get an example of Diabetes
         X, y = load_diabetes(return_X_y=True)

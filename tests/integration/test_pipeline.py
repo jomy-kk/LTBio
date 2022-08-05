@@ -122,7 +122,7 @@ class PipelineIntegrationTests(unittest.TestCase):
         unit4 = Input('target', target)
         from sklearn.ensemble import GradientBoostingRegressor
         model = SkLearnModel(GradientBoostingRegressor(n_estimators=500, max_depth=4, min_samples_split=5))
-        conditions1 = SupervisedTrainConditions(loss='squared_error', learning_rate=0.02, test_size=0.2, shuffle=False)
+        conditions1 = SupervisedTrainConditions(loss='squared_error', learning_rate=0.02, test_ratio=0.2, shuffle=False)
         unit5 = SupervisingTrainer(model, (conditions1, ), name='GBR Trainer')
 
         # 2. Create pipeline and add units
