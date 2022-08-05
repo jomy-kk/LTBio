@@ -10,6 +10,7 @@
 
 # Contributors: João Saraiva
 # Created: 03/08/2022
+# Last Updated: 05/08/2022
 
 # ===================================
 from abc import ABC, abstractmethod
@@ -66,3 +67,11 @@ class BiosignalDataset(Dataset, ABC):
             return self.__biosignals
         else:
             raise AttributeError("Dataset was not populated with Biosignals.")
+
+    @property
+    def object_timeseries_names(self):
+        return self.__object_timeseries_names
+
+    @property
+    def target_timeseries_names(self):
+        return self.__target_timeseries_names

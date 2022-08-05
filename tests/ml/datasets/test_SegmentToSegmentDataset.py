@@ -97,6 +97,11 @@ class SegmentToSegmentDatasetTestCase(unittest.TestCase):
 
     def test_create_dataset_from_timeseries(self):
         # Given a dataset with 2 Timeseries as objects and 3 Timeseries as targets
+        self.temp._get_channel('temp').name = 'temp'
+        self.eda._get_channel('eda').name = 'eda'
+        self.acc._get_channel('x').name = 'x'
+        self.acc._get_channel('y').name = 'y'
+        self.acc._get_channel('z').name = 'z'
         dataset = SegmentToSegmentDataset(object=(self.temp._get_channel('temp'), self.eda._get_channel('eda')),
                                           target=(self.acc._get_channel('x'), self.acc._get_channel('y'), self.acc._get_channel('z')),
                                           name=self.dataset_name)
