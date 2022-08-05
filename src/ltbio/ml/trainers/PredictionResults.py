@@ -37,3 +37,11 @@ class PredictionResults():
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def biosignals(self):
+        return self.test_dataset._get_output_biosignals(self.predictions)
+
+    @property
+    def timeseries(self):
+        return self.test_dataset._get_output_timeseries(self.predictions)

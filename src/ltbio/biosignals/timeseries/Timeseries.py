@@ -955,6 +955,24 @@ class Timeseries():
         new.associate(self.events)
         return new
 
+    def _new_samples(self, samples_by_segment: List[ndarray] = None):
+        """
+        Protected Access: For use of this module, since who uses is not aware of Segment.
+
+        Creates a similar copy of the Timeseries' contents and returns the new object, with the samples of each segment changed.
+
+        :return: A new Timeseries with the samples changed. All other fields shall remain the same.
+        :rtype: Timeseries | OverlappingTimeseries
+        """
+
+        assert len(samples_by_segment) == len(self.__segments)
+
+        segments = []
+        for segment, samples in zip(self, samples_by_segment):
+            segments.append(segment._new(samples=samples, raw_samples=samples, is_filtered=False))
+
+        return self.__new(segments=segments)
+
     def __new(self, segments: List[__Segment] = None, sampling_frequency: float = None, units: Unit = None,
               name: str = None, equally_segmented: bool = None, overlapping_segments: bool = None,
               events: Collection[Event] = None):

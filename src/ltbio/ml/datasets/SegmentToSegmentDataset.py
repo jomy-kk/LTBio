@@ -80,6 +80,9 @@ class SegmentToSegmentDataset(BiosignalDataset):
         if len(target) == 0:
             raise AssertionError("Given target cannot be an empty Collection.")
 
+        # Save references to target Timeseries for later reconstruction
+        self.__target_timeseries = target
+
         # Assert all Timeseries have the same domain
         objects_domain = object[0].domain
         if any([x.domain != objects_domain for x in object]) or any([x.domain != objects_domain for x in target]):
@@ -102,3 +105,32 @@ class SegmentToSegmentDataset(BiosignalDataset):
         # VStacks the segments of all Timeseries. Each item is a sample to be fed to the model.
         self._BiosignalDataset__objects = object_all_segments.swapaxes(0, 1)
         self._BiosignalDataset__targets = target_all_segments.swapaxes(0, 1)
+
+    def _get_output_timeseries(self, output_segments:tuple) -> list[Timeseries]:
+        output_segments = np.array(output_segments)
+        output_segments = output_segments.swapaxes(1, 0)
+
+        new_timeseries = []
+        for samples, timeseries in zip(output_segments, self.__target_timeseries):
+            new_timeseries.append(timeseries._new_samples(samples_by_segment=samples))
+
+        return new_timeseries
+
+    def _get_output_biosignals(self, output_segments:tuple) -> list[Biosignal]:
+        new_timeseries = self._get_output_timeseries(output_segments)
+        new_biosignals = []
+
+        # Match to correspondent Biosignals
+        # Assuming they were vertically stacked by the order they were passed
+        i = 0
+        for target_biosignal in self._BiosignalDataset__biosignals['target']:
+            new_channels = {}
+            for channel_name, _ in target_biosignal:
+                new_channels[channel_name] = new_timeseries[i]
+                i += 1
+            new_biosignals.append(target_biosignal._new(timeseries=new_channels, name='Output '+ target_biosignal.name))
+
+        assert i == len(new_timeseries)  # all Timeseries in 'new_timeseries' were used
+
+        return new_biosignals
+
