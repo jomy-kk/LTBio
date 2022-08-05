@@ -10,12 +10,13 @@
 
 # Contributors: João Saraiva
 # Created: 31/05/2022
-# Last Updated: 02/08/2022
+# Last Updated: 05/08/2022
 
 # ===================================
 from _datetime import datetime
 from abc import ABC, abstractmethod
-from typing import Collection
+from inspect import isclass
+from typing import Collection, ClassVar
 
 from ltbio.ml.datasets.BiosignalDataset import BiosignalDataset
 from ltbio.ml.metrics import Metric
@@ -61,6 +62,10 @@ class SupervisedModel(ABC):
         return [f'V{version.number} on {version.created_on}' for version in self.__versions]
 
     @property
+    def is_trained(self) -> bool:
+        return len(self.__versions) > 0
+
+    @property
     @abstractmethod
     def trained_parameters(self):
         pass
@@ -77,7 +82,7 @@ class SupervisedModel(ABC):
         self.__versions.append(self.__current_version)
 
     @abstractmethod
-    def test(self, dataset:BiosignalDataset, evaluation_metrics:Collection[Metric] = None, version:int = None) -> PredictionResults:
+    def test(self, dataset:BiosignalDataset, evaluation_metrics:Collection = None, version:int = None) -> PredictionResults:
         # This is to be executed before the testing starts
         if version is None:
             if self.__current_version is None:
@@ -88,6 +93,11 @@ class SupervisedModel(ABC):
                 pass  # uses current version
         else:
             self.set_to_version(version)
+
+        # Check types
+        for metric in evaluation_metrics:
+            if not isclass(metric) and metric.__base__ is not Metric:
+                raise TypeError("Give non instantiated evaluation metrics, i.e., types of Metric.")
 
     def set_to_version(self, version:int = None):
         if version <= len(self.__versions):

@@ -14,7 +14,10 @@
 # ===================================
 from abc import ABC, abstractmethod
 
+import numpy as np
+
 from ltbio.biosignals.timeseries.Unit import Unit, Unitless, Decibels
+from ltbio.ml.datasets.BiosignalDataset import BiosignalDataset
 
 
 class Metric(ABC):
@@ -26,19 +29,38 @@ class Metric(ABC):
     def name(self) -> str:
         pass
 
-class ValueMetric(Metric, float, ABC):
+class ValueMetric(Metric, ABC):
     def __init__(self, value: float | int):
         super().__init__()
         self.__value = value
+
+    @classmethod
+    def fromDatasetPredictions(cls, dataset:BiosignalDataset, predictions):
+        return cls(cls.compute_value(dataset, predictions))
+
+    @staticmethod
+    @abstractmethod
+    def compute_value(dataset:BiosignalDataset, predictions) -> float:
+        pass
 
     @property
     def unit(self) -> Unit:
         return Unitless()
 
+    def __getitem__(self, item):
+        if isinstance(self.__value, dict):
+            return self.__value[item]
+        else:
+            raise TypeError("There are no multiple values in this metric.")
+
     def __float__(self):
+        if isinstance(self.__value, dict):
+            raise TypeError("This metric computed a value for each Timeseries. Index its name first.")
         return float(self.__value)
 
     def __int__(self):
+        if isinstance(self.__value, dict):
+            raise TypeError("This metric computed a value for each Timeseries. Index its name first.")
         return int(self.__value)
 
     def __str__(self):
@@ -107,8 +129,18 @@ class F1(ValueMetric):
 
 class MSE(ValueMetric):
     """Mean Squared Error."""
-    def __init__(self, value):
-        super().__init__(value)
+    @staticmethod
+    def compute_value(dataset, predictions):
+        average_mse = 0
+        targets = dataset.all_targets
+        for target, prediction in zip(targets, predictions):
+            mse = (np.square(target - prediction)).mean(axis=1)
+            average_mse += mse
+        average_mse /= len(targets)
+        if np.shape(average_mse)[0] > 1:
+            return {ts_label: value for ts_label, value in zip(dataset.target_timeseries_names, tuple(average_mse))}
+        else:
+            return average_mse
 
     def name(self):
         return 'Mean Squared Error'

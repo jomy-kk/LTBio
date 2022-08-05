@@ -10,6 +10,7 @@
 
 # Contributors: João Saraiva
 # Created: 02/08/2022
+# Last Updated: 05/08/2022
 
 # ===================================
 from typing import Collection
@@ -26,4 +27,4 @@ class PredictionResults():
         self.loss = loss
         self.test_dataset = test_dataset
         self.predictions = predictions
-        self.metrics = [metric(test_dataset, predictions) for metric in evaluation_metrics]
+        self.metrics = [metric.fromDatasetPredictions(test_dataset, predictions) for metric in evaluation_metrics]
