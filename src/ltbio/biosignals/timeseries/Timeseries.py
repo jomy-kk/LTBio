@@ -1170,7 +1170,8 @@ class Timeseries():
 
     def _concatenate_segments(self):
         if len(self.__segments) > 1:
-            self.__segments = [concatenate(self._to_array()), ]
+            self.__segments = [Timeseries.__Segment(concatenate(self._to_array()), self.initial_datetime, self.__sampling_frequency, False), ]
+            self.__is_equally_segmented = True
         else:
             pass  # no need
 
@@ -1215,3 +1216,6 @@ class OverlappingTimeseries(Timeseries):
         segment = Timeseries._Timeseries__Segment(array(samples) if not isinstance(samples, ndarray) else samples,
                                        initial_datetime, self.__sampling_frequency)
         self.__segments.append(segment)
+
+    def _concatenate_segments(self):
+        raise NotImplementedError("")
