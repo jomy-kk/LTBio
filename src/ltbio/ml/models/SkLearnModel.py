@@ -104,34 +104,7 @@ class SkLearnModel(SupervisedModel):
     def _SupervisedModel__get_state(self):
         return self.design.__getstate__()
 
-    def __plot_train_and_test_loss(self, show:bool=True, save_to:str=None):
-        """
-        All code was adapted from https://scikit-learn.org/stable/auto_examples/ensemble/plot_gradient_boosting_regression.html#sphx-glr-auto-examples-ensemble-plot-gradient-boosting-regression-py
-        """
-        test_score = zeros((self.design.get_params()["n_estimators"],))
-        for i, y_pred in enumerate(self.design.staged_predict(self.__last_results.object)):
-            test_score[i] = self.design.loss_(self.__last_results.target, y_pred)
-        fig = plt.figure(figsize=(8, 4))
-        plt.subplot(1, 1, 1)
-        plt.title("Train/Test Loss")
-        plt.plot(
-            arange(self.design.get_params()["n_estimators"]) + 1, self.design.train_score_, "b-", label="Training Set Deviance",
-        )
-        plt.plot(
-            arange(self.design.get_params()["n_estimators"]) + 1, test_score, "r-", label="Test Set Deviance"
-        )
-        plt.legend(loc="upper right")
-        plt.xlabel("Boosting Iterations")
-        plt.ylabel("Deviance")
 
-        fig.tight_layout()
-        if save_to is not None:
-            fig.savefig(save_to)
-        if show:
-            plt.show()
-            print("Train/Test Loss plot was shown.")
-        else:
-            plt.close()
 
     def __plot_timeseries_importance(self, show:bool=True, save_to:str=None):
         """

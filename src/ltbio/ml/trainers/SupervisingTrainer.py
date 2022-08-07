@@ -85,7 +85,10 @@ class SupervisingTrainer(SinglePipelineUnit):
             # Name each test result with what version number and differences in train conditions.
             test_results.name = f"[V{self.__model.current_version}: " + ', '.join([f'{key} = {value}' for key, value in differences_in_conditions[i].items()]) + ']'
 
-        self.reporter.print_end_of_trains(len(self.train_conditions))
-        self.reporter.output('Report.pdf')
+            # Report results
+            self.reporter.declare_training_session(set_of_conditions, train_results, test_results)
 
-        return results
+        if self.save_report_to is not None:
+            self.reporter.output_report('Supervising Trainer Report', self.save_report_to)
+
+        return self.__model.best_version_results
