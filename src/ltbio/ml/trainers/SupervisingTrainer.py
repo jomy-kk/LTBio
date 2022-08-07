@@ -10,47 +10,52 @@
 
 # Contributors: João Saraiva
 # Created: 04/06/2022
-# Last Updated: 07/07/2022
+# Last Updated: 07/08/2022
 
 # ===================================
 
 from typing import Collection
 
-from numpy import array
-from sklearn.model_selection import train_test_split
-
-from ltbio.biosignals import Timeseries
-from ltbio.ml.models import SupervisedModel
+from ltbio.ml.datasets.BiosignalDataset import BiosignalDataset
+from ltbio.ml.models.SupervisedModel import SupervisedModel
 from ltbio.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
-from ltbio.ml.trainers.SupervisedTrainReport import SupervisedTrainReport
+from ltbio.ml.trainers.SupervisingTrainerReporter import SupervisingTrainerReporter
 from ltbio.pipeline.PipelineUnit import SinglePipelineUnit
 
 
 class SupervisingTrainer(SinglePipelineUnit):
-
     PIPELINE_INPUT_LABELS = {'object': 'timeseries', 'target': 'target'}
     PIPELINE_OUTPUT_LABELS = {'results': 'results'}
     ART_PATH = 'resources/pipeline_media/ml.png'
 
-    def __init__(self, model:SupervisedModel, train_conditions:Collection[SupervisedTrainConditions], name:str=None):
+    def __init__(self, model: SupervisedModel,
+                 train_conditions: Collection[SupervisedTrainConditions],
+                 evaluation_metrics: Collection = None,
+                 name: str = None, save_report_to: str = None):
+
         super().__init__(name)
+
+        if not isinstance(model, SupervisedModel):
+            raise TypeError("Parameter 'model' must be an instance of SupervisedModel.")
         self.__model = model
-        self.train_conditions = train_conditions
 
         if len(train_conditions) == 0:
             raise AttributeError("Give at least one SupervisedTrainConditions to 'train_conditions'.")
+        if not isinstance(train_conditions, (tuple, list, set)) or not all(
+                isinstance(x, SupervisedTrainConditions) for x in train_conditions):
+            raise TypeError("Parameter 'train_conditions' must be a collection of SupervisedTrainConditions objects.")
+        self.train_conditions = train_conditions
 
+        self.evaluation_metrics = evaluation_metrics
+        self.save_report_to = save_report_to
 
-    def apply(self, object:Collection[Timeseries], target:Timeseries):
-        self.reporter = SupervisedTrainReport()
-        self.reporter.print_successful_instantiation()
-        self.reporter.print_model_description(self.__model, **self.__model.non_trainable_parameters)
+        self.reporter = SupervisingTrainerReporter()
+        self.reporter.declare_model_description(self.__model, **self.__model.non_trainable_parameters)
 
-        # Convert object and target to arrays
-        X = array([ts.to_array() for ts in (object.values() if isinstance(object, dict) else object)]).T # Assertion that every Timeseries only contains one Segment is guaranteed by 'to_array' conversion.
-        y = target.to_array()
+    def apply(self, dataset: BiosignalDataset):
+        # Infer what is different between all sets of the train conditions
+        differences_in_conditions = SupervisedTrainConditions.differences_between(self.train_conditions)
 
-        results = []
         for i, set_of_conditions in enumerate(self.train_conditions):
             # Train subdatset size
             if set_of_conditions.train_size != None:
@@ -77,10 +82,10 @@ class SupervisingTrainer(SinglePipelineUnit):
             train_dataset, test_dataset = dataset.split(train_subsize, test_subsize, set_of_conditions.shuffle is True)
 
             # Train the model
-            self.__model.train(X_train, y_train)
+            train_results = self.__model.train(train_dataset, set_of_conditions)
 
             # Test the model
-            self.__model.test(X_test, y_test)
+            test_results = self.__model.test(test_dataset, self.evaluation_metrics)
 
             # Name each test result with what version number and differences in train conditions.
             test_results.name = f"[V{self.__model.current_version}: " + ', '.join([f'{key} = {value}' for key, value in differences_in_conditions[i].items()]) + ']'

@@ -157,8 +157,11 @@ class TorchModel(SupervisedModel):
         # Call super for version control
         super().test(dataset, evaluation_metrics, version)
 
+        # Get current conditions
+        conditions = self._SupervisedModel__current_version.conditions
+
         # Create dataset and dataloader
-        dataloader = DataLoader(dataset=dataset, batch_size=self._SupervisedModel__current_version.conditions.batch_size)
+        dataloader = DataLoader(dataset=dataset, batch_size=conditions.batch_size)
 
         # Test by batch
         size = len(dataset)
@@ -172,7 +175,7 @@ class TorchModel(SupervisedModel):
                 # X, y = X.to(device), y.to(device)  # TODO: pass to cuda if available
                 pred = self.design(X)
                 predictions.append(pred.cpu().detach().numpy().squeeze())
-                test_loss += self._SupervisedModel__current_version.conditions.loss(pred, y).item()
+                test_loss += conditions.loss(pred, y).item()
                 correct += (pred.argmax(1) == y).type(torch.float).sum().item()
         test_loss /= num_batches
         correct /= size
