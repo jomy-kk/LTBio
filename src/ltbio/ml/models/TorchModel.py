@@ -132,7 +132,7 @@ class TorchModel(SupervisedModel):
                     best_loss = validation_loss  # defines the first
                 elif validation_loss < best_loss:
                     best_loss = validation_loss
-                    self._SupervisedModel__update_current_version_state(epoch_concluded=t)
+                    self._SupervisedModel__update_current_version_state(epoch_concluded=t+1)
 
             print("Training finished")
 
@@ -141,7 +141,7 @@ class TorchModel(SupervisedModel):
             while True:
                 answer = input("Save Parameters? (y/n): ").lower()
                 if answer == 'y':
-                    self._SupervisedModel__update_current_version_state(epoch_concluded=t)
+                    self._SupervisedModel__update_current_version_state(epoch_concluded=t+1)
                     print("Model and parameters saved.")
                     break
                 elif answer == 'n':
@@ -180,7 +180,9 @@ class TorchModel(SupervisedModel):
         if self.verbose:
             print(f"Test Error: Avg loss: {test_loss:>8f} \n")
 
-        return PredictionResults(test_loss, dataset, tuple(predictions), evaluation_metrics)
+        results = PredictionResults(test_loss, dataset, tuple(predictions), evaluation_metrics)
+        self._SupervisedModel__update_current_version_best_test_results(results)
+        return results
 
     @property
     def trained_parameters(self):

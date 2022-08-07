@@ -10,7 +10,7 @@
 
 # Contributors: João Saraiva
 # Created: 31/05/2022
-# Last Updated: 05/08/2022
+# Last Updated: 07/08/2022
 
 # ===================================
 from _datetime import datetime
@@ -37,6 +37,7 @@ class SupervisedModel(ABC):
             self.state = state
             self.conditions = conditions
             self.epoch = None
+            self.best_test_results = None
 
     def __init__(self, design, name:str=None):
         self.design = design
@@ -105,6 +106,21 @@ class SupervisedModel(ABC):
         else:
             raise ValueError(f"There is no version number {version}. Check version numbers by accessing 'versions'.")
 
+    @property
+    def best_version_results(self) -> PredictionResults:
+        if not self.is_trained:
+            raise AttributeError("Model was not trained yet, hence it has no results.")
+        if self.__versions[0].best_test_results is None:
+            raise AttributeError("Model was not tested yet, hence it has no test results.")
+
+        best_results = self.__versions[0].best_test_results
+
+        for version in self.__versions:
+            if version.best_test_results is not None and version.best_test_results.loss < best_results.loss:
+                best_results = version.best_test_results
+
+        return best_results
+
     # ====================================
     # For Internal Usage
 
@@ -112,23 +128,16 @@ class SupervisedModel(ABC):
         self.__set_state(version.state)
         self.__current_version = version
 
-    def __report(self, reporter, show, save_to):
-        #mse = mean_squared_error(self.__last_results.target, self.__last_results.predicted)
-        #reporter.print_textual_results(mse=mse)
-        if save_to is not None:
-            file_names = (save_to + '_loss.png', save_to + '_importance.png', save_to + '_permutation.png')
-            self.__plot_train_and_test_loss(show=show, save_to=file_names[0])
-            self.__plot_timeseries_importance(show=show, save_to=file_names[1])
-            self.__plot_timeseries_permutation_importance(show=show, save_to=file_names[2])
-
-            reporter.print_loss_plot(file_names[0])
-            reporter.print_small_plots(file_names[1:])
-
-        #return mse
-
     def __update_current_version_state(self, epoch_concluded:int = None):
         self.__current_version.state = self.__get_state()
         self.__current_version.epoch = epoch_concluded
+
+    def __update_current_version_best_test_results(self, results: PredictionResults):
+        if self.__current_version.best_test_results is not None:
+            if results.loss < self.__current_version.best_test_results.loss:
+                self.__current_version.best_test_results = results
+        else:
+            self.__current_version.best_test_results = results
 
     @abstractmethod
     def __set_state(self, state):
