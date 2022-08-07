@@ -10,7 +10,7 @@
 
 # Contributors: João Saraiva and code from https://pytorch.org/tutorials/beginner/basics/optimization_tutorial
 # Created: 24/07/2022
-# Last Updated: 05/08/2022
+# Last Updated: 07/08/2022
 
 # ===================================
 
@@ -102,8 +102,7 @@ class TorchModel(SupervisedModel):
         # Divide dataset into 2 smaller train and validation datasets
         validation_size = int(len(dataset) * conditions.validation_ratio)
         train_size = len(dataset) - validation_size
-        train_dataset, validation_dataset = random_split(dataset, (train_size, validation_size),
-                                                         generator=torch.Generator().manual_seed(42))  # Docs recommend to fix the generator seed for reproducible results
+        train_dataset, validation_dataset = dataset.split(train_size, validation_size, conditions.shuffle is True)
 
         # Decide on shuffling between epochs
         epoch_shuffle = False

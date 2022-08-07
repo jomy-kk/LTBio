@@ -52,16 +52,29 @@ class SupervisingTrainer(SinglePipelineUnit):
 
         results = []
         for i, set_of_conditions in enumerate(self.train_conditions):
-            # Prepare train and test sets
-            X_train, X_test, y_train, y_test = train_test_split(X, y,
-                                                                test_size=set_of_conditions['test_size'],
-                                                                #train_size=set_of_conditions['train_size'],
-                                                                shuffle=set_of_conditions['shuffle'],
-                                                                )
-            self.reporter.print_start_of_train(i+1, len(self.train_conditions), set_of_conditions)
+            # Train subdatset size
+            if set_of_conditions.train_size != None:
+                train_subsize = set_of_conditions.train_size
+            elif set_of_conditions.train_ratio != None:
+                train_subsize = int(set_of_conditions.train_ratio * len(dataset))
+            else:
+                train_subsize = None
+            # Test subdatset size
+            if set_of_conditions.test_size != None:
+                test_subsize = set_of_conditions.test_size
+            elif set_of_conditions.test_ratio != None:
+                test_subsize = int(set_of_conditions.test_ratio * len(dataset))
+            else:
+                test_subsize = None
+            # By inference
+            if train_subsize is None:
+                train_subsize = len(dataset) - test_subsize
+            if test_subsize is None:
+                test_subsize = len(dataset) - train_subsize
+            # SupervisedTrainConditions garantees that at least one of these four conditions is defined to make these computations.
 
-            # Do setup, if any
-            self.__model.setup(set_of_conditions)
+            # Prepare the train and test datasets
+            train_dataset, test_dataset = dataset.split(train_subsize, test_subsize, set_of_conditions.shuffle is True)
 
             # Train the model
             self.__model.train(X_train, y_train)

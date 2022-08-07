@@ -8,15 +8,17 @@
 # Module: MLDataset
 # Description: 
 
-# Contributors: João Saraiva
+# Contributors: João Saraiva and code adapted from PyTorch Documentation
 # Created: 03/08/2022
 # Last Updated: 05/08/2022
 
 # ===================================
 from abc import ABC, abstractmethod
+from typing import Sequence
 
 from numpy import ndarray
-from torch.utils.data.dataset import Dataset
+from torch import Generator, randperm
+from torch.utils.data.dataset import Dataset, random_split, Subset
 
 from ltbio.biosignals import Biosignal
 
@@ -75,3 +77,57 @@ class BiosignalDataset(Dataset, ABC):
     @property
     def target_timeseries_names(self):
         return self.__target_timeseries_names
+
+
+    def split(self, subsetA_size: int, subsetB_size: int, randomly: bool):
+        if subsetA_size + subsetB_size != len(self):
+            raise ValueError("Sum of sizes does not equal the length of the input dataset.")
+
+        if randomly:
+            indices = randperm(subsetA_size + subsetB_size, generator=Generator().manual_seed(42)).tolist()
+            subsetA = BiosignalSubset(self, indices[:subsetA_size])
+            subsetB = BiosignalSubset(self, indices[subsetA_size:])
+
+        else:
+            subsetA = BiosignalSubset(self, range(subsetA_size))
+            subsetB = BiosignalSubset(self, range(subsetA_size, subsetA_size + subsetB_size))
+
+        return subsetA, subsetB
+
+
+class BiosignalSubset(BiosignalDataset):
+
+    def __init__(self, dataset: BiosignalDataset, indices: Sequence[int]):
+        super().__init__(dataset.name)
+        self.__dataset = dataset
+        self.__indices = indices
+        self.__objects = dataset._BiosignalDataset__objects
+        self.__targets = dataset._BiosignalDataset__targets
+
+    def __getitem__(self, idx):
+        if isinstance(idx, list):
+            return self.__dataset[[self.__indices[i] for i in idx]]
+        return self.__dataset[self.__indices[idx]]
+
+    def __len__(self):
+        return len(self.__indices)
+
+    @property
+    def all_examples(self):
+        return [(o, t) for o, t in zip(self.__objects[self.__indices], self.__targets[self.__indices])]
+
+    @property
+    def all_objects(self):
+        return self.__objects[self.__indices]
+
+    @property
+    def all_targets(self):
+        return self.__targets[self.__indices]
+
+    @property
+    def object_timeseries_names(self):
+        return self.__dataset.object_timeseries_names
+
+    @property
+    def target_timeseries_names(self):
+        return self.__dataset.target_timeseries_names
