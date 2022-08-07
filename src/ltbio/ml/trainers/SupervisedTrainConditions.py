@@ -14,7 +14,7 @@
 
 # ===================================
 from copy import deepcopy
-from typing import Iterable
+from typing import Iterable, Collection
 
 
 class SupervisedTrainConditions():
@@ -156,6 +156,49 @@ class SupervisedTrainConditions():
             'patience': self.patience,
         }
 
+    @staticmethod
+    def differences_between(sets_of_conditions: Collection) -> tuple[dict, ...]:
+        if not isinstance(sets_of_conditions, (list, tuple, set)) or not all(isinstance(_set, SupervisedTrainConditions) for _set in sets_of_conditions):
+            raise TypeError("Sets of conditions must be a collection of SupervisedTrainConditions")
+
+        slot_keys = sets_of_conditions[0]._slots.keys()
+        differences = [{} for i in range(len(sets_of_conditions))]
+
+        for key in slot_keys:
+            all_values = [_set._slots[key] for _set in sets_of_conditions]
+            for value in all_values:
+                if (key == 'optimizer' or key == 'loss') and not isinstance(value, str):
+                    if hasattr(all_values[0], '__getstate__') and hasattr(value, '__getstate__'):
+                        if all_values[0].__getstate__() != value.__getstate__():
+                            for i, x in enumerate(all_values):
+                                differences[i][key] = x
+                    else:
+                        if all_values[0].__repr__() != value.__repr__():
+                            for i, x in enumerate(all_values):
+                                differences[i][key] = x
+                else:
+                    if value != all_values[0]:
+                        for i, x in enumerate(all_values):
+                            differences[i][key] = x
+
+        # Find differences in hyperparameters
+        all_hyperparameters = [_set.hyperparameters for _set in sets_of_conditions]
+        if len(all_hyperparameters) > 1:
+            different_keys_found = []
+            for i in range(len(all_hyperparameters)):
+                x = all_hyperparameters[i]
+                for j in range(i+1, len(all_hyperparameters)):
+                    y = all_hyperparameters[j]
+                    diff = set(x.items()) - set(y.items())
+                    if len(diff) > 0:
+                        for d in diff:
+                            different_keys_found.append(d[0])
+            for key in different_keys_found:
+                for i, x in enumerate(all_hyperparameters):
+                    differences[i][key] = x[key] if key in x else None
+
+        return tuple(differences)
+
     def check_it_has(self, attributes:Iterable[str]):
         slots = self._slots
         for a in attributes:
@@ -212,10 +255,10 @@ class SupervisedTrainConditions():
 
             optimizer, loss = True, True
             if not isinstance(x_slots['optimizer'], str):
-                optimizer = type(x_slots['optimizer']) == type(y_slots['optimizer'])
+                optimizer = x_slots['optimizer'].__getstate__() == y_slots['optimizer'].__getstate__()
                 del x_slots['optimizer'], y_slots['optimizer']
             if not isinstance(x_slots['loss'], str):
-                loss = type(x_slots['loss']) == type(y_slots['loss'])
+                loss = x_slots['loss'].__getstate__() == y_slots['loss'].__getstate__()
                 del x_slots['loss'], y_slots['loss']
 
             primitive_values = all([x_slots[label] == y_slots[label] for label in x_slots.keys()])
