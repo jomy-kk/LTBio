@@ -82,10 +82,8 @@ class SupervisingTrainer(SinglePipelineUnit):
             # Test the model
             self.__model.test(X_test, y_test)
 
-            # Produce report
-            #self.__model.report(self.reporter, show=False, save_to='resources/reports_tests/my_test'+str(i+1))
-            result = self.__model.report(self.reporter, show=False, save_to='resources/reports_tests/my_test'+str(i+1))
-            results.append(result)
+            # Name each test result with what version number and differences in train conditions.
+            test_results.name = f"[V{self.__model.current_version}: " + ', '.join([f'{key} = {value}' for key, value in differences_in_conditions[i].items()]) + ']'
 
         self.reporter.print_end_of_trains(len(self.train_conditions))
         self.reporter.output('Report.pdf')

@@ -23,14 +23,16 @@ class PredictionResults():
     """Stores the results of predictions made with of a supervised ML model."""
 
     def __init__(self, loss: float, test_dataset: BiosignalDataset, predictions:tuple,
-                 evaluation_metrics: Collection[Metric] = None):
+                 evaluation_metrics: Collection[Metric] = None, name: str = None):
         self.loss = loss
         self.test_dataset = test_dataset
         self.predictions = predictions
         self.metrics = [metric.fromDatasetPredictions(test_dataset, predictions) for metric in evaluation_metrics]
+        self.name = name
 
     def __str__(self):
-        res = f'Loss = {self.loss}\n'
+        res = f'{self.name}\n'
+        res += f'Loss = {self.loss}\n'
         for metric in self.metrics:
             res += str(metric) + '\n'
         return res
