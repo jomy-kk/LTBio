@@ -255,13 +255,12 @@ class SupervisedTrainConditions():
 
             optimizer, loss = True, True
             if not isinstance(x_slots['optimizer'], str):
-                optimizer = x_slots['optimizer'].__getstate__() == y_slots['optimizer'].__getstate__()
+                optimizer = x_slots['optimizer'].__repr__() == y_slots['optimizer'].__repr__()
                 del x_slots['optimizer'], y_slots['optimizer']
             if not isinstance(x_slots['loss'], str):
-                loss = x_slots['loss'].__getstate__() == y_slots['loss'].__getstate__()
+                loss = x_slots['loss'].__repr__() == y_slots['loss'].__repr__()
                 del x_slots['loss'], y_slots['loss']
 
             primitive_values = all([x_slots[label] == y_slots[label] for label in x_slots.keys()])
 
             return primitive_values and optimizer and loss
-
