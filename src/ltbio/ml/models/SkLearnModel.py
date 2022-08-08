@@ -37,9 +37,9 @@ class SkLearnModel(SupervisedModel):
     def __set_parameter_from_condition(self, parameter_label:str, conditions_label:str, value):
         if parameter_label in self.__required_parameters:
             if value is not None:
-                self.design.set_params({parameter_label: value})
+                self._SupervisedModel__design.set_params({parameter_label: value})
             else:
-                warn(f"Omitted train condition '{conditions_label}' = {self.design.get_params()[parameter_label]} being used.")
+                warn(f"Omitted train condition '{conditions_label}' = {self._SupervisedModel__design.get_params()[parameter_label]} being used.")
         else:
             if value is not None:
                 warn(f"Train condition '{conditions_label}' given is not required for this model. Ignoring it.")
@@ -51,10 +51,10 @@ class SkLearnModel(SupervisedModel):
         super().train(dataset, conditions)
 
         # Set whichever model hyperparameters were defined
-        self.design.set_params(**conditions.hyperparameters)
+        self._SupervisedModel__design.set_params(**conditions.hyperparameters)
 
         # Map some train conditions to model parameters
-        self.__required_parameters = self.design.get_params().keys()
+        self.__required_parameters = self._SupervisedModel__design.get_params().keys()
         self.__set_parameter_from_condition('max_iter', 'epochs', conditions.epochs)
         self.__set_parameter_from_condition('loss', 'loss', conditions.loss)
         self.__set_parameter_from_condition('tol', 'stop_at_deltaloss', conditions.stop_at_deltaloss)
@@ -71,38 +71,38 @@ class SkLearnModel(SupervisedModel):
         self.__set_parameter_from_condition('?', 'train_size', conditions.train_size)
 
         # Fits the model
-        self.design.fit(dataset.all_objects, dataset.all_targets)
+        self._SupervisedModel__design.fit(dataset.all_objects, dataset.all_targets)
 
         # Update version
-        self._SupervisedModel__update_current_version_state(self, epochs=self.design.n_iter_)
+        self._SupervisedModel__update_current_version_state(self, epochs=self._SupervisedModel__design.n_iter_)
 
         # Create results object
-        return SupervisedTrainResults(self.design.loss_, None, None)
+        return SupervisedTrainResults(self._SupervisedModel__design.loss_, None, None)
 
     def test(self, dataset, evaluation_metrics = None, version = None):
         # Call super for version control
         super().test(dataset, evaluation_metrics, version)
         # Make predictions about the objects
-        predictions = self.design.predict(dataset.all_objects)
+        predictions = self._SupervisedModel__design.predict(dataset.all_objects)
         # Create results object
-        return PredictionResults(self.design.loss_, dataset, predictions, evaluation_metrics)
+        return PredictionResults(self._SupervisedModel__design.loss_, dataset, predictions, evaluation_metrics)
 
     @property
     def trained_parameters(self):
         try:
-            return self.design.coef_, self.design.intercepts_
+            return self._SupervisedModel__design.coef_, self._SupervisedModel__design.intercepts_
         except:
             raise ReferenceError("Unfortunately cannot find the trained parameters, but the design internal state is functional.")
 
     @property
     def non_trainable_parameters(self):
-        return self.design.get_params()
+        return self._SupervisedModel__design.get_params()
 
     def _SupervisedModel__set_state(self, state):
-        self.design.__setstate__(state)
+        self._SupervisedModel__design.__setstate__(state)
 
     def _SupervisedModel__get_state(self):
-        return self.design.__getstate__()
+        return self._SupervisedModel__design.__getstate__()
 
 
 
@@ -112,7 +112,7 @@ class SkLearnModel(SupervisedModel):
         """
         # TImeseries importance
         timeseries_labels = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j')
-        feature_importance = self.design.feature_importances_
+        feature_importance = self._SupervisedModel__design.feature_importances_
         sorted_idx = argsort(feature_importance)
         pos = arange(sorted_idx.shape[0]) + 0.5
         fig = plt.figure(figsize=(6, 6))
@@ -132,7 +132,7 @@ class SkLearnModel(SupervisedModel):
 
     def __plot_timeseries_permutation_importance(self, show:bool=True, save_to:str=None):
         from sklearn.inspection import permutation_importance
-        result = permutation_importance(self.design, self.__last_results.object, self.__last_results.target,
+        result = permutation_importance(self._SupervisedModel__design, self.__last_results.object, self.__last_results.target,
                                         n_repeats=10, random_state=42, n_jobs=2)
         sorted_idx = result.importances_mean.argsort()
         timeseries_labels = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j')

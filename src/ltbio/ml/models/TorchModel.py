@@ -39,13 +39,13 @@ class TorchModel(SupervisedModel):
         def __train(dataloader) -> float:
 
             size = len(dataloader.dataset)
-            self.design.train()  # Sets the module in training mode
+            self._SupervisedModel__design.train()  # Sets the module in training mode
             for batch, (X, y) in enumerate(dataloader):
                 X, y = X.float(), y.float()
                 # X, y = X.to(device), y.to(device)  # TODO: pass to cuda if available
 
                 # Compute prediction and loss
-                pred = self.design(X)
+                pred = self._SupervisedModel__design(X)
                 loss = conditions.loss(pred, y)
 
                 # Backpropagation
@@ -63,13 +63,13 @@ class TorchModel(SupervisedModel):
         def __validate(dataloader: DataLoader) -> float:
             size = len(dataloader.dataset)
             num_batches = len(dataloader)
-            self.design.eval()  # Sets the module in evaluation mode
+            self._SupervisedModel__design.eval()  # Sets the module in evaluation mode
             test_loss, correct = 0., 0
             with torch.no_grad():
                 for X, y in dataloader:
                     X, y = X.float(), y.float()
                     # X, y = X.to(device), y.to(device)  # TODO: pass to cuda if available
-                    pred = self.design(X)
+                    pred = self._SupervisedModel__design(X)
                     test_loss += conditions.loss(pred, y).data.item()
                     correct += (pred.argmax(1) == y).type(torch.float).sum().item()
             test_loss /= num_batches
@@ -166,14 +166,14 @@ class TorchModel(SupervisedModel):
         # Test by batch
         size = len(dataset)
         num_batches = len(dataloader)
-        self.design.eval()  # Sets the module in evaluation mode
+        self._SupervisedModel__design.eval()  # Sets the module in evaluation mode
         test_loss, correct = 0, 0
         predictions = []
         with torch.no_grad():
             for X, y in dataloader:  # for each batch
                 X, y = X.float(), y.float()
                 # X, y = X.to(device), y.to(device)  # TODO: pass to cuda if available
-                pred = self.design(X)
+                pred = self._SupervisedModel__design(X)
                 predictions.append(pred.cpu().detach().numpy().squeeze())
                 test_loss += conditions.loss(pred, y).item()
                 correct += (pred.argmax(1) == y).type(torch.float).sum().item()
@@ -191,7 +191,7 @@ class TorchModel(SupervisedModel):
     def trained_parameters(self):
         if not self.is_trained:
             raise ReferenceError("This model was not yet trained.")
-        return self.design.state_dict()
+        return self._SupervisedModel__design.state_dict()
 
     @property
     def non_trainable_parameters(self):
@@ -201,8 +201,8 @@ class TorchModel(SupervisedModel):
             return self._SupervisedModel__current_version.conditions.hyperparameters
 
     def _SupervisedModel__set_state(self, state):
-        self.design.load_state_dict(state)
+        self._SupervisedModel__design.load_state_dict(state)
 
     def _SupervisedModel__get_state(self):
-        return self.design.state_dict()
+        return self._SupervisedModel__design.state_dict()
         # Optimizer state_dict is inside conditions.optimizer, hence also saved in Version

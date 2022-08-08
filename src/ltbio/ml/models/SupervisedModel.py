@@ -15,6 +15,7 @@
 # ===================================
 from _datetime import datetime
 from abc import ABC, abstractmethod
+from copy import copy
 from inspect import isclass
 from typing import Collection, ClassVar
 
@@ -40,7 +41,7 @@ class SupervisedModel(ABC):
             self.best_test_results = None
 
     def __init__(self, design, name:str=None):
-        self.design = design
+        self.__design = design
         self.name = name
 
         self.__versions:list[SupervisedModel.Version] = []
@@ -50,6 +51,10 @@ class SupervisedModel(ABC):
 
     # ====================================
     # Public API
+
+    @property
+    def design(self):
+        return copy(self.__design)
 
     @property
     def current_version(self) -> int:
