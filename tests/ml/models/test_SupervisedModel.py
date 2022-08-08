@@ -58,7 +58,7 @@ class SupervisedModelTestCase(unittest.TestCase):
         # Assert
         self.assertTrue(isinstance(model, SupervisedModel))
         self.assertEqual(model.name, self.name)
-        self.assertEqual(model.design, self.design)
+        self.assertEqual(model.design.__getstate__(), self.design.__getstate__())
         self.assertEqual(model._SupervisedModel__current_version, None)
         with self.assertRaises(AttributeError):
             x = model.current_version  # because it has not been trained yet

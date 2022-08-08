@@ -113,7 +113,7 @@ class TorchModelTestCase(unittest.TestCase):
         # Assert
         self.assertTrue(isinstance(model, SupervisedModel))
         self.assertEqual(model.name, self.name)
-        self.assertEqual(model.design, self.design)
+        self.assertEqual(model.design.__repr__(), self.design.__repr__())
         self.assertEqual(model._SupervisedModel__current_version, None)
         with self.assertRaises(AttributeError):
             x = model.current_version  # because it has not been trained yet
