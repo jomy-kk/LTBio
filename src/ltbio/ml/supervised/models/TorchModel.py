@@ -17,12 +17,11 @@
 import torch
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
-from torch.utils.data import random_split
 from torch.utils.data.dataloader import DataLoader
 
-from ltbio.ml.models.SupervisedModel import SupervisedModel
-from ltbio.ml.trainers.PredictionResults import PredictionResults
-from ltbio.ml.trainers.SupervisedTrainResults import SupervisedTrainResults
+from ltbio.ml.supervised.models.SupervisedModel import SupervisedModel
+from ltbio.ml.supervised.results import PredictionResults
+from ltbio.ml.supervised.results import SupervisedTrainResults
 
 
 class TorchModel(SupervisedModel):

@@ -1,6 +1,6 @@
 import unittest
 
-from ltbio.ml.trainers import SupervisedTrainConditions
+from ltbio.ml.supervised import SupervisedTrainConditions
 
 
 class SupervisedTrainConditionsTestCase(unittest.TestCase):

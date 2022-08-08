@@ -5,9 +5,9 @@ from sklearn.datasets import load_diabetes
 from sklearn.ensemble import GradientBoostingRegressor
 
 from ltbio.biosignals.timeseries.Timeseries import Timeseries
-from ltbio.ml.models.SkLearnModel import SkLearnModel
-from ltbio.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
-from ltbio.ml.trainers.SupervisingTrainer import SupervisingTrainer
+from ltbio.ml.supervised.models.SkLearnModel import SkLearnModel
+from ltbio.ml.supervised.SupervisedTrainConditions import SupervisedTrainConditions
+from ltbio.ml.supervised.SupervisingTrainer import SupervisingTrainer
 
 
 class SupervisingTrainerTestCase(unittest.TestCase):

@@ -8,9 +8,9 @@ from ltbio.biosignals.timeseries.Timeseries import Timeseries
 from ltbio.features.FeatureExtractor import FeatureExtractor
 from ltbio.features.FeatureSelector import FeatureSelector
 from ltbio.features.Features import TimeFeatures
-from ltbio.ml.models.SkLearnModel import SkLearnModel
-from ltbio.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
-from ltbio.ml.trainers.SupervisingTrainer import SupervisingTrainer
+from ltbio.ml.supervised.models.SkLearnModel import SkLearnModel
+from ltbio.ml.supervised.SupervisedTrainConditions import SupervisedTrainConditions
+from ltbio.ml.supervised.SupervisingTrainer import SupervisingTrainer
 from ltbio.pipeline.Input import Input
 from ltbio.pipeline.Packet import Packet
 from ltbio.pipeline.Pipeline import Pipeline

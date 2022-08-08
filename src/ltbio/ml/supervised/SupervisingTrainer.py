@@ -17,9 +17,9 @@
 from typing import Collection
 
 from ltbio.ml.datasets.BiosignalDataset import BiosignalDataset
-from ltbio.ml.models.SupervisedModel import SupervisedModel
-from ltbio.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
-from ltbio.ml.trainers.SupervisingTrainerReporter import SupervisingTrainerReporter
+from ltbio.ml.supervised.models import SupervisedModel as _SupervisedModel
+from ltbio.ml.supervised.SupervisedTrainConditions import SupervisedTrainConditions
+from ltbio.ml.supervised.SupervisingTrainerReporter import SupervisingTrainerReporter
 from ltbio.pipeline.PipelineUnit import SinglePipelineUnit
 
 
@@ -28,14 +28,14 @@ class SupervisingTrainer(SinglePipelineUnit):
     PIPELINE_OUTPUT_LABELS = {'results': 'results'}
     ART_PATH = 'resources/pipeline_media/ml.png'
 
-    def __init__(self, model: SupervisedModel,
+    def __init__(self, model: _SupervisedModel.SupervisedModel,
                  train_conditions: Collection[SupervisedTrainConditions],
                  evaluation_metrics: Collection = None,
                  name: str = None, save_report_to: str = None):
 
         super().__init__(name)
 
-        if not isinstance(model, SupervisedModel):
+        if not isinstance(model, _SupervisedModel.SupervisedModel):
             raise TypeError("Parameter 'model' must be an instance of SupervisedModel.")
         self.__model = model
 

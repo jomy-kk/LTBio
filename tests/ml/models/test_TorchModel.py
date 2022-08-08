@@ -8,12 +8,12 @@ from torch.optim import Adam
 from ltbio.biosignals.modalities import ACC
 from ltbio.biosignals.sources import E4
 from ltbio.ml.datasets import SegmentToSegmentDataset
-from ltbio.ml.metrics import MSE, SNR, Metric
-from ltbio.ml.models import TorchModel
-from ltbio.ml.models.SupervisedModel import SupervisedModel
-from ltbio.ml.trainers import SupervisedTrainConditions
-from ltbio.ml.trainers.PredictionResults import PredictionResults
-from ltbio.ml.trainers.SupervisedTrainResults import SupervisedTrainResults
+from ltbio.ml.metrics import MSE, Metric
+from ltbio.ml.supervised.models import TorchModel
+from ltbio.ml.supervised.models.SupervisedModel import SupervisedModel
+from ltbio.ml.supervised import SupervisedTrainConditions
+from ltbio.ml.supervised.results import PredictionResults
+from ltbio.ml.supervised.results import SupervisedTrainResults
 from ltbio.processing.formaters import Segmenter
 from ltbio.processing.noises.GaussianNoise import GaussianNoise
 

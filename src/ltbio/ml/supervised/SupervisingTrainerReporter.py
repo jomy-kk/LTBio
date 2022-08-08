@@ -14,15 +14,14 @@
 
 # ===================================
 import os
-from typing import Iterable
 
 from matplotlib import pyplot as plt
 
 from ltbio.ml.metrics import ValueMetric
-from ltbio.ml.models import SupervisedModel
-from ltbio.ml.trainers import SupervisedTrainConditions
-from ltbio.ml.trainers.PredictionResults import PredictionResults
-from ltbio.ml.trainers.SupervisedTrainResults import SupervisedTrainResults
+from ltbio.ml.supervised.models import SupervisedModel
+from ltbio.ml.supervised import SupervisedTrainConditions
+from ltbio.ml.supervised.results import PredictionResults
+from ltbio.ml.supervised.results import SupervisedTrainResults
 from ltbio.pipeline.reports import Reporter
 
 

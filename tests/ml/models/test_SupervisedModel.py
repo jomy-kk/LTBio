@@ -1,15 +1,13 @@
 import unittest
-from datetime import datetime
 
 import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
 
-from ltbio.biosignals import Timeseries
-from ltbio.ml.models import SkLearnModel
-from ltbio.ml.models.SupervisedModel import SupervisedModel
-from ltbio.ml.trainers import SupervisedTrainConditions
+from ltbio.ml.supervised.models import SkLearnModel
+from ltbio.ml.supervised.models.SupervisedModel import SupervisedModel
+from ltbio.ml.supervised import SupervisedTrainConditions
 
 
 class SupervisedModelTestCase(unittest.TestCase):

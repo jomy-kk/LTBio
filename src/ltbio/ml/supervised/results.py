@@ -1,22 +1,29 @@
-# -*- encoding: utf-8 -*-
+# -- encoding: utf-8 --
 
 # ===================================
 
 # IT - LongTermBiosignals
 
 # Package: ml
-# Module: PredictionResults
-# Description: Class PredictionResults, that holds the predictions and evaluation metrics of a model.
+# Module: results
+# Description: 
 
 # Contributors: João Saraiva
-# Created: 02/08/2022
-# Last Updated: 05/08/2022
+# Created: 08/08/2022
 
 # ===================================
 from typing import Collection
 
 from ltbio.ml.datasets.BiosignalDataset import BiosignalDataset
 from ltbio.ml.metrics import Metric
+
+
+class SupervisedTrainResults():
+    """Stores the results of a training session of a supervised ML model."""
+
+    def __init__(self, train_losses:list, validation_losses:list):
+        self.train_losses = train_losses
+        self.validation_losses = validation_losses
 
 
 class PredictionResults():

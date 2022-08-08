@@ -17,13 +17,13 @@ from _datetime import datetime
 from abc import ABC, abstractmethod
 from copy import copy
 from inspect import isclass
-from typing import Collection, ClassVar
+from typing import Collection
 
 from ltbio.ml.datasets.BiosignalDataset import BiosignalDataset
 from ltbio.ml.metrics import Metric
-from ltbio.ml.trainers.PredictionResults import PredictionResults
-from ltbio.ml.trainers.SupervisedTrainConditions import SupervisedTrainConditions
-from ltbio.ml.trainers.SupervisedTrainResults import SupervisedTrainResults
+from ltbio.ml.supervised.results import PredictionResults
+from ltbio.ml.supervised.results import SupervisedTrainResults
+from ltbio.ml.supervised import SupervisedTrainConditions
 
 
 class SupervisedModel(ABC):

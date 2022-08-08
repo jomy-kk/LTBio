@@ -17,15 +17,15 @@
 from warnings import warn
 
 from matplotlib import pyplot as plt
-from numpy import zeros, arange, argsort, array
+from numpy import arange, argsort, array
 from sklearn.base import is_classifier, is_regressor
 
-from ltbio.ml.models.SupervisedModel import SupervisedModel
-from ltbio.ml.trainers.PredictionResults import PredictionResults
-from ltbio.ml.trainers.SupervisedTrainResults import SupervisedTrainResults
+import ltbio.ml.supervised.models.SupervisedModel as _SupervisedModel
+from ltbio.ml.supervised.results import PredictionResults
+from ltbio.ml.supervised.results import SupervisedTrainResults
 
 
-class SkLearnModel(SupervisedModel):
+class SkLearnModel(_SupervisedModel.SupervisedModel):
 
     def __init__(self, design, name: str = None):
         # Check design
