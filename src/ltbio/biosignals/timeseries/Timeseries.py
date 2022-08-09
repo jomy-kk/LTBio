@@ -135,6 +135,8 @@ class Timeseries():
     https://github.com/jomy-kk/IT-LongTermBiosignals/wiki/%5BClass%5D-Timeseries
     """
 
+    __SERIALVERSION: int = 1
+
     # ===================================
     # Class: Segment
 
@@ -418,6 +420,33 @@ class Timeseries():
             samples = operation(self.__samples.copy(), **kwargs)
             return self._new(samples, initial_datetime=initial_datetime, sampling_frequency=sampling_frequency)
 
+        # ===================================
+        # SERIALIZATION
+
+        def __getstate__(self):
+            """
+            1: __initial_datetime (datetime)
+            2: __samples (ndarray)
+            """
+            return (Timeseries._Timeseries__SERIALVERSION, self.__initial_datetime, self.__samples)
+
+        def __setstate__(self, state):
+            """
+            1: __initial_datetime (datetime)
+            2: __samples (ndarray)
+            3: __sampling_frequency (Frequency)
+            """
+            if state[0] == 1:
+                self.__initial_datetime, self.__samples, self.__sampling_frequency = state[1], state[2], state[3]
+                self.__final_datetime = self.initial_datetime + timedelta(seconds=len(self.__samples) / self.__sampling_frequency)
+                self.__is_filtered = False
+                self.__raw_samples = self.__samples
+            else:
+                raise IOError(
+                    f'Version of Segment object not supported. Serialized version: {state[0]};'
+                    f'Supported versions: 1.')
+
+
     # ===================================
     # Class: Timeseries
 
@@ -446,6 +475,8 @@ class Timeseries():
         name: str
             A symbolic name for the Timeseries. It is mentioned in plots, reports, error messages, etc.
         """
+        _sampling_frequency = sampling_frequency if isinstance(sampling_frequency, Frequency) else Frequency(
+            sampling_frequency)
 
         # Shortcut: Check if being copied
         if isinstance(samples, list) and isinstance(samples[0], Timeseries.__Segment):
@@ -454,13 +485,11 @@ class Timeseries():
         else:
             # Creat first Segment
             samples = array(samples) if not isinstance(samples, ndarray) else samples
-            sampling_frequency = sampling_frequency if isinstance(sampling_frequency,
-                                                                  Frequency) else Frequency(sampling_frequency)
-            segment = Timeseries.__Segment(samples, initial_datetime, sampling_frequency)
+            segment = Timeseries.__Segment(samples, initial_datetime, _sampling_frequency)
             self.__segments = [segment, ]
 
         # Metadata
-        self.__sampling_frequency = sampling_frequency
+        self.__sampling_frequency = _sampling_frequency
         self.__units = units
         self.__name = name
         self.__associated_events = {}
@@ -553,7 +582,7 @@ class Timeseries():
     @property
     def sampling_frequency(self) -> float:
         """The frequency at which the samples were acquired, in Hz."""
-        return self.__sampling_frequency.value
+        return float(self.__sampling_frequency)
 
     @property
     def units(self):
@@ -1215,6 +1244,37 @@ class Timeseries():
                 i += f
 
         self.__segments = partitions
+
+    # ===================================
+    # SERIALIZATION
+
+    def __getstate__(self):
+        """
+        1: __name (str)
+        2: __sampling_frequency (Frequency)
+        3: __units (Unit)
+        4: __is_equally_segmented (bool)
+        5: segments_state (list)
+        """
+        segments_state = [segment.__getstate__() for segment in self.__segments]
+        return (self.__SERIALVERSION, self.__name, self.__sampling_frequency, self.__units, self.__is_equally_segmented,
+                segments_state)
+
+    def __setstate__(self, state):
+        if state[0] == 1:
+            self.__name, self.__sampling_frequency, self.__units = state[1], state[2], state[3]
+            self.__is_equally_segmented = state[4]
+            self.__segments = []
+            for segment_state in state[5]:
+                segment_state = list(segment_state)
+                segment_state.append(self.__sampling_frequency)
+                segment = object.__new__(Timeseries.__Segment)
+                segment.__setstate__(segment_state)
+                self.__segments.append(segment)
+            self.__associated_events = {}  # empty; to be populated by Biosignal
+        else:
+            raise IOError(f'Version of {self.__class__.__name__} object not supported. Serialized version: {state[0]};'
+                          f'Supported versions: 1.')
 
 
 class OverlappingTimeseries(Timeseries):

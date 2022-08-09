@@ -14,9 +14,10 @@
 # Last Updated: 22/07/2022
 
 # ===================================
-
+from datetime import timedelta
 from os import listdir, path
 
+import numpy as np
 from neo import MicromedIO
 from numpy import array
 
@@ -56,7 +57,8 @@ class HEM(BiosignalSource):
         if metadata:
             return ch_list[find_idx], float(hem_sig.sampling_rate), hem_data.rec_datetime, hem_sig.units
         # returns initial date and samples
-        return array(hem_sig[:, find_idx].T), hem_data.rec_datetime
+        print(ch_list[find_idx])
+        return array(hem_sig[:, find_idx].T), hem_data.rec_datetime, ch_list[find_idx]
 
     @staticmethod
     def _read(dir, type, **options):
@@ -65,18 +67,31 @@ class HEM(BiosignalSource):
         # this is a list of lists where the second column is the type of channel to extract
         if type is modalities.ECG:
             label = 'ecg'
-        # if type is EEG:
-        #    label = 'eeg'
-
         all_files = sorted([[path.join(dir, file), label] for file in listdir(dir) if file.lower().endswith('.trc')])
         # run the edf read function for all files in list all_files
         channels, sfreq, start_datetime, units = HEM.__read_trc(all_files[0], metadata=True)
         all_trc = list(map(HEM.__read_trc, all_files))
         # run the trc read function for all files in list all_files
-        new_dict = {}
+        new_dict, first_time = {}, all_trc[0][1]
         # TODO ADD UNITS TO TIMESERIES
-        for ch in range(len(channels)):
-            segments = {trc_data[1]: trc_data[0][ch] for trc_data in all_trc}
+        for channel in channels:
+            last_start = all_trc[0][1]
+            segments = {last_start: all_trc[0][0][list(all_trc[0][2]).index(channel)]}
+            for at, trc_data in enumerate(all_trc[1:]):
+                if channel not in trc_data[2]:
+                    continue
+                ch = list(trc_data[2]).index(channel)
+                final_time = all_trc[at][1] + timedelta(seconds=len(all_trc[at][0][ch])/sfreq)
+                if trc_data[1] <= final_time:
+                    if (final_time - trc_data[1]) < timedelta(seconds=1):
+                        segments[last_start] = np.append(segments[last_start], trc_data[0][ch])
+                    else:
+                        continue
+                        print('here')
+                else:
+                    segments[trc_data[1]] = trc_data[0][ch]
+                    last_start = trc_data[1]
+
             if len(segments) > 1:
                 new_timeseries = Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=channels[ch])
             else:
