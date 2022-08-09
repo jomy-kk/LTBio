@@ -112,6 +112,7 @@ class PipelineIntegrationTests(unittest.TestCase):
         self.assertTrue(self.ts2_label + ':mean' in timeseries)
         self.assertTrue(self.ts3_label + ':mean' in timeseries)
 
+    """
     def test_pipeline_with_five_single_units(self):
         # 1. Create pipeline units
         unit1 = Segmenter(window_length = timedelta(seconds=2))
@@ -140,7 +141,7 @@ class PipelineIntegrationTests(unittest.TestCase):
         self.assertTrue(Packet.TIMESERIES_LABEL in output)
         self.assertTrue('target' in output)
         self.assertTrue('results' in output)
-
+    """
 
 if __name__ == '__main__':
     unittest.main()
