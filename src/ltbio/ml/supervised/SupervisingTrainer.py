@@ -16,6 +16,8 @@
 
 from typing import Collection
 
+from ltbio.biosignals import Timeseries
+from ltbio.ml.datasets import SegmentToSegmentDataset
 from ltbio.ml.datasets.BiosignalDataset import BiosignalDataset
 from ltbio.ml.supervised.models import SupervisedModel as _SupervisedModel
 from ltbio.ml.supervised.SupervisedTrainConditions import SupervisedTrainConditions
@@ -24,7 +26,7 @@ from ltbio.pipeline.PipelineUnit import SinglePipelineUnit
 
 
 class SupervisingTrainer(SinglePipelineUnit):
-    PIPELINE_INPUT_LABELS = {'object': 'timeseries', 'target': 'target'}
+    PIPELINE_INPUT_LABELS = {'dataset': ('timeseries', 'target')}
     PIPELINE_OUTPUT_LABELS = {'results': 'results'}
     ART_PATH = 'resources/pipeline_media/ml.png'
 
@@ -53,6 +55,10 @@ class SupervisingTrainer(SinglePipelineUnit):
         self.reporter.declare_model_description(self.__model, **self.__model.non_trainable_parameters)
 
     def apply(self, dataset: BiosignalDataset):
+
+        if not isinstance(dataset, BiosignalDataset):
+            raise TypeError(f"A BiosignalDataset is expected. Instead a {type(dataset)} was given.")
+
         # Infer what is different between all sets of the train conditions
         differences_in_conditions = SupervisedTrainConditions.differences_between(self.train_conditions)
 
@@ -97,3 +103,12 @@ class SupervisingTrainer(SinglePipelineUnit):
             self.reporter.output_report('Supervising Trainer Report', self.save_report_to)
 
         return self.__model.best_version_results
+
+    def _transform_input(self, object:tuple[Timeseries], target:tuple[Timeseries]) -> BiosignalDataset:
+        if len(target) == 1 and target[0].is_contiguous:
+            # dataset = SegmentToValueDataset()
+            pass  # TODO
+        else:
+            dataset = SegmentToSegmentDataset(object=object, target=target)
+
+        return dataset
