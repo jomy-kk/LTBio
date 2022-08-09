@@ -804,6 +804,22 @@ class Biosignal(ABC):
         else:
             NotImplementedError("Not yet implemented.")
 
+    def tag(self, tags: str | tuple[str]):
+        """
+        Mark all channels with a tag. Useful to mark machine learning targets.
+        :param tags: The label or labels to tag the channels.
+        :return: None
+        """
+        if isinstance(tags, str):
+            for _, channel in self:
+                channel.tag(tags)
+        elif isinstance(tags, tuple) and all(isinstance(x, str) for x in tags):
+            for x in tags:
+                for _, channel in self:
+                    channel.tag(x)
+        else:
+            raise TypeError("Give one or multiple string labels to tag the channels.")
+
     @classmethod
     def fromNoise(cls,
                   noises: Noise | Dict[str|BodyLocation, Noise],
@@ -849,12 +865,12 @@ class Biosignal(ABC):
                 for channel_name, noise in noises.items():
                     samples = noise[time_intervals.timedelta]
                     channels[channel_name] = Timeseries(samples, time_intervals.start_datetime, noise.sampling_frequency,
-                                                        units=Unitless(), name=noise.name)
+                                                        units=Unitless(), name=noise.name + f" : {channel_name}")
             else:
                 for channel_name, noise in noises.items():
                     segments = {x.start_datetime: noise[x.timedelta] for x in time_intervals}
                     channels[channel_name] = Timeseries.withDiscontiguousSegments(segments, noise.sampling_frequency,
-                                                        units=Unitless(), name=noise.name)
+                                                        units=Unitless(), name=noise.name + f" : {channel_name}")
 
         return cls(channels, name=name)
 

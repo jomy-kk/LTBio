@@ -464,6 +464,7 @@ class Timeseries():
         self.__units = units
         self.__name = name
         self.__associated_events = {}
+        self.__tags:set[str] = set()
 
 
         # Control Flags
@@ -591,6 +592,10 @@ class Timeseries():
     def events(self) -> Tuple[Event]:
         """The events timely associated to the Timeseries, timely ordered."""
         return tuple(sorted(self.__associated_events.values()))
+
+    @property
+    def tags(self) -> tuple[str]:
+        return tuple(self.__tags)
 
     # ===================================
     # Built-ins
@@ -786,6 +791,20 @@ class Timeseries():
         else:
             raise NameError(f"There's no Event '{event_name}' associated to this Timeseries.")
 
+    def tag(self, tags: str | tuple[str]):
+        """
+        Mark the Timeseries with a tag. Useful to mark machine learning targets.
+        :param tags: The label or labels to tag the Timeseries.
+        :return: None
+        """
+        if isinstance(tags, str):
+            self.__tags.add(tags)
+        elif isinstance(tags, tuple) and all(isinstance(x, str) for x in tags):
+            for x in tags:
+                self.__tags.add(x)
+        else:
+            raise TypeError("Give one or multiple string labels to tag the Timeseries.")
+
     # ===================================
     # INTERNAL USAGE - Convert indexes <-> timepoints && Get Samples
 
@@ -953,6 +972,7 @@ class Timeseries():
                          str(self.name))  # Uses shortcut in __init__
         new._Timeseries__is_equally_segmented = self.__is_equally_segmented
         new.associate(self.events)
+        new.tag(self.tags)
         return new
 
     def _new_samples(self, samples_by_segment: List[ndarray] = None):
@@ -1020,6 +1040,8 @@ class Timeseries():
                 new.associate(event)
             except ValueError:
                 pass  # it's outside the new boundaries
+
+        new.tag(self.tags)
 
         return new
 
