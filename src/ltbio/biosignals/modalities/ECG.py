@@ -241,4 +241,22 @@ class ECG(Biosignal):
         # FIXME
         #return NNI(all_nni_channels, self.source, self._Biosignal__patient, self.acquisition_location, 'NNI of ' + self.name, original_signal=self)
 
-
+    def decide_invert(self):
+        """
+        Corrects inverted ECG recordings based on the median of the R-peaks amplitudes. Works preferably with leads I and II.
+        """
+        invert = False
+        
+        original_signal = signal - np.mean(signal) # to remove DC component if not filtered
+        rpeaks = None # time indexes from biosppy method
+        amp_rpeaks = original_signal[rpeaks]
+        
+        inv_signal = -original_signal # inverted signal
+        rpeaks_inv = segmenter(inverted_signal, sampling_rate) # time indexes 
+        amp_rpeaks_inv = inv_signal[rpeaks_inv]
+        
+        if np.median(amp_rpeaks) < np.median(amp_rpeaks_inv):
+            invert = True
+        
+        return invert
+        
