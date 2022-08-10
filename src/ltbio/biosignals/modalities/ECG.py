@@ -8,9 +8,9 @@
 # Module: ECG
 # Description: Class ECG, a type of Biosignal named Electrocardiogram.
 
-# Contributors: João Saraiva, Mariana Abreu
+# Contributors: João Saraiva, Mariana Abreu, Rafael Silva
 # Created: 12/05/2022
-# Last Updated: 22/07/2022
+# Last Updated: 10/08/2022
 
 # ===================================
 
@@ -241,22 +241,29 @@ class ECG(Biosignal):
         # FIXME
         #return NNI(all_nni_channels, self.source, self._Biosignal__patient, self.acquisition_location, 'NNI of ' + self.name, original_signal=self)
 
-    def decide_invert(self):
+    def invert_if_necessary(self):
         """
-        Corrects inverted ECG recordings based on the median of the R-peaks amplitudes. Works preferably with leads I and II.
+        Investigates which ECG channels need to be inverted, and, the ones that do, get inverted just like method 'invert'.
+        Based on the median of the R-peaks amplitudes. Works preferably with leads I and II.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
         """
-        invert = False
-        
-        original_signal = signal - np.mean(signal) # to remove DC component if not filtered
-        rpeaks = None # time indexes from biosppy method
-        amp_rpeaks = original_signal[rpeaks]
-        
-        inv_signal = -original_signal # inverted signal
-        rpeaks_inv = segmenter(inverted_signal, sampling_rate) # time indexes 
-        amp_rpeaks_inv = inv_signal[rpeaks_inv]
-        
-        if np.median(amp_rpeaks) < np.median(amp_rpeaks_inv):
-            invert = True
-        
-        return invert
-        
+
+        for channel_name, channel in self.preview:
+
+            original_signal = channel.samples - np.mean(channel.samples) # to remove DC component if not filtered
+            rpeaks = self.__r_indices.biosppy_r_indices(original_signal, channel.sampling_frequency, 'hamilton') # indexes from biosppy method
+            amp_rpeaks = original_signal[rpeaks]
+
+            inv_signal = -original_signal # inverted signal
+            rpeaks_inv = self.__r_indices.biosppy_r_indices(inv_signal, channel.sampling_frequency, 'hamilton') # indexes from biosppy method
+            amp_rpeaks_inv = inv_signal[rpeaks_inv]
+
+            if np.median(amp_rpeaks) < np.median(amp_rpeaks_inv):
+                self.invert(channel_name)
