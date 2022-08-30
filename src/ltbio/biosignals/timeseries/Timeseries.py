@@ -725,7 +725,8 @@ class Timeseries():
         """
         assert len(self.__segments) > 0
         if self.__segments[-1].final_datetime > initial_datetime:  # Check for order and overlaps
-            raise AssertionError("Cannot append more samples starting before the ones already existing.")
+            print(f'{self.__segments[-1].final_datetime} -- {initial_datetime}')
+            raise AssertionError("Cannot append more samples starting before the ones already existing")
 
         segment = Timeseries.__Segment(array(samples) if not isinstance(samples, ndarray) else samples,
                                        initial_datetime, self.__sampling_frequency)

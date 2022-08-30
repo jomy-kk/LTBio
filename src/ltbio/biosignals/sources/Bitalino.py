@@ -21,6 +21,7 @@ from os import listdir, path, getcwd, access, R_OK
 
 import numpy as np
 from dateutil.parser import parse as to_datetime
+from datetime import timedelta
 
 import ltbio.biosignals.modalities as modalities
 from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
@@ -66,6 +67,13 @@ class Bitalino(BiosignalSource):
             for se in range(len(sens)):
                 new_se = str(input(f'{device} -- {sens[se]} -- {analogs[se]}')).upper()
                 sens[se] = new_se
+        if len(list(set(sens))) != len(sens):
+            print('Repeated sensors, please specify')
+            analogs = channels[-len(sens):]
+            for se in range(len(sens)):
+                new_se = str(input(f'{device} -- {sens[se]} -- {analogs[se]}')).upper()
+                sens[se] = new_se
+
         return sens
 
     def __analog_idx(header, sensor, **options):
@@ -89,10 +97,16 @@ class Bitalino(BiosignalSource):
             if json_bool:
                 sens, ch, location = Bitalino.__read_json(json_dir, header[device])
             else:
-                sens = header[device][str(input(f'What is the header key of sensor names? {header}\n ')).strip().lower()]
-                ch = header[device][str(input(f'What is the header key for analog channels? {header}\n ')).strip().lower()]
-                location = str(input(f'What is the body location of this device {device}? \n'))
-                sens = Bitalino.__change_sens_list(sens, device, ch)
+                # sens = header[device][str(input(f'What is the header key of sensor names? {header}\n ')).strip().lower()]
+                # ch = header[device][str(input(f'What is the header key for analog channels? {header}\n ')).strip().lower()]
+                # location = str(input(f'What is the body location of this device {device}? \n'))
+                sens, ch, location = header[device]['sensor'], header[device]['column'], 'chest'
+                if (device == '20:16:04:12:01:40' or device == '20:16:07:18:16:69'):
+                    sens = ['EDA', 'BVP', 'EMG', 'Acc X', 'Acc Y', 'Acc Z']
+                elif (device == '20:16:04:12:01:23' or device == '20:16:07:18:14:11'):
+                    sens = ['EOG', 'ECG', 'PZT', 'Acc X', 'Acc Y', 'Acc Z']
+                else:
+                    sens = ['ECG', 'PZT', 'ACCX', 'ACCY', 'ACCZ']  # Bitalino.__change_sens_list(sens, device, ch)
             analogs = ch[-len(sens):]
 
             if sensor in str(sens):
@@ -197,14 +211,14 @@ class Bitalino(BiosignalSource):
             header = next(fh)[2:]
             next(fh)
             # signal
-            data = np.array([line.strip().split() for line in fh], float)
+            data = np.array([line.strip().split() for line in fh])
         # if file is empty, return
         if Bitalino.__check_empty(len(data)):
             return None
 
         header = ast.literal_eval(header)
         if len(sensor_names) > 0:
-            sensor_data = data[:, sensor_idx]
+            sensor_data = data[:, sensor_idx].astype(float)
             date = Bitalino.__aux_date(header[device])
             print(date)
             return sensor_data, date
@@ -248,16 +262,32 @@ class Bitalino(BiosignalSource):
         if header == {}:
             raise IOError(f'The files in {dir} did not contain a bitalino type {header}')
         new_dict = {}
-        segments = [Bitalino.__read_bit(file, sensor=sensor, sensor_idx=ch_idx, sensor_names=channels,
-                                        device=device, **options) for file in all_files[h-1:]]
+        all_bit = [Bitalino.__read_bit(file, sensor=sensor, sensor_idx=ch_idx, sensor_names=channels,
+                                       device=device, **options) for file in all_files[h - 1:]]
         for ch, channel in enumerate(channels):
+            last_start = all_bit[0][1]
+            samples = {last_start: all_bit[0][ch]}
 
-            samples = {segment[1]: segment[0][:, ch] for segment in segments if segment}
+            for seg, segment in enumerate(all_bit[1:]):
+                final_time = all_bit[seg][1] + timedelta(seconds=len(all_bit[seg][0][ch]) / header['sampling rate'])
+                if segment[1] <= final_time:
+                    if (final_time - segment[1]) < timedelta(seconds=1):
+                        samples[last_start] = np.append(samples[last_start], segment[0][ch])
+                    else:
+                        continue
+                        print('here')
+                else:
+                    samples[segment[1]] = segment[0][ch]
+                    last_start = segment[1]
+
+            # samples = {segment[1]: segment[0][:, ch] for segment in segments if segment}
             if len(samples) > 1:
-                new_timeseries = Timeseries.withDiscontiguousSegments(samples, sampling_frequency=header['sampling rate'],
+                new_timeseries = Timeseries.withDiscontiguousSegments(samples,
+                                                                      sampling_frequency=header['sampling rate'],
                                                                       name=channels[ch])
             else:
-                new_timeseries = Timeseries(tuple(samples.values())[0], tuple(samples.keys())[0], header['sampling rate'],
+                new_timeseries = Timeseries(tuple(samples.values())[0], tuple(samples.keys())[0],
+                                            header['sampling rate'],
                                             name=channels[ch])
             new_dict[channel] = new_timeseries
         return new_dict

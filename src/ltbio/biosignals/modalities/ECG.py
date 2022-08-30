@@ -201,13 +201,13 @@ class ECG(Biosignal):
         all_hr_channels = {}
         for channel_name in self.channel_names:
             channel = self._Biosignal__timeseries[channel_name]
-            all_hr = []
+            all_hr = {}
             for segment in channel:
-                indices = np.array([int((timepoint - segment.initial_datetime).total_seconds() * self.sampling_frequency) for timepoint in self.r_timepoints])
-                hr = get_heart_rate(indices, channel.sampling_frequency, smooth = (smooth_length is not None), size=smooth_length)['heart_rate']
-                all_hr.append(Timeseries.__Segment(hr, segment.initial_datetime, channel.sampling_frequency))
-
-            all_hr_channels[channel_name] = Timeseries(all_hr, True, channel.sampling_frequency, BeatsPerMinute(), 'Heart Rate of ' + channel.name, equally_segmented=False)
+                indices = np.array([int((timepoint - segment.initial_datetime).total_seconds() * self.sampling_frequency) for timepoint in self.r_timepoints()])
+                hr = get_heart_rate(indices, channel.sampling_frequency, smooth=(smooth_length is not None), size=smooth_length)['heart_rate']
+                # all_hr.append(Timeseries..__Segment(hr, segment.initial_datetime, channel.sampling_frequency))
+                all_hr[segment.initial_datetime] = hr
+            all_hr_channels[channel_name] = Timeseries.withDiscontiguousSegments(all_hr, channel.sampling_frequency, BeatsPerMinute(), 'Heart Rate of ' + channel.name)
 
         from ltbio.biosignals.modalities.HR import HR
         return HR(all_hr_channels, self.source, self._Biosignal__patient, self.acquisition_location, 'Heart Rate of ' + self.name, original_signal=self)

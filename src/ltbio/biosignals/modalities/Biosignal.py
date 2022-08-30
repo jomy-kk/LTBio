@@ -199,7 +199,6 @@ class Biosignal(ABC):
 
                 return new
 
-
         if isinstance(item, tuple):
             if len(self) == 1:
                 res = list()

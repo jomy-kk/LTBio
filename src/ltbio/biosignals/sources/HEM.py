@@ -57,7 +57,6 @@ class HEM(BiosignalSource):
         if metadata:
             return ch_list[find_idx], float(hem_sig.sampling_rate), hem_data.rec_datetime, hem_sig.units
         # returns initial date and samples
-        print(ch_list[find_idx])
         return array(hem_sig[:, find_idx].T), hem_data.rec_datetime, ch_list[find_idx]
 
     @staticmethod
