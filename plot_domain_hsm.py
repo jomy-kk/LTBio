@@ -9,7 +9,7 @@ from ltbio.biosignals.modalities.Biosignal import Biosignal
 from ltbio.biosignals.timeseries.Event import Event
 from ltbio.processing.filters import TimeDomainFilter, ConvolutionOperation
 
-main_dir = 'C:\\Users\\Mariana\\Documents\\Epilepsy\\data'
+main_dir = 'C:\\Users\\Mariana\\Documents\\CAT\\data'
 
 def patient_function(patients):
 
@@ -33,7 +33,7 @@ def patient_function(patients):
         aa_time = pd.date_range(segment.initial_datetime, segment.final_datetime, freq='1s')
         table_long = pd.concat((table_long, pd.DataFrame({'Time': aa_time})), ignore_index=True)
 
-    table_long.to_csv('C:\\Users\\Mariana\\Documents\\Epilepsy\\data_domains' + os.sep + 'domain_' + patients + '.csv')
+    table_long.to_csv('C:\\Users\\Mariana\\Documents\\CAT\\data_domains' + os.sep + 'domain_' + patients + '.csv')
     print('je')
 
 week = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
@@ -42,14 +42,14 @@ colors = ['#A9D1ED', '#843C0C', '#F8CBAD', '#B0B0B0']
 fictional_date = datetime.datetime(2000, 1, 3, 9, 0, 0)
 fig, ax1 = plt.subplots(figsize=(15, 10))
 
-list_patients = os.listdir('C:\\Users\\Mariana\\Documents\\Epilepsy\\data_domains\\HSM')
+list_patients = os.listdir('C:\\Users\\Mariana\\Documents\\CAT\\data_domains\\HSM')
 
 
 patients = set([pat.split('_')[0] for pat in list_patients])
 
 patients_year = {}
 
-dir_ = 'C:\\Users\\Mariana\\Documents\\Epilepsy\\data_domains\\HSM\\'
+dir_ = 'C:\\Users\\Mariana\\Documents\\CAT\\data_domains\\HSM\\'
 final_patients = {}
 
 ytics_dict = {'Patient4': ['PC + ArmBit ForearmBit', '2017-04-23 21:50:21.105000'],
@@ -90,14 +90,14 @@ for pp, patient in enumerate(list(ytics_dict.keys())):
     # get bit domain
     dirbit = os.path.join(dir_, patient + '_domain.parquet')
     if os.path.isfile(dirbit):
-        table_bit = pd.read_parquet('C:\\Users\\Mariana\\Documents\\Epilepsy\\data_domains\\HSM\\' +
+        table_bit = pd.read_parquet('C:\\Users\\Mariana\\Documents\\CAT\\data_domains\\HSM\\' +
                              os.sep + patient + '_domain.parquet', engine='fastparquet')
     else:
         table_bit = None
 
     # get annotations
     try:
-        excel_patient = pd.read_excel('D:\\PreEpiSeizures\\Patients_HSM\\Patients_HSM_.xlsx', sheet_name=patient)
+        excel_patient = pd.read_excel('G:\\PreEpiSeizures\\Patients_HSM\\Patients_HSM_.xlsx', sheet_name=patient)
         excel_patient = excel_patient.loc[excel_patient['Crises'].notna()]
     except:
         excel_patient = []
@@ -120,9 +120,6 @@ for pp, patient in enumerate(list(ytics_dict.keys())):
         if (table is None or len(table) == 0):
             continue
         times = pd.to_datetime(table['Time'])
-
-        # print(times.iloc[0])
-        # k = input(patient)
         delta = times.iloc[0] - datetime.datetime.strptime(ytics_dict[patient][1], '%Y-%m-%d %H:%M:%S.%f')
         times = pd.to_datetime(times + abs(delta))
 
@@ -142,8 +139,9 @@ for pp, patient in enumerate(list(ytics_dict.keys())):
         week_utc = pd.to_datetime((week_axis-week_axis[0]).astype(np.int64))
         times_utc = pd.to_datetime((times - week_axis[0]).astype(np.int64))
         times_utc = times_utc.loc[times_utc <= week_utc[-1]]
-        times_missing = pd.date_range(week_utc[0] + datetime.timedelta(hours=12),
-                                      week_utc[-1], freq='s')
+        #times_missing = pd.date_range(week_utc[0] + datetime.timedelta(hours=12),
+        #                              week_utc[-1], freq='s')
+        times_missing = pd.date_range(times_utc.iloc[0], times_utc.iloc[-1], freq='s')
         times_missing_DF_temp = pd.DataFrame({'Times missing': times_missing})
         times_missing_DF = times_missing_DF_temp.loc[~times_missing_DF_temp['Times missing'].isin(pd.to_datetime(np.array(times_utc).astype('datetime64[s]')))]
         missing_utc = times_missing_DF['Times missing']
@@ -165,7 +163,7 @@ for pp, patient in enumerate(list(ytics_dict.keys())):
 
         ax1.set_xticks(week_utc, week[1:])
         if key == 'Bit':
-            ax1.scatter(missing_utc, pp * np.ones(len(missing_utc)), linewidth=0.5, marker='_', c=colors[2],
+            ax1.scatter(missing_utc, pp * np.ones(len(missing_utc)), linewidth=1, marker='_', c=colors[2],
                         label='Missing', linestyle=(0, (10, 4)))
             ax1.scatter(times_utc, pp * np.ones(len(times_utc)), linewidth=5, marker='_', c=colors[0], label='Bitalino')
 
@@ -185,5 +183,5 @@ for pp, patient in enumerate(list(ytics_dict.keys())):
 # ticks should be arm and chest and wrist
 ax1.set_yticks(final_pos, final_patients)
 
-fig.savefig('C:\\Users\\Mariana\\Documents\\Epilepsy\\images\\hsm_data_acquisition_domain_v2.png')
+fig.savefig('C:\\Users\\Mariana\\Documents\\CAT\\images\\hsm_data_acquisition_domain_v2.png')
 

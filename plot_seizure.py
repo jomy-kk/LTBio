@@ -39,7 +39,7 @@ def patient_function(patients):
     # try:
 
 
-main_dir = 'C:\\Users\\Mariana\\Documents\\Epilepsy\\data'
+main_dir = 'C:\\Users\\Mariana\\Documents\\CAT\\data'
 patients = 'FCSFDM'
 
 sig, event1 = patient_function(patients)
