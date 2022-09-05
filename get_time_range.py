@@ -65,13 +65,12 @@ def __read_edf(dirfile):
 
 def __read_trc(dirfile):
 
-
+    # get TRC info related to time (start time and end time)
 
     seg_micromed = MicromedIO(dirfile)
     hem_data = seg_micromed.read_segment()
-    return hem_data
 
-
+    return float(hem_data.t_stop), hem_data.rec_datetime
 
 
 def bitalino_domain(patients, main_dir, save_file_dir):
@@ -113,13 +112,14 @@ def hem_domain(patients, main_dir, save_file_dir):
 
         if file.endswith('.TRC'):
             print('Processing file ... ', file)
-            int_times, date = __read_trc(path.join(pat_dir, file))
-            if len(int_times) == 0:
+            total_delta, date = __read_trc(path.join(pat_dir, file))
+            if total_delta <= 0:
                 continue
-            print(int_times[-1], date)
-            times = [str(date + timedelta(seconds=int_time.astype(float))) for int_time in np.unique(int_times.astype('timedelta64[s]'))]
+            print(total_delta, date)
+            times = [str(date + timedelta(seconds=i)) for i in np.arange(0, float(total_delta), 1/256)]
             all_df = pd.concat((all_df, pd.DataFrame({'Time': times, 'File': [file] * len(times)})),
                                ignore_index=True)
+    aaa
     if len(all_df) > 0:
         all_df.to_parquet(save_file_dir, engine='fastparquet', compression='gzip')
 
@@ -150,11 +150,11 @@ def hsm_domain(patients, main_dir, save_file_dir):
     all_df.to_parquet(save_file_dir, engine='fastparquet', compression='gzip')
 
 
-main_dir = 'D:\\PreEpiSeizures\\Patients_HEM'
+main_dir = 'G:\\PreEpiSeizures\\Patients_HEM'
 
 for patients in listdir(main_dir):
 
-    save_file_dir = path.join('C:\\Users\\Mariana\\Documents\\Epilepsy\\data_domains\\HEM', patients +
+    save_file_dir = path.join('C:\\Users\\Mariana\\Documents\\CAT\\data_domains\\HEM', patients +
                               '_hospital_domain.parquet')
     if path.isfile(save_file_dir):
         print(patients + ' already in data domain')
