@@ -21,6 +21,7 @@ import numpy as np
 from neo import MicromedIO
 from numpy import array
 
+# from ltbio.biosignals.modalities import ECG
 import ltbio.biosignals.modalities as modalities
 from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
 from ltbio.biosignals import Timeseries
@@ -106,3 +107,4 @@ class HEM(BiosignalSource):
     @staticmethod
     def _transfer(samples, to_unit):
         pass
+

@@ -42,7 +42,7 @@ class Biosignal(ABC):
 
     __SERIALVERSION: int = 1
 
-    def __init__(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | Tuple[datetime], source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None):
+    def __init__(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | Tuple[datetime], source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, **options:dict):
         self.__name = name
         self.__source = source
         self.__patient = patient
@@ -55,7 +55,7 @@ class Biosignal(ABC):
             if source is None:
                 raise ValueError("To read a biosignal from a file, specify the biosignal source.")
             else:
-                read_data = self.source._read(timeseries, type=type(self) )
+                read_data = self.source._read(timeseries, type=type(self), **options)
 
                 if isinstance(read_data, dict):  # Get Timeseries
                     self.__timeseries = read_data
