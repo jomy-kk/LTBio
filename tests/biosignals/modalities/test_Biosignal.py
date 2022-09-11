@@ -192,7 +192,7 @@ class BiosignalTestCase(unittest.TestCase):
         ecg2 = ECG({"a": ts4, "b": ts5}, patient=cls.patient, acquisition_location=BodyLocation.V1)
 
         # This should work
-        ecg3 = ecg1 + ecg2
+        ecg3 = ecg1 >> ecg2
         cls.assertEqual(len(ecg3), 2)  # it has the same 2 channels
         cls.assertEqual(ecg3.channel_names, ecg1.channel_names)  # with the same names
         cls.assertEqual(ecg3["a"][cls.initial1], cls.samples1[0])
@@ -202,15 +202,17 @@ class BiosignalTestCase(unittest.TestCase):
 
         # This should not work
         with cls.assertRaises(TypeError): # different types; e.g. ecg + eda
-            ecg1 + EDA(dict())
+            ecg1 >> EDA(dict())
         with cls.assertRaises(ArithmeticError): # different channel sets
             ecg3 = ECG({"a": ts4, "b": ts5, "z":ts5})
-            ecg1 + ecg3
+            ecg1 >> ecg3
+        """ now allowed
         with cls.assertRaises(ArithmeticError):  # different patient codes
             ecg3 = ECG({"a": ts4, "b": ts5}, patient=Patient(code=27462))
-            ecg1 + ecg3
+            ecg1 >> ecg3
+        """
         with cls.assertRaises(ArithmeticError): # later + earlier
-            ecg2 + ecg1
+            ecg2 >> ecg1
 
     def test_concatenate_channels_of_two_biosignals(cls):
         initial2 = cls.initial1+timedelta(days=1)
@@ -220,7 +222,7 @@ class BiosignalTestCase(unittest.TestCase):
         ecg2 = ECG({"c": ts4, "d": ts5}, patient=cls.patient, acquisition_location=BodyLocation.V1)
 
         # This should work
-        ecg3 = ecg1 + ecg2
+        ecg3 = ecg1 & ecg2
         cls.assertEqual(len(ecg3), 4)  # it has the 4 channels
         cls.assertEqual(ecg3.channel_names, set.union(ecg1.channel_names, ecg2.channel_names))  # with the same names
         cls.assertEqual(ecg3["a"][cls.initial1], cls.samples1[0])
@@ -232,13 +234,13 @@ class BiosignalTestCase(unittest.TestCase):
 
         # This should not work
         with cls.assertRaises(TypeError): # different types; e.g. ecg + eda
-            ecg1 + EDA(dict())
+            ecg1 & EDA(dict())
         with cls.assertRaises(ArithmeticError): # conflicting channel sets; e.g. 'a'
             ecg3 = ECG({"a": ts4, "c": ts5})
-            ecg1 + ecg3
+            ecg1 & ecg3
         with cls.assertRaises(ArithmeticError):  # different patient codes
             ecg3 = ECG({"a": ts4, "b": ts5}, patient=Patient(code=27462))
-            ecg1 + ecg3
+            ecg1 & ecg3
 
     def test_multiply_by_value(self):
         ecg1 = ECG({"a":self.ts1, "b":self.ts2, "c":self.ts3})

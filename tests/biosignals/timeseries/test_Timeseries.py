@@ -110,27 +110,22 @@ class TimeseriesTestCase(unittest.TestCase):
         # With the same sampling frequency and units, and on the correct order
         ts1 = Timeseries(self.samples1, self.initial1, self.sf, self.units, self.name)
         ts2 = Timeseries(self.samples2, self.initial2, self.sf, self.units, self.name)
-        self.assertEqual(len(ts1 + ts2), len(self.samples1) + len(self.samples2))
-        ts1 += ts2
-        self.assertEqual(len(ts1), len(self.samples1) + len(self.samples2))
+        self.assertEqual(len(ts1 >> ts2), len(self.samples1) + len(self.samples2))
 
         # With different sampling frequencies
         ts2 = Timeseries(self.samples2, self.initial2, self.sf+1, self.units, self.name)
         with self.assertRaises(ArithmeticError):
-            ts1 + ts2
-            ts1 += ts2
+            ts1 >> ts2
 
         # With different units
         ts2 = Timeseries(self.samples2, self.initial2, self.sf, G(), self.name)
         with self.assertRaises(ArithmeticError):
-            ts1 + ts2
-            ts1 += ts2
+            ts1 >> ts2
 
         # With initial datetime of the latter coming before the final datetime of the former
         ts2 = Timeseries(self.samples2, self.initial2, self.sf, self.units, self.name)
         with self.assertRaises(ArithmeticError):
-            ts2 + ts1
-            ts2 += ts1
+            ts2 >> ts1
 
 
 if __name__ == '__main__':
