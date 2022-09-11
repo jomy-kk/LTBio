@@ -16,13 +16,14 @@
 # ===================================
 
 from datetime import datetime, timedelta
+from math import ceil
 from typing import List, Iterable, Collection, Dict, Tuple, Callable
 
 import matplotlib.pyplot as plt
 from biosppy.signals.tools import power_spectrum
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime
-from numpy import array, append, ndarray, divide
+from numpy import array, append, ndarray, divide, concatenate, tile
 from scipy.signal import resample
 
 from ltbio.biosignals.timeseries.Event import Event
@@ -134,7 +135,7 @@ class Timeseries():
     https://github.com/jomy-kk/IT-LongTermBiosignals/wiki/%5BClass%5D-Timeseries
     """
 
-    __SERIALVERSION: int = 1
+    __SERIALVERSION: int = 2
 
     # ===================================
     # Class: Segment
@@ -159,7 +160,7 @@ class Timeseries():
         final_datetime: datetime
             The date and time of the last sample.
 
-        duration: timedelta
+        duration: timedeltao
             The total time of acquired samples, i.e., final_datetime - initial_datetime.
 
         is_filtered: bool
@@ -253,8 +254,12 @@ class Timeseries():
         def __len__(self):
             return len(self.__samples)
 
-        def __iadd__(self, other: ndarray | list):
+        def __rshift__(self, other: ndarray | list):
             self.__samples = append(self.__samples, other)
+
+        def __add__(self, other):
+            if isinstance(other, type(self)):  # if it is a Segment
+                return self._new(samples = self.samples + other.samples, is_filtered=False)  # raw is lost
 
         def __contains__(self, item):  # Operand 'in' === belongs to
             if isinstance(item, datetime):
@@ -357,6 +362,7 @@ class Timeseries():
             """
             n_samples = int(new_frequency * len(self) / self.__sampling_frequency)
             self.__samples = resample(self.__samples, num=n_samples)
+            self.__raw_samples = resample(self.__raw_samples, num=n_samples)
             self.__sampling_frequency = new_frequency
             self.__final_datetime = self.initial_datetime + timedelta(seconds=len(self) / new_frequency.value)
 
@@ -431,19 +437,20 @@ class Timeseries():
 
         def __setstate__(self, state):
             """
+            Version 1 and 2:
             1: __initial_datetime (datetime)
             2: __samples (ndarray)
             3: __sampling_frequency (Frequency)
             """
-            if state[0] == 1:
+            if state[0] == 1 or state[0] == 2:
                 self.__initial_datetime, self.__samples, self.__sampling_frequency = state[1], state[2], state[3]
                 self.__final_datetime = self.initial_datetime + timedelta(seconds=len(self.__samples) / self.__sampling_frequency)
                 self.__is_filtered = False
                 self.__raw_samples = self.__samples
             else:
                 raise IOError(
-                    f'Version of Segment object not supported. Serialized version: {state[0]};'
-                    f'Supported versions: 1.')
+                    f'Version of Segment object not supported. Serialized version: {state[0]}; '
+                    f'Supported versions: 1, 2.')
 
 
     # ===================================
@@ -492,6 +499,7 @@ class Timeseries():
         self.__units = units
         self.__name = name
         self.__associated_events = {}
+        self.__tags:set[str] = set()
 
 
         # Control Flags
@@ -543,8 +551,15 @@ class Timeseries():
     # Properties
 
     @property
-    def segments(self) -> list:
+    def segments(self) -> list:  # FIXME: deprecate this
         return self.__segments
+
+    @property
+    def samples(self) -> list | ndarray:
+        if len(self.__segments) == 1:
+            return self.__segments[0].samples.copy()
+        else:
+            return [segment.samples.copy() for segment in self.__segments]
 
     @property
     def initial_datetime(self) -> datetime:
@@ -591,6 +606,11 @@ class Timeseries():
         self.__name = name
 
     @property
+    def is_contiguous(self) -> bool:
+        """The logic value stating if there are no interruptions in time."""
+        return len(self.__segments) == 1
+
+    @property
     def is_equally_segmented(self) -> bool:
         """The logic value stating if each interval in the domain has the same duration."""
         return self.__is_equally_segmented
@@ -607,6 +627,10 @@ class Timeseries():
     def events(self) -> Tuple[Event]:
         """The events timely associated to the Timeseries, timely ordered."""
         return tuple(sorted(self.__associated_events.values()))
+
+    @property
+    def tags(self) -> tuple[str]:
+        return tuple(self.__tags)
 
     # ===================================
     # Built-ins
@@ -672,30 +696,30 @@ class Timeseries():
         raise IndexError(
             "Index types not supported. Give a datetime (can be in string format), a slice or a tuple of those.")
 
-    def __iadd__(self, other):
-        '''The built-in increment operation (+=) concatenates one Timeseries to the end of another.'''
-        if isinstance(other, Timeseries):
-            if other.initial_datetime < self.final_datetime:
-                raise ArithmeticError(
-                    "The second Timeseries must start after the first one ends ({} + {}).".format(self.initial_datetime,
-                                                                                                  other.final_datetime))
-            if other.sampling_frequency != self.sampling_frequency:
-                raise ArithmeticError("Both Timeseries must have the same sampling frequency ({} and {}).".format(
-                    self.__sampling_frequency, other.sampling_frequency))
-            if other.units is not None and self.__units is not None and other.units != self.__units:
-                raise ArithmeticError(
-                    "Both Timeseries must have the same units ({} and {}).".format(self.__units, other.units))
-            self.__segments += other.segments  # gets a list of all other's Segments and concatenates it to the self's one.
-            return self
-        elif isinstance(other, (ndarray, list)):  # Appends more samples to the last Segment
-            assert len(self.__segments) > 0
-            self.__segments[-1] += other
-        else:
-            raise TypeError(
-                "Trying to concatenate an object of type {}. Expected type: Timeseries.".format(type(other)))
-
     def __add__(self, other):
-        '''The built-in sum operation (+) adds two Timeseries.'''
+        """The built-in + operation that adds sample-by-sample two Timeseries."""
+        # Check errors
+        if not isinstance(other, Timeseries):
+            raise TypeError("Trying to add an object of type {}. Expected type: Timeseries.".format(type(other)))
+        if other.sampling_frequency != self.__sampling_frequency:
+            raise ArithmeticError("Both Timeseries must have the same sampling frequency ({} and {}).".format(
+                self.__sampling_frequency, other.sampling_frequency))
+        if other.units is not None and self.__units is not None and other.units != self.__units:
+            raise ArithmeticError(
+                "Both Timeseries must have the same units ({} and {}).".format(self.__units, other.units))
+        if self.domain != other.domain:
+            raise ArithmeticError("Timeseries to add must have the same domain.")
+
+        # Perform addition
+        new_segments = []
+        for x, y in zip(self.__segments, other.segments):
+            new_segments.append(x + y)
+
+        return self.__new(segments=new_segments, units=self.units if self.__units is not None else other.units,
+                          name=self.name + ' + ' + other.name if self.name != other.name else self.name)
+
+    def __rshift__(self, other):
+        """The built-in >> operation that concatenates two Timeseries."""
         if isinstance(other, Timeseries):
             if other.initial_datetime < self.final_datetime:
                 raise ArithmeticError(
@@ -707,14 +731,34 @@ class Timeseries():
             if other.units is not None and self.__units is not None and other.units != self.__units:
                 raise ArithmeticError(
                     "Both Timeseries must have the same units ({} and {}).".format(self.__units, other.units))
-            new_segments = self.__segments + other.segments
+            new_segments = self.__segments + other.segments  # concatenate lists
             return self.__new(segments=new_segments, units=self.units if self.__units is not None else other.units,
-                              name=other.name)
+                              name=self.name + ' >> ' + other.name if self.name != other.name else self.name)
 
         raise TypeError("Trying to concatenate an object of type {}. Expected type: Timeseries.".format(type(other)))
 
     # ===================================
     # Methods
+
+    def overlap(self, other) -> Tuple[DateTimeRange]:
+        if isinstance(other, Timeseries):
+            domain1:Tuple[DateTimeRange] = self.domain
+            domain2:Tuple[DateTimeRange] = other.domain
+
+        elif isinstance(other, tuple) and all(isinstance(x, DateTimeRange) for x in other):
+            domain1: Tuple[DateTimeRange] = self.domain
+            domain2: Tuple[DateTimeRange] = other
+
+        else:
+            raise TypeError("Overlap method must be used with another Timeseries or a union of intervals (Tuple[DateTimeRange]).")
+
+        intersections = []  # Union of the intervals fom both Timeseries that intersect
+        for interval1 in domain1:
+            for interval2 in domain2:
+                if interval1.is_intersection(interval2):
+                    intersections.append(interval1.intersection(interval2))
+
+        return tuple(intersections)
 
     def append(self, initial_datetime: datetime, samples: ndarray | list | tuple):
         """
@@ -754,7 +798,7 @@ class Timeseries():
             except IndexError:
                 raise ValueError(
                     f"Event '{event.name}' is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
-            if event.name in self.__associated_events:
+            if event.name in self.__associated_events and event != self.__associated_events[event.name]:
                 raise NameError(
                     f"There is already another Event named with '{events.name}'. Cannot have two Events with the same name.")
             else:
@@ -782,14 +826,19 @@ class Timeseries():
         else:
             raise NameError(f"There's no Event '{event_name}' associated to this Timeseries.")
 
-    def to_array(self):
+    def tag(self, tags: str | tuple[str]):
         """
-        Converts Timeseries to numpy.ndarray, only if it contains just one Segment.
-        :return: An array with the Timeseries' samples.
-        :rtype: numpy.ndarray
+        Mark the Timeseries with a tag. Useful to mark machine learning targets.
+        :param tags: The label or labels to tag the Timeseries.
+        :return: None
         """
-        assert len(self.__segments) == 1
-        return array(self.__segments[0].samples)
+        if isinstance(tags, str):
+            self.__tags.add(tags)
+        elif isinstance(tags, tuple) and all(isinstance(x, str) for x in tags):
+            for x in tags:
+                self.__tags.add(x)
+        else:
+            raise TypeError("Give one or multiple string labels to tag the Timeseries.")
 
     # ===================================
     # INTERNAL USAGE - Convert indexes <-> timepoints && Get Samples
@@ -844,7 +893,7 @@ class Timeseries():
 
         elif isinstance(datetime_or_range, DateTimeRange):
             for subdomain in self.domain:
-                if subdomain.is_intersection(datetime_or_range):
+                if subdomain.is_intersection(datetime_or_range) and datetime_or_range.start_datetime != subdomain.end_datetime:
                     intersects = True
                     break
             if not intersects:
@@ -858,6 +907,14 @@ class Timeseries():
             all_timepoints += [segment.initial_datetime + timedelta(seconds=tp) for tp in timepoints]  # Append them all
         return tuple(all_timepoints)
 
+    def _to_array(self) -> list[ndarray]:
+        """
+        Converts Timeseries to list of numpy.ndarray.
+        :return: A list with the Timeseries' samples of each segment.
+        :rtype: list[numpy.ndarray]
+        """
+        return [segment.samples.copy() for segment in self.__segments]
+
     # ===================================
     # INTERNAL USAGE - Plots
 
@@ -870,7 +927,7 @@ class Timeseries():
             plt.plot(x, y, alpha=0.6, linewidth=0.5,
                      label='From {0} to {1}'.format(segment.initial_datetime, segment.final_datetime))
 
-    def _plot(self):
+    def _plot(self, label:str = None):
         xticks, xticks_labels = [], []  # to store the initial and final ticks of each Segment
         SPACE = int(self.__sampling_frequency) * 2  # the empty space between each Segment
 
@@ -880,7 +937,7 @@ class Timeseries():
             if i > 0:  # except for the first Segment
                 x = array(x) + (xticks[-1] + SPACE)  # shift right in time
                 plt.gca().axvspan(x[0] - SPACE, x[0], alpha=0.05, color='black')  # add empty space in between Segments
-            plt.gca().plot(x, y, linewidth=0.5)
+            plt.gca().plot(x, y, linewidth=0.5, alpha=0.7, label=label)
 
             xticks += [x[0], x[-1]]  # add positions of the first and last samples of this Segment
 
@@ -896,7 +953,7 @@ class Timeseries():
         plt.tick_params(axis='x', direction='in')
 
         if self.units is not None:  # override ylabel
-            plt.gca().set_ylabel("Amplitude ({})".format(self.units))
+            plt.gca().set_ylabel("Amplitude ({})".format(str(self.units)))
 
     # ===================================
     # INTERNAL USAGE - Accept methods
@@ -950,7 +1007,26 @@ class Timeseries():
                          str(self.name))  # Uses shortcut in __init__
         new._Timeseries__is_equally_segmented = self.__is_equally_segmented
         new.associate(self.events)
+        new.tag(self.tags)
         return new
+
+    def _new_samples(self, samples_by_segment: List[ndarray] = None):
+        """
+        Protected Access: For use of this module, since who uses is not aware of Segment.
+
+        Creates a similar copy of the Timeseries' contents and returns the new object, with the samples of each segment changed.
+
+        :return: A new Timeseries with the samples changed. All other fields shall remain the same.
+        :rtype: Timeseries | OverlappingTimeseries
+        """
+
+        assert len(samples_by_segment) == len(self.__segments)
+
+        segments = []
+        for segment, samples in zip(self, samples_by_segment):
+            segments.append(segment._new(samples=samples, raw_samples=samples, is_filtered=False))
+
+        return self.__new(segments=segments)
 
     def __new(self, segments: List[__Segment] = None, sampling_frequency: float = None, units: Unit = None,
               name: str = None, equally_segmented: bool = None, overlapping_segments: bool = None,
@@ -989,10 +1065,19 @@ class Timeseries():
         elif overlapping_segments is True:
             new = OverlappingTimeseries(segments, initial_datetime, sampling_frequency, units, name)
         else:
-            new = OverlappingTimeseries(segments, initial_datetime, sampling_frequency, units, name)
+            new = Timeseries(segments, initial_datetime, sampling_frequency, units, name)
 
         new._Timeseries__is_equally_segmented = equally_segmented
-        new.associate(events)
+
+        events = events.values() if isinstance(events, dict) else events
+        for event in events:
+            try:
+                new.associate(event)
+            except ValueError:
+                pass  # it's outside the new boundaries
+
+        new.tag(self.tags)
+
         return new
 
     def _new(self, segments_by_time: Dict[datetime, ndarray | list | tuple] = None,
@@ -1030,7 +1115,8 @@ class Timeseries():
             for initial_datetime, samples in segments_by_time.items():
                 seg = Timeseries.__Segment(samples, initial_datetime, sampling_frequency,
                                            is_filtered=rawsegments_by_time is not None)
-                seg._Segment__raw_samples = rawsegments_by_time[initial_datetime]
+                if rawsegments_by_time is not None:
+                    seg._Segment__raw_samples = rawsegments_by_time[initial_datetime]
                 segments.append(seg)
         else:
             # Send nothing
@@ -1043,18 +1129,32 @@ class Timeseries():
     def _apply_operation_and_new(self, operation, sampling_frequency: float = None, units: Unit = None,
                                  name: str = None, equally_segmented: bool = None,
                                  overlapping_segments: bool = None,
-                                 events: Collection[Event] = None, **kwargs):
+                                 events: Collection[Event] = None,
+                                 iterate_over_each_segment_key: str = None, **kwargs):
         """
         For outside usage. Who uses is not aware of Segment.
         Creates new Segments from the existing ones, using Segment._new().
+
+        If there is one item in '**kwargs' that has input to be iteratively passed to 'method',
+        indicate its key in 'iterate_over_each_segment_key'.
         """
+
         # Sampling frequency
         sampling_frequency = self.__sampling_frequency if sampling_frequency is None else sampling_frequency
+
         # Apply operation
         all_new_segments = []
-        for segment in self:
-            all_new_segments.append(
-                segment._apply_operation_and_new(operation, sampling_frequency=sampling_frequency, **kwargs))
+        if iterate_over_each_segment_key is not None:
+            items = kwargs[iterate_over_each_segment_key]
+            for segment, item in zip(self, items):
+                kwargs[iterate_over_each_segment_key] = item
+                new_segment = segment._apply_operation_and_new(operation, sampling_frequency=sampling_frequency, **kwargs)
+                all_new_segments.append(new_segment)
+        else:
+            for segment in self:
+                new_segment = segment._apply_operation_and_new(operation, sampling_frequency=sampling_frequency, **kwargs)
+                all_new_segments.append(new_segment)
+
         # Get new Timeseries
         return self.__new(all_new_segments, sampling_frequency=sampling_frequency, units=units, name=name,
                           equally_segmented=equally_segmented, overlapping_segments=overlapping_segments,
@@ -1103,13 +1203,12 @@ class Timeseries():
             assert len(indexes) == len(values)
             initial_datetimes = [timedelta(seconds=index / self.__sampling_frequency) + segment.initial_datetime for
                                  index in indexes]
+
             if initial_datetimes_shift is not None:
                 initial_datetimes = [idt + initial_datetimes_shift for idt in initial_datetimes]
-                trimmed_segments = [
-                    segment._new(samples=values[i], initial_datetime=initial_datetimes[i], raw_samples=raw_values) for i
-                    in range(len(values))]
-            else:
-                trimmed_segments = [segment._new(samples=values[i], raw_samples=raw_values) for i in range(len(values))]
+
+            trimmed_segments = [segment._new(samples=values[i], initial_datetime=initial_datetimes[i],
+                                             raw_samples=raw_values[i]) for i in range(len(values))]
 
             return trimmed_segments
 
@@ -1125,18 +1224,56 @@ class Timeseries():
                           overlapping_segments=overlapping_segments)
 
     # ===================================
+    # INTERNAL USAGE - Reshape
+
+    def _concatenate_segments(self):
+        if len(self.__segments) > 1:
+            self.__segments = [Timeseries.__Segment(concatenate(self._to_array()), self.initial_datetime, self.__sampling_frequency, False), ]
+            self.__is_equally_segmented = True
+        else:
+            pass  # no need
+
+    def _partition(self, time_intervals:tuple[DateTimeRange]):
+        assert len(self.__segments) == 1
+        samples = self.__segments[0]
+        partitions = []
+        i = 0
+        for x in time_intervals:
+            n_samples_required = ceil(x.timedelta.total_seconds() * self.__sampling_frequency)
+            if n_samples_required > len(samples):
+                samples = tile(samples, ceil(n_samples_required/len(samples)))  # repeat
+                samples = samples[:n_samples_required]  # cut where it is enough
+                partitions.append(Timeseries.__Segment(samples, x.start_datetime, self.__sampling_frequency))
+                i = 0
+            else:
+                f = i + n_samples_required
+                partitions.append(Timeseries.__Segment(samples[i: f], x.start_datetime, self.__sampling_frequency))
+                i += f
+
+        self.__segments = partitions
+
+    # ===================================
     # SERIALIZATION
 
     def __getstate__(self):
         """
+        Version 1:
         1: __name (str)
         2: __sampling_frequency (Frequency)
         3: __units (Unit)
         4: __is_equally_segmented (bool)
         5: segments_state (list)
+
+        Version 2:
+        1: __name (str)
+        2: __sampling_frequency (Frequency)
+        3: __units (Unit)
+        4: __is_equally_segmented (bool)
+        5: __tags (set)
+        6: segments_state (list)
         """
         segments_state = [segment.__getstate__() for segment in self.__segments]
-        return (self.__SERIALVERSION, self.__name, self.__sampling_frequency, self.__units, self.__is_equally_segmented,
+        return (self.__SERIALVERSION, self.__name, self.__sampling_frequency, self.__units, self.__is_equally_segmented, self.__tags,
                 segments_state)
 
     def __setstate__(self, state):
@@ -1151,9 +1288,22 @@ class Timeseries():
                 segment.__setstate__(segment_state)
                 self.__segments.append(segment)
             self.__associated_events = {}  # empty; to be populated by Biosignal
+            self.__tags = set()  # In version 1, tags were not a possibility, so none existed.
+        elif state[0] == 2:
+            self.__name, self.__sampling_frequency, self.__units = state[1], state[2], state[3]
+            self.__is_equally_segmented = state[4]
+            self.__segments = []
+            for segment_state in state[6]:
+                segment_state = list(segment_state)
+                segment_state.append(self.__sampling_frequency)
+                segment = object.__new__(Timeseries.__Segment)
+                segment.__setstate__(segment_state)
+                self.__segments.append(segment)
+            self.__associated_events = {}  # empty; to be populated by Biosignal
+            self.__tags = state[5]
         else:
             raise IOError(f'Version of {self.__class__.__name__} object not supported. Serialized version: {state[0]};'
-                          f'Supported versions: 1.')
+                          f'Supported versions: 1 and 2.')
 
 
 class OverlappingTimeseries(Timeseries):
@@ -1177,3 +1327,6 @@ class OverlappingTimeseries(Timeseries):
         segment = Timeseries._Timeseries__Segment(array(samples) if not isinstance(samples, ndarray) else samples,
                                        initial_datetime, self.__sampling_frequency)
         self.__segments.append(segment)
+
+    def _concatenate_segments(self):
+        raise NotImplementedError("")

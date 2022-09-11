@@ -22,9 +22,9 @@ import wfdb
 import wget
 from dateutil.parser import parse as to_datetime
 
-import ltbio.biosignals.modalities as modalities
-from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
-from ltbio.biosignals import Timeseries
+from .. import timeseries
+from .. import modalities
+from ..sources.BiosignalSource import BiosignalSource
 from ltbio.clinical.BodyLocation import BodyLocation
 from ltbio.biosignals.timeseries.Unit import *
 
@@ -94,9 +94,9 @@ class MITDB(BiosignalSource):
             unit = Volt(Multiplier.m) if 'mV' in units[ch] else None
             name = BodyLocation.MLII if channels[ch].strip() == 'MLII' else BodyLocation.V5 if channels[ch].strip() == 'V5' else channels[ch]
             if len(segments) > 1:
-                new_timeseries = Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=channels[ch], units=unit)
+                new_timeseries = timeseries.Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=channels[ch], units=unit)
             else:
-                new_timeseries = Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq, name=channels[ch], units=unit)
+                new_timeseries = timeseries.Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq, name=channels[ch], units=unit)
             new_dict[channels[ch]] = new_timeseries
 
         return new_dict

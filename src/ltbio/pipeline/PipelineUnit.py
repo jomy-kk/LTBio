@@ -127,11 +127,17 @@ class PipelineUnit(ABC):
             parameter_type = parameter.annotation
             packet_label = unit.PIPELINE_INPUT_LABELS[parameter_name]  # Map to the label in Packet
 
-            content = packet[packet_label]
+            if isinstance(packet_label, tuple) and any(x == Packet.TIMESERIES_LABEL for x in packet_label):  # Transformation needed
+                ungrouped = packet._ungroup_timeseries(packet_label)
+                content = unit._transform_input(*ungrouped)
+            else:
+                content = packet[packet_label]
+
+            # Insert on input
             if isinstance(content, dict) and parameter_type is biosignals.Timeseries:
                 assert len(content) == 1
                 input[parameter_name] = tuple(content.values())[0]  # arity match
-            elif not isinstance(content, dict) and parameter_type is not biosignals.Timeseries:
+            elif not isinstance(content, dict) and packet_label == Packet.TIMESERIES_LABEL and parameter_type is not biosignals.Timeseries:
                 input[parameter_name] = {'_': content}  # arity match
             else:
                 input[parameter_name] = content  # arity already matches

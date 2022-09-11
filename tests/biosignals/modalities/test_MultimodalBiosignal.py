@@ -42,7 +42,7 @@ class MultimodalBiosignalTestCase(unittest.TestCase):
         self.assertEqual(multi.acquisition_location, {BodyLocation.CHEST, BodyLocation.WRIST_L})
         self.assertEqual(multi.source, {HSM, Sense})
         self.assertEqual(len(multi), 7)  # 8 channels in total = 2 + 1 + 1 + 3
-        self.assertEqual(multi.channel_names, ("ecg1:V1", "ecg1:V2", "ecg2:Band", "eda:Sweat", "acc:x", "acc:y", "acc:z"))
+        self.assertEqual(multi.channel_names, {"ecg1:V1", "ecg1:V2", "ecg2:Band", "eda:Sweat", "acc:x", "acc:y", "acc:z"})
         self.assertEqual(multi.patient_code, 101)
         self.assertEqual(multi.patient_conditions[0], self.condition)
         self.assertEqual(multi.name, self.name)

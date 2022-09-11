@@ -56,10 +56,9 @@ class TimeDomainFilter(Filter):
     def _setup(self, sampling_frequency: float):
         self.__window_length_in_samples = int(self.window_length.total_seconds() * sampling_frequency)
         self.__overlap_length_in_samples = int(self.overlap_length.total_seconds() * sampling_frequency)
-        if divmod(self.__window_length_in_samples, 2) == 0:
-            self.__window_length_in_samples+=1
-        if divmod(self.__overlap_length_in_samples, 2) == 0:
-            self.__overlap_length_in_samples+=1
+
+        if self.operation is ConvolutionOperation.MEDIAN and self.__window_length_in_samples % 2 == 0: # if even, in median
+            self.__window_length_in_samples += 1  # make it odd
 
     def _visit(self, samples: array) -> array:
         """

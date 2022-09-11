@@ -19,9 +19,9 @@ from os import listdir, path
 
 from mne.io import read_raw_edf
 
-import ltbio.biosignals.modalities as modalities
-from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
-from ltbio.biosignals import Timeseries
+from .. import timeseries
+from .. import modalities
+from ..sources.BiosignalSource import BiosignalSource
 
 
 class Seer(BiosignalSource):
@@ -84,9 +84,9 @@ class Seer(BiosignalSource):
                 name = f'{channels[ch]} from {device.split("-")[0]}'
                 dict_key = f'{device.split("-")[0]}-{channels[ch].upper()}' if len(devices) > 1 else channels[ch].upper()
                 if len(segments) > 1:
-                    new_timeseries = Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=name, units=unit)
+                    new_timeseries = timeseries.Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=name, units=unit)
                 else:
-                    new_timeseries = Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq, name=name, units=unit)
+                    new_timeseries = timeseries.Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq, name=name, units=unit)
                 new_dict[dict_key] = new_timeseries
 
         return new_dict

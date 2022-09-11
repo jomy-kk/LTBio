@@ -19,12 +19,14 @@ from typing import Callable
 
 import numpy as np
 from biosppy.plotting import plot_ecg
-from biosppy.signals.ecg import hamilton_segmenter, correct_rpeaks, extract_heartbeats, ecg as biosppyECG
+from biosppy.signals.ecg import hamilton_segmenter, correct_rpeaks, extract_heartbeats, ecg as biosppyECG, christov_segmenter, \
+    engzee_segmenter
 from biosppy.signals.tools import get_heart_rate
-from numpy import linspace, ndarray
+from biosppy.signals.ecg import sSQI, kSQI, pSQI, fSQI, bSQI
+from numpy import linspace, ndarray, average, array
 
 from ltbio.biosignals.modalities.Biosignal import Biosignal
-from ltbio.biosignals import Timeseries
+from .. import timeseries as _timeseries
 from ltbio.biosignals.timeseries.Unit import Volt, Multiplier, BeatsPerMinute
 
 
@@ -69,19 +71,22 @@ class ECG(Biosignal):
     def plot_rpeaks(self, show:bool=True, save_to:str=None):
         pass  # TODO
 
-    def __r_indices(self, channel:Timeseries, segmenter:Callable = hamilton_segmenter):
-        def biosppy_r_indices(signal, sampling_rate, algorithm_method, **kwargs) -> ndarray:
-            """
-            Returns the indices of the R peaks of a sequence of samples, using Biosppy tools.
-            This procedures joins 2 smaller procedures, that should be executed at once.
-            This procedures shall be passed to '_apply_operation_and_return'.
-            """
-            from biosppy.signals.ecg import correct_rpeaks
-            indices = algorithm_method(signal, sampling_rate, **kwargs)['rpeaks']  # Compute indices
-            corrected_indices = correct_rpeaks(signal, indices, sampling_rate)['rpeaks']  # Correct indices
-            return corrected_indices
+    @staticmethod
+    def __biosppy_r_indices(signal, sampling_rate, algorithm_method, **kwargs) -> ndarray:
+        """
+        Returns the indices of the R peaks of a sequence of samples, using Biosppy tools.
+        This procedures joins 2 smaller procedures, that should be executed at once.
+        This procedures shall be passed to '_apply_operation_and_return'.
+        """
+        from biosppy.signals.ecg import correct_rpeaks
+        indices = algorithm_method(signal, sampling_rate, **kwargs)['rpeaks']  # Compute indices
+        corrected_indices = correct_rpeaks(signal, indices, sampling_rate)['rpeaks']  # Correct indices
+        return corrected_indices
 
-        r_indices = channel._apply_operation_and_return(biosppy_r_indices,
+    def __r_indices(self, channel:_timeseries.Timeseries, segmenter:Callable = hamilton_segmenter):
+
+
+        r_indices = channel._apply_operation_and_return(self.__biosppy_r_indices,
                                                         sampling_rate=channel.sampling_frequency,
                                                         algorithm_method=segmenter)
 
@@ -125,7 +130,7 @@ class ECG(Biosignal):
             raise ValueError(
                 "Give an 'algorithm' from the following: 'ssf', 'christov', 'engzee', 'gamboa', 'hamilton', or 'asi'.")
 
-        channel: Timeseries = tuple(self._Biosignal__timeseries.values())[0]
+        channel: _timeseries.Timeseries = tuple(self._Biosignal__timeseries.values())[0]
         r_indices = self.__r_indices(channel, segmenter)
 
         # Convert from indices to timepoints
@@ -161,7 +166,7 @@ class ECG(Biosignal):
         all_heartbeat_channels = {}
         for channel_name in self.channel_names:
 
-            channel:Timeseries = self._Biosignal__timeseries[channel_name]
+            channel:_timeseries.Timeseries = self._Biosignal__timeseries[channel_name]
             r_indices = self.__r_indices(channel)
 
             new = channel._segment_and_new(extract_heartbeats, 'templates', 'rpeaks',
@@ -185,7 +190,7 @@ class ECG(Biosignal):
         """
         Transform ECG signal to instantaneous heart rate.
 
-         Parameters
+        Parameters
         ----------
         smooth_length : float, optional
             Length of smoothing window. If not given, no smoothing is performed on the instantaneous heart rate.
@@ -200,14 +205,28 @@ class ECG(Biosignal):
 
         all_hr_channels = {}
         for channel_name in self.channel_names:
-            channel = self._Biosignal__timeseries[channel_name]
-            all_hr = []
-            for segment in channel:
-                indices = np.array([int((timepoint - segment.initial_datetime).total_seconds() * self.sampling_frequency) for timepoint in self.r_timepoints])
-                hr = get_heart_rate(indices, channel.sampling_frequency, smooth = (smooth_length is not None), size=smooth_length)['heart_rate']
-                all_hr.append(Timeseries.__Segment(hr, segment.initial_datetime, channel.sampling_frequency))
+            channel = self._get_channel(channel_name)
 
-            all_hr_channels[channel_name] = Timeseries(all_hr, True, channel.sampling_frequency, BeatsPerMinute(), 'Heart Rate of ' + channel.name, equally_segmented=False)
+            r_indices = self.__r_indices(channel)
+            all_hr = []
+            all_idx = []
+            for seg in r_indices:
+                idx, hr = get_heart_rate(seg, channel.sampling_frequency, smooth = (smooth_length is not None), size=smooth_length)
+                all_idx.append(idx)
+                all_hr += list(hr)
+
+
+
+            timepoints = channel._indices_to_timepoints(all_idx)
+
+            hr_channel = channel._new(
+                segments_by_time={tp: [hr, ] for tp, hr in zip(timepoints, all_hr)},
+                units=BeatsPerMinute(),
+                name='Heart Rate of ' + channel.name,
+                equally_segmented=False
+            )
+
+            all_hr_channels[channel_name] = hr_channel
 
         from ltbio.biosignals.modalities.HR import HR
         return HR(all_hr_channels, self.source, self._Biosignal__patient, self.acquisition_location, 'Heart Rate of ' + self.name, original_signal=self)
@@ -234,9 +253,9 @@ class ECG(Biosignal):
             for segment in channel:
                 indices = np.array([int((timepoint - segment.initial_datetime).total_seconds() * self.sampling_frequency) for timepoint in self.r_timepoints])
                 nni = np.diff(indices)
-                all_nii.append(Timeseries.__Segment(nni, segment.initial_datetime, channel.sampling_frequency))
+                all_nii.append(_timeseries.Timeseries.__Segment(nni, segment.initial_datetime, channel.sampling_frequency))
 
-            all_nni_channels[channel_name] = Timeseries(all_nii, True, channel.sampling_frequency, None, 'NNI of ' + channel.name, equally_segmented=channel.is_equally_segmented)
+            all_nni_channels[channel_name] = _timeseries.Timeseries(all_nii, True, channel.sampling_frequency, None, 'NNI of ' + channel.name, equally_segmented=channel.is_equally_segmented)
 
         # FIXME
         #return NNI(all_nni_channels, self.source, self._Biosignal__patient, self.acquisition_location, 'NNI of ' + self.name, original_signal=self)
@@ -256,14 +275,141 @@ class ECG(Biosignal):
         """
 
         for channel_name, channel in self.preview:
-
-            original_signal = channel.samples - np.mean(channel.samples) # to remove DC component if not filtered
-            rpeaks = self.__r_indices.biosppy_r_indices(original_signal, channel.sampling_frequency, 'hamilton') # indexes from biosppy method
+            samples = channel.samples
+            if isinstance(samples, list):
+                samples = samples[0]
+            original_signal = samples - np.mean(samples) # to remove DC component if not filtered
+            rpeaks = self.__biosppy_r_indices(original_signal, channel.sampling_frequency, hamilton_segmenter) # indexes from biosppy method
             amp_rpeaks = original_signal[rpeaks]
 
             inv_signal = -original_signal # inverted signal
-            rpeaks_inv = self.__r_indices.biosppy_r_indices(inv_signal, channel.sampling_frequency, 'hamilton') # indexes from biosppy method
+            rpeaks_inv = self.__biosppy_r_indices(inv_signal, channel.sampling_frequency, hamilton_segmenter) # indexes from biosppy method
             amp_rpeaks_inv = inv_signal[rpeaks_inv]
 
             if np.median(amp_rpeaks) < np.median(amp_rpeaks_inv):
                 self.invert(channel_name)
+
+    def skewness(self, by_segment: bool = False) -> dict[str: float | list[float]]:
+        """
+        Computes the skweness of each channel.
+        If `by_segment` is True, a list of skweness values is returned for each contiguous uninterrupted segment,
+        otherwise the weighted average is returned. Weighted by duration of each segment.
+        :return: A dictionary of skewness value(s) for each channel.
+        """
+        res = {}
+        for channel_name, channel in self:
+            skweness_by_segment = channel._apply_operation_and_return(sSQI)
+            if by_segment:
+                res[channel_name] = skweness_by_segment
+            else:
+                res[channel_name] = average(array(skweness_by_segment), weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+
+        return res
+
+    def kurtosis(self, by_segment: bool = False):
+        """
+        Computes the kurtosis of each channel.
+        If `by_segment` is True, a list of kurtosis values is returned for each contiguous uninterrupted segment,
+        otherwise the weighted average is returned. Weighted by duration of each segment.
+
+        If kurtosis <= 5, it means there's a great amount of noise present.
+
+        :return: A dictionary of kurtosis value(s) for each channel.
+        """
+        res = {}
+        for channel_name, channel in self:
+            skweness_by_segment = channel._apply_operation_and_return(kSQI)
+            if by_segment:
+                res[channel_name] = skweness_by_segment
+            else:
+                weights = list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain))
+                res[channel_name] = average(array(skweness_by_segment), weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+
+        return res
+
+    def flatline_percentage(self, by_segment: bool = False):
+        """
+        Computes the % of flatline of each channel.
+        If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+        otherwise the weighted average is returned. Weighted by duration of each segment.
+
+        :return: A dictionary of % of flatline value(s) for each channel.
+        """
+        res = {}
+        for channel_name, channel in self:
+            skweness_by_segment = channel._apply_operation_and_return(pSQI)
+            if by_segment:
+                res[channel_name] = skweness_by_segment
+            else:
+                res[channel_name] = average(array(skweness_by_segment), weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+
+        return res
+
+    def basSQI(self, by_segment: bool = False):
+        """
+        Computes the ration between [0, 1] Hz and [0, 40] Hz frequency power bands.
+        If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+        otherwise the weighted average is returned. Weighted by duration of each segment.
+
+        Adequate to evaluate the presence of baseline drift.
+        Values between [0.95, 1] mean ECG shows optimal quality.
+
+        :return: A dictionary of the computed ratio for each channel.
+        """
+        res = {}
+        for channel_name, channel in self:
+            bas_by_segment = channel._apply_operation_and_return(fSQI, fs=channel.sampling_frequency,
+                                                                      num_spectrum=(0, 1), dem_spectrum=(0, 40), mode='bas')
+            if by_segment:
+                res[channel_name] = bas_by_segment
+            else:
+                res[channel_name] = average(array(bas_by_segment),
+                                            weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+
+        return res
+
+    def pSQI(self, by_segment: bool = False):
+        """
+        Computes the ration between [5, 15] Hz and [5, 40] Hz frequency power bands.
+        If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+        otherwise the weighted average is returned. Weighted by duration of each segment.
+
+        Values between [0.5, 0.8] mean QRS complexes show high quality.
+
+        :return: A dictionary of the computed ratio for each channel.
+        """
+        res = {}
+        for channel_name, channel in self:
+            bas_by_segment = channel._apply_operation_and_return(fSQI, fs=channel.sampling_frequency,
+                                                                 num_spectrum=(5, 15), dem_spectrum=(5, 40), mode='simple')
+            if by_segment:
+                res[channel_name] = bas_by_segment
+            else:
+                res[channel_name] = average(array(bas_by_segment),
+                                            weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+
+        return res
+
+    def qSQI(self, by_segment: bool = False):
+        """
+        Evaluates agreement between two R detectors.
+        If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+        otherwise the weighted average is returned. Weighted by duration of each segment.
+
+        Values > 90% mean optimal R-peak consensus.
+
+        :return: A dictionary of the computed qSQI for each channel.
+        """
+        res = {}
+        for channel_name, channel in self:
+            peaks1 = self.__r_indices(channel, hamilton_segmenter)
+            peaks2 = self.__r_indices(channel, engzee_segmenter)
+
+            res[channel_name] = [bSQI(p1, p2, channel.sampling_frequency, mode='matching') for p1, p2 in zip(peaks1, peaks2)]
+
+            if not by_segment:
+                res[channel_name] = average(array(res[channel_name]),
+                                            weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+
+        return res
+

@@ -119,6 +119,46 @@ class Packet():
     def _to_dict(self):
         return self.__load.copy()
 
+    def _ungroup_timeseries(self, packet_labels:tuple[str]) -> tuple[tuple[Timeseries]]:
+        res = []
+        all_not_timeseries = []
+
+        for label in packet_labels:
+            if label != Packet.TIMESERIES_LABEL:
+                found = []
+                # Search on tags
+                for ts in self.__timeseries.values():
+                    if label in ts.tags:
+                        found.append(ts)
+                        all_not_timeseries.append(ts)
+                # Seach on load
+                if label in self.__load:
+                    if isinstance(self.__load[label], Timeseries):
+                        found.append(self.__load[label])
+                        all_not_timeseries.append(self.__load[label])
+                    elif isinstance(self.__load[label], dict):
+                        found += list(self.__load[label].values())
+                        all_not_timeseries += list(self.__load[label].values())
+
+                assert len(found) > 0  # otherwise there is no point in this
+                res.append(tuple(found))
+
+            else:
+                res.append(Packet.TIMESERIES_LABEL)
+
+        for i in range(len(res)):
+            if res[i] == Packet.TIMESERIES_LABEL:
+                ts_to_include = []
+                for ts in self.__timeseries.values():
+                    if ts not in all_not_timeseries:
+                        ts_to_include.append(ts)
+                assert len(ts_to_include) > 0  # otherwise there is no point in this
+                res[i] = tuple(ts_to_include)
+
+        return tuple(res)
+
+
+
     @staticmethod
     def join_packets(**packets):
         """

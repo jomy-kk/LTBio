@@ -22,9 +22,9 @@ from os import listdir, path, getcwd, access, R_OK
 import numpy as np
 from dateutil.parser import parse as to_datetime
 
-import ltbio.biosignals.modalities as modalities
-from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
-from ltbio.biosignals import Timeseries
+from .. import timeseries
+from .. import modalities
+from ..sources.BiosignalSource import BiosignalSource
 
 
 class Bitalino(BiosignalSource):
@@ -254,10 +254,10 @@ class Bitalino(BiosignalSource):
 
             samples = {segment[1]: segment[0][:, ch] for segment in segments if segment}
             if len(samples) > 1:
-                new_timeseries = Timeseries.withDiscontiguousSegments(samples, sampling_frequency=header['sampling rate'],
+                new_timeseries = timeseries.Timeseries.withDiscontiguousSegments(samples, sampling_frequency=header['sampling rate'],
                                                                       name=channels[ch])
             else:
-                new_timeseries = Timeseries(tuple(samples.values())[0], tuple(samples.keys())[0], header['sampling rate'],
+                new_timeseries = timeseries.Timeseries(tuple(samples.values())[0], tuple(samples.keys())[0], header['sampling rate'],
                                             name=channels[ch])
             new_dict[channel] = new_timeseries
         return new_dict

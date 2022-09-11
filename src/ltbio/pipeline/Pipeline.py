@@ -100,9 +100,12 @@ class Pipeline():
         assert self.__biosignals is not None  # Check if Biosignals were loaded
         all_timeseries = {}
         for biosignal in self.__biosignals:
-            timeseries = biosignal._to_dict()
-            assert tuple(timeseries.keys()) not in all_timeseries  # Ensure there are no repeated keys
-            all_timeseries.update(timeseries)
+            for channel_name, channel in biosignal:
+                if channel_name in all_timeseries.keys():  # Ensure there are no repeated keys
+                    channel_name = biosignal.name + ' : ' + channel_name
+                    if channel_name in all_timeseries.keys():
+                        raise NameError("Cannot give Biosignals with the same name and with the same channel names. Suggestion: Change the name of Biosignals to unique names.")
+                all_timeseries[channel_name] = channel
 
         self.__current_packet = Packet(timeseries=all_timeseries)
 

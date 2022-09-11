@@ -21,9 +21,9 @@ import numpy as np
 from neo import MicromedIO
 from numpy import array
 
-import ltbio.biosignals.modalities as modalities
-from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
-from ltbio.biosignals import Timeseries
+from .. import timeseries
+from .. import modalities
+from ..sources.BiosignalSource import BiosignalSource
 
 
 class HEM(BiosignalSource):
@@ -93,9 +93,9 @@ class HEM(BiosignalSource):
                     last_start = trc_data[1]
 
             if len(segments) > 1:
-                new_timeseries = Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=channels[ch])
+                new_timeseries = timeseries.Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=channels[ch])
             else:
-                new_timeseries = Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq,  name=channels[ch])
+                new_timeseries = timeseries.Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq,  name=channels[ch])
             new_dict[channels[ch]] = new_timeseries
 
         return new_dict

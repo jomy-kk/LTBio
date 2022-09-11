@@ -23,10 +23,9 @@ from os.path import isdir
 
 from numpy import vstack
 
-import ltbio.biosignals.modalities as modalities
-from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
-from ltbio.biosignals.timeseries.Event import Event
-from ltbio.biosignals import Timeseries
+from .. import timeseries
+from .. import modalities
+from ..sources.BiosignalSource import BiosignalSource
 
 
 class E4(BiosignalSource):
@@ -140,9 +139,9 @@ class E4(BiosignalSource):
         # Encapsulating the list of Segments of the same channel in a Timeseries
         for channel in segments:
             if len(segments[channel]) > 1:
-                res[channel] = Timeseries.withDiscontiguousSegments(segments[channel], sampling_frequency=res[channel])
+                res[channel] = timeseries.Timeseries.withDiscontiguousSegments(segments[channel], sampling_frequency=res[channel])
             else:
-                res[channel] = Timeseries(tuple(segments[channel].values())[0], tuple(segments[channel].keys())[0], sampling_frequency=res[channel])
+                res[channel] = timeseries.Timeseries(tuple(segments[channel].values())[0], tuple(segments[channel].keys())[0], sampling_frequency=res[channel])
 
         return res
 
@@ -178,7 +177,7 @@ class E4(BiosignalSource):
                         # Events are named numerically
                         for i in range(len(a)):
                             n_events += 1
-                            res.append(Event('event' + str(n_events), E4.__aux_date(a[i][0])))
+                            res.append(timeseries.Event('event' + str(n_events), E4.__aux_date(a[i][0])))
         return res
 
     @staticmethod

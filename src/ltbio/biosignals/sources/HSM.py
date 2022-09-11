@@ -19,9 +19,9 @@ from os import listdir, path
 
 from mne.io import read_raw_edf
 
-import ltbio.biosignals.modalities as modalities
-from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
-from ltbio.biosignals import Timeseries
+from .. import timeseries
+from .. import modalities
+from ..sources.BiosignalSource import BiosignalSource
 
 
 class HSM(BiosignalSource):
@@ -59,10 +59,12 @@ class HSM(BiosignalSource):
     @staticmethod
     def _read(dir, type, **options):
         '''Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.'''
-        """
-        """
         if type is modalities.ECG:
             label = 'ecg'
+        if type is modalities.EMG:
+            label = 'emg'
+        if type is modalities.EEG:
+            label = 'eeg'
         # first a list is created with all the filenames that end in .edf and are inside the chosen dir
         # this is a list of lists where the second column is the type of channel to extract
         all_files = sorted([[path.join(dir, file), label] for file in listdir(dir) if file.endswith('.edf')])
@@ -73,9 +75,9 @@ class HSM(BiosignalSource):
         for ch in range(len(channels)):
             segments = {edf_data[1]: edf_data[0][ch] for edf_data in all_edf}
             if len(segments) > 1:
-                new_timeseries = Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=channels[ch])
+                new_timeseries = timeseries.Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=channels[ch])
             else:
-                new_timeseries = Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq, name=channels[ch])
+                new_timeseries = timeseries.Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq, name=channels[ch])
             new_dict[channels[ch]] = new_timeseries
         return new_dict
 
