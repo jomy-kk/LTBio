@@ -30,5 +30,5 @@ class GaussianNoise(Noise):
         self.__deviation = deviation
 
     def _Noise__generate_data(self, duration:timedelta) -> ndarray:
-        n_samples = ceil(duration.seconds * self.sampling_frequency)
+        n_samples = int(duration.total_seconds() * self.sampling_frequency)
         return normal(self.__mean, self.__deviation, n_samples)

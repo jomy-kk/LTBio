@@ -1237,7 +1237,7 @@ class Timeseries():
         partitions = []
         i = 0
         for x in time_intervals:
-            n_samples_required = int(x.timedelta.total_seconds() * self.__sampling_frequency)
+            n_samples_required = ceil(x.timedelta.total_seconds() * self.__sampling_frequency)
             if n_samples_required > len(samples):
                 samples = tile(samples, ceil(n_samples_required/len(samples)))  # repeat
                 samples = samples[:n_samples_required]  # cut where it is enough
