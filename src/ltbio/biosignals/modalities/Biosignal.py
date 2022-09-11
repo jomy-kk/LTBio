@@ -141,14 +141,14 @@ class Biosignal(ABC):
 
     @property
     def preview(self):
-        """Returns 20 seconds of the middle of the signal."""
+        """Returns 5 seconds of the middle of the signal."""
         domain = self.domain
         middle_of_domain:DateTimeRange = domain[len(domain)//2]
         middle = middle_of_domain.start_datetime + (middle_of_domain.timedelta / 2)
         try:
-            return self[middle - timedelta(seconds=10) : middle + timedelta(seconds=10)]
+            return self[middle - timedelta(seconds=2) : middle + timedelta(seconds=3)]
         except IndexError:
-            raise AssertionError(f"The middle segment does not have at least 20 seconds to return a preview.")
+            raise AssertionError(f"The middle segment of {self.name} from {self.patient_code} does not have at least 5 seconds to return a preview.")
 
     def __getitem__(self, item):
         '''The built-in slicing and indexing operations.'''
