@@ -23,7 +23,7 @@ class Normalizer(SinglePipelineUnit):
     """
 
     def __init__(self, method='mean'):
-        if method == 'mean' and method == 'minmax':
+        if method != 'mean' and method != 'minmax':
             raise ValueError("Normalizer 'method' should be either 'mean' (default) or 'minmax'.")
         self.__method = method
 
