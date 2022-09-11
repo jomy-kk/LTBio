@@ -59,10 +59,12 @@ class HSM(BiosignalSource):
     @staticmethod
     def _read(dir, type, **options):
         '''Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.'''
-        """
-        """
         if type is modalities.ECG:
             label = 'ecg'
+        if type is modalities.EMG:
+            label = 'emg'
+        if type is modalities.EEG:
+            label = 'eeg'
         # first a list is created with all the filenames that end in .edf and are inside the chosen dir
         # this is a list of lists where the second column is the type of channel to extract
         all_files = sorted([[path.join(dir, file), label] for file in listdir(dir) if file.endswith('.edf')])
