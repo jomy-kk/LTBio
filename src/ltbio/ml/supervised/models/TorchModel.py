@@ -26,6 +26,8 @@ from ltbio.ml.supervised.results import SupervisedTrainResults
 
 class TorchModel(SupervisedModel):
 
+    DEVICE = torch.device('cpu')
+
     def __init__(self, design: torch.nn.Module, name: str = None):
         if not isinstance(design, torch.nn.Module):
             raise ValueError("The design given is not a valid PyTorch module. "
@@ -33,31 +35,38 @@ class TorchModel(SupervisedModel):
 
         super().__init__(design, name)
 
-    def train(self, dataset, conditions):
+        # Check for CUDA (NVidea) or MPS (Apple M1) acceleration
+        try:
+            if torch.backends.mps.is_built():
+                TorchModel.DEVICE = torch.device('mps')
+                self.design.to(TorchModel.DEVICE)
+        except:
+            pass
+        try:
+            if torch.cuda.is_available():
+                TorchModel.DEVICE = torch.device('cuda')
+                self.design.to(TorchModel.DEVICE)
+        except:
+            pass
+
+    def train(self, dataset, conditions, n_subprocesses: int = 0):
 
         def __train(dataloader) -> float:
-
             size = len(dataloader.dataset)
             self._SupervisedModel__design.train()  # Sets the module in training mode
-            for batch, (X, y) in enumerate(dataloader):
-                X, y = X.float(), y.float()
-                # X, y = X.to(device), y.to(device)  # TODO: pass to cuda if available
+            for i, (batch_objects, batch_targets) in enumerate(dataloader):
+                conditions.optimizer.zero_grad()  # Zero gradients for every batch
+                pred = self._SupervisedModel__design(batch_objects)  # Make predictions for this batch
+                loss = conditions.loss(pred, batch_targets)  # Compute loss
+                loss.backward()  # Compute its gradients
+                conditions.optimizer.step()  # Adjust learning weights
 
-                # Compute prediction and loss
-                pred = self._SupervisedModel__design(X)
-                loss = conditions.loss(pred, y)
-
-                # Backpropagation
-                conditions.optimizer.zero_grad()
-                loss.backward()
-                conditions.optimizer.step()
-
-                if batch % 100 == 0:
-                    loss, current = loss.item(), batch * len(X)
+                if i % 100 == 0:
+                    loss, current = loss.item(), i * len(batch_objects)
                     if self.verbose:
                         print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
-            return loss.data.item()  # returns the last loss
+            return loss#.data.item()  # returns the last loss
 
         def __validate(dataloader: DataLoader) -> float:
             size = len(dataloader.dataset)
@@ -65,12 +74,10 @@ class TorchModel(SupervisedModel):
             self._SupervisedModel__design.eval()  # Sets the module in evaluation mode
             test_loss, correct = 0., 0
             with torch.no_grad():
-                for X, y in dataloader:
-                    X, y = X.float(), y.float()
-                    # X, y = X.to(device), y.to(device)  # TODO: pass to cuda if available
-                    pred = self._SupervisedModel__design(X)
-                    test_loss += conditions.loss(pred, y).data.item()
-                    correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+                for batch_objects, batch_targets in dataloader:
+                    pred = self._SupervisedModel__design(batch_objects)
+                    test_loss += conditions.loss(pred, batch_targets).data.item()
+                    correct += (pred.argmax(1) == batch_targets).type(torch.float).sum().item()
             test_loss /= num_batches
             correct /= size
 
@@ -109,9 +116,18 @@ class TorchModel(SupervisedModel):
             epoch_shuffle = True
 
         # Create DataLoaders
-        train_dataloader = DataLoader(dataset=train_dataset, batch_size=conditions.batch_size, shuffle=epoch_shuffle)
-        validation_dataloader = DataLoader(dataset=validation_dataset, batch_size=conditions.batch_size,
-                                           shuffle=epoch_shuffle)
+        train_dataloader = DataLoader(dataset=train_dataset,
+                                      batch_size=conditions.batch_size, shuffle=epoch_shuffle,
+                                      #pin_memory=True, #pin_memory_device=TorchModel.DEVICE.type,
+                                      num_workers=n_subprocesses,
+                                      drop_last=True)
+
+        validation_dataloader = DataLoader(dataset=validation_dataset,
+                                           batch_size=conditions.batch_size, shuffle=epoch_shuffle,
+                                           #pin_memory=True, #pin_memory_device=TorchModel.DEVICE.type,
+                                           num_workers=n_subprocesses,
+                                           drop_last=True)
+
 
         # Repeat the train-validate process for N epochs
         train_losses, validation_losses = [], []
@@ -160,7 +176,10 @@ class TorchModel(SupervisedModel):
         conditions = self._SupervisedModel__current_version.conditions
 
         # Create dataset and dataloader
-        dataloader = DataLoader(dataset=dataset, batch_size=conditions.batch_size)
+        dataloader = DataLoader(dataset=dataset, batch_size=1,  # shuffle=conditions.shuffle,
+                                #pin_memory=True,
+                                #pin_memory_device=TorchModel.DEVICE.type
+                                )
 
         # Test by batch
         size = len(dataset)
@@ -169,13 +188,11 @@ class TorchModel(SupervisedModel):
         test_loss, correct = 0, 0
         predictions = []
         with torch.no_grad():
-            for X, y in dataloader:  # for each batch
-                X, y = X.float(), y.float()
-                # X, y = X.to(device), y.to(device)  # TODO: pass to cuda if available
-                pred = self._SupervisedModel__design(X)
+            for batch_objects, batch_targets in dataloader:  # for each batch
+                pred = self._SupervisedModel__design(batch_objects)
                 predictions.append(pred.cpu().detach().numpy().squeeze())
-                test_loss += conditions.loss(pred, y).item()
-                correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+                test_loss += conditions.loss(pred, batch_targets).item()
+                correct += (pred.argmax(1) == batch_targets).type(torch.float).sum().item()
         test_loss /= num_batches
         correct /= size
 
