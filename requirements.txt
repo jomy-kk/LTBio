@@ -133,9 +133,7 @@ threadpoolctl==3.1.0
 thriftpy2==0.4.14
 tinycss2==1.1.1
 tomli==2.0.1
-torch==1.13.0.dev20220903
-torchaudio==0.13.0.dev20220903
-torchvision==0.14.0.dev20220903
+torch==1.11.0
 tornado==6.1
 tqdm==4.64.0
 traitlets==5.3.0
