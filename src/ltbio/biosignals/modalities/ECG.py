@@ -19,9 +19,11 @@ from typing import Callable
 
 import numpy as np
 from biosppy.plotting import plot_ecg
-from biosppy.signals.ecg import hamilton_segmenter, correct_rpeaks, extract_heartbeats, ecg as biosppyECG
+from biosppy.signals.ecg import hamilton_segmenter, correct_rpeaks, extract_heartbeats, ecg as biosppyECG, christov_segmenter, \
+    engzee_segmenter
 from biosppy.signals.tools import get_heart_rate
-from numpy import linspace, ndarray
+from biosppy.signals.ecg import sSQI, kSQI, pSQI, fSQI, bSQI
+from numpy import linspace, ndarray, average, array
 
 from ltbio.biosignals.modalities.Biosignal import Biosignal
 from .. import timeseries as _timeseries
@@ -69,19 +71,22 @@ class ECG(Biosignal):
     def plot_rpeaks(self, show:bool=True, save_to:str=None):
         pass  # TODO
 
-    def __r_indices(self, channel:Timeseries, segmenter:Callable = hamilton_segmenter):
-        def biosppy_r_indices(signal, sampling_rate, algorithm_method, **kwargs) -> ndarray:
-            """
-            Returns the indices of the R peaks of a sequence of samples, using Biosppy tools.
-            This procedures joins 2 smaller procedures, that should be executed at once.
-            This procedures shall be passed to '_apply_operation_and_return'.
-            """
-            from biosppy.signals.ecg import correct_rpeaks
-            indices = algorithm_method(signal, sampling_rate, **kwargs)['rpeaks']  # Compute indices
-            corrected_indices = correct_rpeaks(signal, indices, sampling_rate)['rpeaks']  # Correct indices
-            return corrected_indices
+    @staticmethod
+    def __biosppy_r_indices(signal, sampling_rate, algorithm_method, **kwargs) -> ndarray:
+        """
+        Returns the indices of the R peaks of a sequence of samples, using Biosppy tools.
+        This procedures joins 2 smaller procedures, that should be executed at once.
+        This procedures shall be passed to '_apply_operation_and_return'.
+        """
+        from biosppy.signals.ecg import correct_rpeaks
+        indices = algorithm_method(signal, sampling_rate, **kwargs)['rpeaks']  # Compute indices
+        corrected_indices = correct_rpeaks(signal, indices, sampling_rate)['rpeaks']  # Correct indices
+        return corrected_indices
 
-        r_indices = channel._apply_operation_and_return(biosppy_r_indices,
+    def __r_indices(self, channel:_timeseries.Timeseries, segmenter:Callable = hamilton_segmenter):
+
+
+        r_indices = channel._apply_operation_and_return(self.__biosppy_r_indices,
                                                         sampling_rate=channel.sampling_frequency,
                                                         algorithm_method=segmenter)
 
@@ -185,7 +190,7 @@ class ECG(Biosignal):
         """
         Transform ECG signal to instantaneous heart rate.
 
-         Parameters
+        Parameters
         ----------
         smooth_length : float, optional
             Length of smoothing window. If not given, no smoothing is performed on the instantaneous heart rate.
@@ -204,12 +209,24 @@ class ECG(Biosignal):
 
             r_indices = self.__r_indices(channel)
             all_hr = []
-            for segment in channel:
-                indices = np.array([int((timepoint - segment.initial_datetime).total_seconds() * self.sampling_frequency) for timepoint in self.r_timepoints])
-                hr = get_heart_rate(indices, channel.sampling_frequency, smooth = (smooth_length is not None), size=smooth_length)['heart_rate']
-                all_hr.append(Timeseries.__Segment(hr, segment.initial_datetime, channel.sampling_frequency))
+            all_idx = []
+            for seg in r_indices:
+                idx, hr = get_heart_rate(seg, channel.sampling_frequency, smooth = (smooth_length is not None), size=smooth_length)
+                all_idx.append(idx)
+                all_hr += list(hr)
 
-            all_hr_channels[channel_name] = Timeseries(all_hr, True, channel.sampling_frequency, BeatsPerMinute(), 'Heart Rate of ' + channel.name, equally_segmented=False)
+
+
+            timepoints = channel._indices_to_timepoints(all_idx)
+
+            hr_channel = channel._new(
+                segments_by_time={tp: [hr, ] for tp, hr in zip(timepoints, all_hr)},
+                units=BeatsPerMinute(),
+                name='Heart Rate of ' + channel.name,
+                equally_segmented=False
+            )
+
+            all_hr_channels[channel_name] = hr_channel
 
         from ltbio.biosignals.modalities.HR import HR
         return HR(all_hr_channels, self.source, self._Biosignal__patient, self.acquisition_location, 'Heart Rate of ' + self.name, original_signal=self)
@@ -258,13 +275,15 @@ class ECG(Biosignal):
         """
 
         for channel_name, channel in self.preview:
-
-            original_signal = channel.samples - np.mean(channel.samples) # to remove DC component if not filtered
-            rpeaks = self.__r_indices.biosppy_r_indices(original_signal, channel.sampling_frequency, 'hamilton') # indexes from biosppy method
+            samples = channel.samples
+            if isinstance(samples, list):
+                samples = samples[0]
+            original_signal = samples - np.mean(samples) # to remove DC component if not filtered
+            rpeaks = self.__biosppy_r_indices(original_signal, channel.sampling_frequency, hamilton_segmenter) # indexes from biosppy method
             amp_rpeaks = original_signal[rpeaks]
 
             inv_signal = -original_signal # inverted signal
-            rpeaks_inv = self.__r_indices.biosppy_r_indices(inv_signal, channel.sampling_frequency, 'hamilton') # indexes from biosppy method
+            rpeaks_inv = self.__biosppy_r_indices(inv_signal, channel.sampling_frequency, hamilton_segmenter) # indexes from biosppy method
             amp_rpeaks_inv = inv_signal[rpeaks_inv]
 
             if np.median(amp_rpeaks) < np.median(amp_rpeaks_inv):
