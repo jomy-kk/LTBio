@@ -31,7 +31,7 @@ class SupervisedModel(ABC):
     A generic machine learning supervised model.
     """
 
-    class Version():
+    class __Version:
         def __init__(self, number, state=None, conditions=None):
             self.number = number
             self.created_on = datetime.now()
@@ -44,7 +44,7 @@ class SupervisedModel(ABC):
         self.__design = design
         self.name = name
 
-        self.__versions:list[SupervisedModel.Version] = []
+        self.__versions:list[SupervisedModel.__Version] = []
         self.__current_version = None
 
         self.verbose = True  # by default
@@ -84,7 +84,7 @@ class SupervisedModel(ABC):
     @abstractmethod
     def train(self, dataset:BiosignalDataset, conditions:SupervisedTrainConditions) -> SupervisedTrainResults:
         # This is to be executed before the training session starts
-        self.__current_version = SupervisedModel.Version(len(self.__versions)+1, conditions=conditions.__copy__())
+        self.__current_version = SupervisedModel.__Version(len(self.__versions) + 1, conditions=conditions.__copy__())
         self.__versions.append(self.__current_version)
 
     @abstractmethod
@@ -129,7 +129,7 @@ class SupervisedModel(ABC):
     # ====================================
     # For Internal Usage
 
-    def __set_to_version(self, version: Version):
+    def __set_to_version(self, version: __Version):
         self.__set_state(version.state)
         self.__current_version = version
 
