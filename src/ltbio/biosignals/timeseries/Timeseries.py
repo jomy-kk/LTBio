@@ -135,7 +135,7 @@ class Timeseries():
     https://github.com/jomy-kk/IT-LongTermBiosignals/wiki/%5BClass%5D-Timeseries
     """
 
-    __SERIALVERSION: int = 1
+    __SERIALVERSION: int = 2
 
     # ===================================
     # Class: Segment
@@ -432,19 +432,20 @@ class Timeseries():
 
         def __setstate__(self, state):
             """
+            Version 1 and 2:
             1: __initial_datetime (datetime)
             2: __samples (ndarray)
             3: __sampling_frequency (Frequency)
             """
-            if state[0] == 1:
+            if state[0] == 1 or state[0] == 2:
                 self.__initial_datetime, self.__samples, self.__sampling_frequency = state[1], state[2], state[3]
                 self.__final_datetime = self.initial_datetime + timedelta(seconds=len(self.__samples) / self.__sampling_frequency)
                 self.__is_filtered = False
                 self.__raw_samples = self.__samples
             else:
                 raise IOError(
-                    f'Version of Segment object not supported. Serialized version: {state[0]};'
-                    f'Supported versions: 1.')
+                    f'Version of Segment object not supported. Serialized version: {state[0]}; '
+                    f'Supported versions: 1, 2.')
 
 
     # ===================================
@@ -1250,14 +1251,23 @@ class Timeseries():
 
     def __getstate__(self):
         """
+        Version 1:
         1: __name (str)
         2: __sampling_frequency (Frequency)
         3: __units (Unit)
         4: __is_equally_segmented (bool)
         5: segments_state (list)
+
+        Version 2:
+        1: __name (str)
+        2: __sampling_frequency (Frequency)
+        3: __units (Unit)
+        4: __is_equally_segmented (bool)
+        5: __tags (set)
+        6: segments_state (list)
         """
         segments_state = [segment.__getstate__() for segment in self.__segments]
-        return (self.__SERIALVERSION, self.__name, self.__sampling_frequency, self.__units, self.__is_equally_segmented,
+        return (self.__SERIALVERSION, self.__name, self.__sampling_frequency, self.__units, self.__is_equally_segmented, self.__tags,
                 segments_state)
 
     def __setstate__(self, state):
@@ -1272,9 +1282,22 @@ class Timeseries():
                 segment.__setstate__(segment_state)
                 self.__segments.append(segment)
             self.__associated_events = {}  # empty; to be populated by Biosignal
+            self.__tags = set()  # In version 1, tags were not a possibility, so none existed.
+        elif state[0] == 2:
+            self.__name, self.__sampling_frequency, self.__units = state[1], state[2], state[3]
+            self.__is_equally_segmented = state[4]
+            self.__segments = []
+            for segment_state in state[6]:
+                segment_state = list(segment_state)
+                segment_state.append(self.__sampling_frequency)
+                segment = object.__new__(Timeseries.__Segment)
+                segment.__setstate__(segment_state)
+                self.__segments.append(segment)
+            self.__associated_events = {}  # empty; to be populated by Biosignal
+            self.__tags = state[5]
         else:
             raise IOError(f'Version of {self.__class__.__name__} object not supported. Serialized version: {state[0]};'
-                          f'Supported versions: 1.')
+                          f'Supported versions: 1 and 2.')
 
 
 class OverlappingTimeseries(Timeseries):
