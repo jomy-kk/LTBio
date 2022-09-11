@@ -68,7 +68,7 @@ mccabe==0.7.0
 mistune==0.8.4
 mne==1.0.2
 nbclient==0.6.4
-nbconvert==6.5.0
+nbconvert==6.5.1
 nbformat==5.4.0
 neo==0.10.2
 nest-asyncio==1.5.5
