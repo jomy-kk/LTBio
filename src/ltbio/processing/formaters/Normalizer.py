@@ -42,7 +42,7 @@ class Normalizer(SinglePipelineUnit):
         def __min_max_normalization(samples: ndarray) -> ndarray:
             return (samples - min(samples)) / (max(samples) - min(samples))
 
-        if self.__method is 'mean':
+        if self.__method == 'mean':
             return timeseries._apply_operation_and_new(__mean_normalization)
         else:
             return timeseries._apply_operation_and_new(__min_max_normalization)
