@@ -288,3 +288,128 @@ class ECG(Biosignal):
 
             if np.median(amp_rpeaks) < np.median(amp_rpeaks_inv):
                 self.invert(channel_name)
+
+    def skewness(self, by_segment: bool = False) -> dict[str: float | list[float]]:
+        """
+        Computes the skweness of each channel.
+        If `by_segment` is True, a list of skweness values is returned for each contiguous uninterrupted segment,
+        otherwise the weighted average is returned. Weighted by duration of each segment.
+        :return: A dictionary of skewness value(s) for each channel.
+        """
+        res = {}
+        for channel_name, channel in self:
+            skweness_by_segment = channel._apply_operation_and_return(sSQI)
+            if by_segment:
+                res[channel_name] = skweness_by_segment
+            else:
+                res[channel_name] = average(array(skweness_by_segment), weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+
+        return res
+
+    def kurtosis(self, by_segment: bool = False):
+        """
+        Computes the kurtosis of each channel.
+        If `by_segment` is True, a list of kurtosis values is returned for each contiguous uninterrupted segment,
+        otherwise the weighted average is returned. Weighted by duration of each segment.
+
+        If kurtosis <= 5, it means there's a great amount of noise present.
+
+        :return: A dictionary of kurtosis value(s) for each channel.
+        """
+        res = {}
+        for channel_name, channel in self:
+            skweness_by_segment = channel._apply_operation_and_return(kSQI)
+            if by_segment:
+                res[channel_name] = skweness_by_segment
+            else:
+                weights = list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain))
+                res[channel_name] = average(array(skweness_by_segment), weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+
+        return res
+
+    def flatline_percentage(self, by_segment: bool = False):
+        """
+        Computes the % of flatline of each channel.
+        If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+        otherwise the weighted average is returned. Weighted by duration of each segment.
+
+        :return: A dictionary of % of flatline value(s) for each channel.
+        """
+        res = {}
+        for channel_name, channel in self:
+            skweness_by_segment = channel._apply_operation_and_return(pSQI)
+            if by_segment:
+                res[channel_name] = skweness_by_segment
+            else:
+                res[channel_name] = average(array(skweness_by_segment), weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+
+        return res
+
+    def basSQI(self, by_segment: bool = False):
+        """
+        Computes the ration between [0, 1] Hz and [0, 40] Hz frequency power bands.
+        If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+        otherwise the weighted average is returned. Weighted by duration of each segment.
+
+        Adequate to evaluate the presence of baseline drift.
+        Values between [0.95, 1] mean ECG shows optimal quality.
+
+        :return: A dictionary of the computed ratio for each channel.
+        """
+        res = {}
+        for channel_name, channel in self:
+            bas_by_segment = channel._apply_operation_and_return(fSQI, fs=channel.sampling_frequency,
+                                                                      num_spectrum=(0, 1), dem_spectrum=(0, 40), mode='bas')
+            if by_segment:
+                res[channel_name] = bas_by_segment
+            else:
+                res[channel_name] = average(array(bas_by_segment),
+                                            weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+
+        return res
+
+    def pSQI(self, by_segment: bool = False):
+        """
+        Computes the ration between [5, 15] Hz and [5, 40] Hz frequency power bands.
+        If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+        otherwise the weighted average is returned. Weighted by duration of each segment.
+
+        Values between [0.5, 0.8] mean QRS complexes show high quality.
+
+        :return: A dictionary of the computed ratio for each channel.
+        """
+        res = {}
+        for channel_name, channel in self:
+            bas_by_segment = channel._apply_operation_and_return(fSQI, fs=channel.sampling_frequency,
+                                                                 num_spectrum=(5, 15), dem_spectrum=(5, 40), mode='simple')
+            if by_segment:
+                res[channel_name] = bas_by_segment
+            else:
+                res[channel_name] = average(array(bas_by_segment),
+                                            weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+
+        return res
+
+    def qSQI(self, by_segment: bool = False):
+        """
+        Evaluates agreement between two R detectors.
+        If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+        otherwise the weighted average is returned. Weighted by duration of each segment.
+
+        Values > 90% mean optimal R-peak consensus.
+
+        :return: A dictionary of the computed qSQI for each channel.
+        """
+        res = {}
+        for channel_name, channel in self:
+            peaks1 = self.__r_indices(channel, hamilton_segmenter)
+            peaks2 = self.__r_indices(channel, engzee_segmenter)
+
+            res[channel_name] = [bSQI(p1, p2, channel.sampling_frequency, mode='matching') for p1, p2 in zip(peaks1, peaks2)]
+
+            if not by_segment:
+                res[channel_name] = average(array(res[channel_name]),
+                                            weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+
+        return res
+
