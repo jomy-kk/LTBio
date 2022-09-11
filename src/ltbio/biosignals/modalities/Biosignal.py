@@ -28,7 +28,7 @@ from numpy import ndarray
 from ltbio.biosignals.timeseries.Unit import Unitless
 from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
 from ltbio.biosignals.timeseries.Event import Event
-from ltbio.biosignals import Timeseries
+from .. import timeseries
 from ltbio.clinical.conditions.MedicalCondition import MedicalCondition
 from ltbio.processing.filters.FrequencyDomainFilter import Filter
 from ltbio.clinical.BodyLocation import BodyLocation
@@ -47,7 +47,7 @@ class Biosignal(ABC):
 
     __SERIALVERSION: int = 1
 
-    def __init__(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | Tuple[datetime], source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None):
+    def __init__(self, timeseries: Dict[str|BodyLocation, timeseries.Timeseries] | str | Tuple[datetime], source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None):
         self.__name = name
         self.__source = source
         self.__patient = patient
@@ -94,7 +94,7 @@ class Biosignal(ABC):
     def __copy__(self):
         return type(self)({ts: self.__timeseries[ts].__copy__() for ts in self.__timeseries}, self.__source, self.__patient, self.__acquisition_location, str(self.__name))
 
-    def _new(self, timeseries: Dict[str|BodyLocation, Timeseries] | str | Tuple[datetime] = None, source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, events:Collection[Event]=None, added_noise=None):
+    def _new(self, timeseries: Dict[str|BodyLocation, timeseries.Timeseries] | str | Tuple[datetime] = None, source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, events:Collection[Event]=None, added_noise=None):
         timeseries = [ts.__copy__() for ts in self.__timeseries] if timeseries is None else timeseries  # copy
         source = self.__source if source is None else source  # no copy
         patient = self.__patient if patient is None else patient  # no copy
@@ -133,7 +133,7 @@ class Biosignal(ABC):
     def __has_single_channel(self) -> bool:
         return len(self) == 1
 
-    def _get_channel(self, channel_name:str|BodyLocation):
+    def _get_channel(self, channel_name:str|BodyLocation) -> timeseries.Timeseries:
         if channel_name in self.channel_names:
             return self.__timeseries[channel_name]
         else:
@@ -390,7 +390,7 @@ class Biosignal(ABC):
                 res += '- ' + str(event) + '\n'
         return res
 
-    def _to_dict(self) -> Dict[str|BodyLocation, Timeseries]:
+    def _to_dict(self) -> Dict[str|BodyLocation, timeseries.Timeseries]:
         return self.__timeseries
 
     def __iter__(self):
@@ -633,7 +633,7 @@ class Biosignal(ABC):
         @param show: True if plot is to be immediately displayed; False otherwise.
         @param save_to: A path to save the plot as an image file; If none is provided, it is not saved.
         '''
-        self.__draw_plot(Timeseries._plot_spectrum, 'Power Spectrum of', 'Frequency (Hz)', 'Power (dB)', True, show, save_to)
+        self.__draw_plot(timeseries.Timeseries._plot_spectrum, 'Power Spectrum of', 'Frequency (Hz)', 'Power (dB)', True, show, save_to)
 
     def plot(self, show:bool=True, save_to:str=None):
         '''
@@ -641,7 +641,7 @@ class Biosignal(ABC):
         @param show: True if plot is to be immediately displayed; False otherwise.
         @param save_to: A path to save the plot as an image file; If none is provided, it is not saved.
         '''
-        self.__draw_plot(Timeseries._plot, None, 'Time', 'Amplitude (n.d.)', False, show, save_to)
+        self.__draw_plot(timeseries.Timeseries._plot, None, 'Time', 'Amplitude (n.d.)', False, show, save_to)
 
     @abstractmethod
     def plot_summary(self, show:bool=True, save_to:str=None):
@@ -751,7 +751,7 @@ class Biosignal(ABC):
         if not isinstance(original, Biosignal):
             raise TypeError(f"Parameter 'original' must be of type Biosignal; but {type(original)} was given.")
 
-        if not isinstance(noise, (Noise, Timeseries, Biosignal)):
+        if not isinstance(noise, (Noise, timeseries.Timeseries, Biosignal)):
             raise TypeError(f"Parameter 'noise' must be of types Noise, Timeseries or Biosignal; but {type(noise)} was given.")
 
         if name is not None and not isinstance(name, str):
@@ -772,7 +772,7 @@ class Biosignal(ABC):
             else:  # equal lengths
                 return samples + template  # add values
 
-        def __noisy_timeseries(original:Timeseries, noise:Timeseries) -> Timeseries:
+        def __noisy_timeseries(original:timeseries.Timeseries, noise:timeseries.Timeseries) -> timeseries.Timeseries:
             # Case 1: Segment-wise
             if original.domain == noise.domain:
                 template = [noise.samples, ] if noise.is_contiguous else noise.samples
@@ -802,7 +802,7 @@ class Biosignal(ABC):
                         f"Suggestion: Resample one of them first.")
 
         # Case Timeseries
-        elif isinstance(noise, Timeseries):
+        elif isinstance(noise, timeseries.Timeseries):
             for channel_name in original.channel_names:
                 channel = original._get_channel(channel_name)
                 if channel.units != noise.units and channel.units != None and channel.units != Unitless and noise.units != None and noise.units != Unitless:
@@ -855,7 +855,7 @@ class Biosignal(ABC):
                 raise ArithmeticError("Noise should have 1 channel only (to be added to every channel of 'original') "
                                       "or the same channels as 'original' (for each to be added to the corresponding channel of 'original'.")
 
-        events = set.union(set(original.events), set(noise.events)) if isinstance(noise, (Biosignal, Timeseries)) else None
+        events = set.union(set(original.events), set(noise.events)) if isinstance(noise, (Biosignal, timeseries.Timeseries)) else None
 
         return original._new(timeseries = noisy_channels, name = name if name is not None else 'Noisy ' + original.name,
                              events = events, added_noise=noise)
@@ -920,23 +920,23 @@ class Biosignal(ABC):
         if isinstance(noises, Noise):
             if isinstance(time_intervals, DateTimeRange):
                 samples = noises[time_intervals.timedelta]
-                channels[noises.name] = Timeseries(samples, time_intervals.start_datetime, noises.sampling_frequency,
+                channels[noises.name] = timeseries.Timeseries(samples, time_intervals.start_datetime, noises.sampling_frequency,
                                                     units=Unitless(), name=noises.name)
             else:
                 segments = {x.start_datetime: noises[x.timedelta] for x in time_intervals}
-                channels[noises.name] = Timeseries.withDiscontiguousSegments(segments, noises.sampling_frequency,
+                channels[noises.name] = timeseries.Timeseries.withDiscontiguousSegments(segments, noises.sampling_frequency,
                                                    units=Unitless(), name=noises.name)
 
         elif isinstance(noises, dict):
             if isinstance(time_intervals, DateTimeRange):
                 for channel_name, noise in noises.items():
                     samples = noise[time_intervals.timedelta]
-                    channels[channel_name] = Timeseries(samples, time_intervals.start_datetime, noise.sampling_frequency,
+                    channels[channel_name] = timeseries.Timeseries(samples, time_intervals.start_datetime, noise.sampling_frequency,
                                                         units=Unitless(), name=noise.name + f" : {channel_name}")
             else:
                 for channel_name, noise in noises.items():
                     segments = {x.start_datetime: noise[x.timedelta] for x in time_intervals}
-                    channels[channel_name] = Timeseries.withDiscontiguousSegments(segments, noise.sampling_frequency,
+                    channels[channel_name] = timeseries.Timeseries.withDiscontiguousSegments(segments, noise.sampling_frequency,
                                                         units=Unitless(), name=noise.name + f" : {channel_name}")
 
         return cls(channels, name=name)

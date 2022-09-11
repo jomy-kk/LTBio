@@ -26,8 +26,9 @@ from warnings import warn
 import numpy as np
 from dateutil.parser import parse as to_datetime
 
-from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
-from ltbio.biosignals import Timeseries
+from .. import timeseries
+from .. import modalities
+from ..sources.BiosignalSource import BiosignalSource
 from ltbio.clinical.BodyLocation import BodyLocation
 
 
@@ -364,9 +365,9 @@ class Sense(BiosignalSource):
         # Encapsulating the list of Segments of the same channel in a Timeseries
         for channel in segments:
             if len(segments[channel]) > 1:
-                res[channel] = Timeseries.withDiscontiguousSegments(segments[channel], sampling_frequency=res[channel])
+                res[channel] = timeseries.Timeseries.withDiscontiguousSegments(segments[channel], sampling_frequency=res[channel])
             else:
-                res[channel] = Timeseries(tuple(segments[channel].values())[0], tuple(segments[channel].keys())[0], sampling_frequency=res[channel])
+                res[channel] = timeseries.Timeseries(tuple(segments[channel].values())[0], tuple(segments[channel].keys())[0], sampling_frequency=res[channel])
 
         return res if body_location is None else res, body_location
 

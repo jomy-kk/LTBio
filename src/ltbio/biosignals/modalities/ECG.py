@@ -24,7 +24,7 @@ from biosppy.signals.tools import get_heart_rate
 from numpy import linspace, ndarray
 
 from ltbio.biosignals.modalities.Biosignal import Biosignal
-from ltbio.biosignals import Timeseries
+from .. import timeseries as _timeseries
 from ltbio.biosignals.timeseries.Unit import Volt, Multiplier, BeatsPerMinute
 
 
@@ -125,7 +125,7 @@ class ECG(Biosignal):
             raise ValueError(
                 "Give an 'algorithm' from the following: 'ssf', 'christov', 'engzee', 'gamboa', 'hamilton', or 'asi'.")
 
-        channel: Timeseries = tuple(self._Biosignal__timeseries.values())[0]
+        channel: _timeseries.Timeseries = tuple(self._Biosignal__timeseries.values())[0]
         r_indices = self.__r_indices(channel, segmenter)
 
         # Convert from indices to timepoints
@@ -161,7 +161,7 @@ class ECG(Biosignal):
         all_heartbeat_channels = {}
         for channel_name in self.channel_names:
 
-            channel:Timeseries = self._Biosignal__timeseries[channel_name]
+            channel:_timeseries.Timeseries = self._Biosignal__timeseries[channel_name]
             r_indices = self.__r_indices(channel)
 
             new = channel._segment_and_new(extract_heartbeats, 'templates', 'rpeaks',
@@ -234,9 +234,9 @@ class ECG(Biosignal):
             for segment in channel:
                 indices = np.array([int((timepoint - segment.initial_datetime).total_seconds() * self.sampling_frequency) for timepoint in self.r_timepoints])
                 nni = np.diff(indices)
-                all_nii.append(Timeseries.__Segment(nni, segment.initial_datetime, channel.sampling_frequency))
+                all_nii.append(_timeseries.Timeseries.__Segment(nni, segment.initial_datetime, channel.sampling_frequency))
 
-            all_nni_channels[channel_name] = Timeseries(all_nii, True, channel.sampling_frequency, None, 'NNI of ' + channel.name, equally_segmented=channel.is_equally_segmented)
+            all_nni_channels[channel_name] = _timeseries.Timeseries(all_nii, True, channel.sampling_frequency, None, 'NNI of ' + channel.name, equally_segmented=channel.is_equally_segmented)
 
         # FIXME
         #return NNI(all_nni_channels, self.source, self._Biosignal__patient, self.acquisition_location, 'NNI of ' + self.name, original_signal=self)
