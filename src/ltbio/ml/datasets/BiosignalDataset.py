@@ -14,13 +14,16 @@
 
 # ===================================
 from abc import ABC
-from typing import Sequence
+from typing import Sequence, Iterable, Collection
 
-from numpy import ndarray
+import torch
+from numpy import ndarray, concatenate, array
 from torch import Generator, randperm
-from torch.utils.data.dataset import Dataset
+from torch.utils.data.dataset import Dataset, ConcatDataset, Subset
+from matplotlib import pyplot as plt
 
-from ltbio.biosignals import Biosignal
+from ltbio.biosignals.modalities.Biosignal import Biosignal
+from ltbio.ml.datasets.augmentation import DatasetAugmentationTechnique
 
 
 class BiosignalDataset(Dataset, ABC):
@@ -94,40 +97,132 @@ class BiosignalDataset(Dataset, ABC):
 
         return subsetA, subsetB
 
+    def __add__(self, other: 'BiosignalDataset') -> 'CohortDataset':
+        return CohortDataset([self, other])
 
-class BiosignalSubset(BiosignalDataset):
+    def augment(self, techniques:Collection[DatasetAugmentationTechnique], how_many_times=1, show_example=False):
+        initial_n_examples = len(self)
+        new_objects, new_targets = [], []
+
+        for i in range(how_many_times):
+            for technique in techniques:
+                for o in self.__objects:
+                    new_objects.append([technique._apply(seg) for seg in o])
+                for t in self.__targets:
+                    new_targets.append([seg.__copy__() for seg in t])
+
+        self.__objects = concatenate((self.__objects, array(new_objects)))
+        self.__targets = concatenate((self.__targets, array(new_targets)))
+
+        print(f"Dataset augmented from {initial_n_examples} to {len(self)} examples.")
+
+        return initial_n_examples, len(self)
+
+    def plot_example_object(self, number: int = None):
+        if number is None:
+            example = self[len(self) // 2]  # middle example
+        else:
+            example = self[number]
+
+        plt.figure()
+        for ts in example[0]:  # get the object only
+            plt.plot(ts)
+        plt.show()
+
+    def redimension_to(self, dimensions: int):
+        if dimensions == 2:
+            self._BiosignalDataset__objects = self._BiosignalDataset__objects[:, None, :, :]
+            self._BiosignalDataset__targets = self._BiosignalDataset__targets[:, None, :, :]
+        if dimensions == 1:
+            self._BiosignalDataset__objects = self._BiosignalDataset__objects[:, 0, :, :]
+            self._BiosignalDataset__targets = self._BiosignalDataset__targets[:, 0, :, :]
+
+    def transfer_to_device(self, device):
+        if device == 'cpu':
+            self._BiosignalDataset__objects = self._BiosignalDataset__objects.cpu().detach().numpy()
+            self._BiosignalDataset__targets = self._BiosignalDataset__targets.cpu().detach().numpy()
+        else:
+            self._BiosignalDataset__objects = torch.Tensor(self._BiosignalDataset__objects).to(device=device, dtype=torch.float)
+            self._BiosignalDataset__targets = torch.Tensor(self._BiosignalDataset__targets).to(device=device, dtype=torch.float)
+
+
+class BiosignalSubset(Subset, BiosignalDataset):
 
     def __init__(self, dataset: BiosignalDataset, indices: Sequence[int]):
-        super().__init__(dataset.name)
-        self.__dataset = dataset
-        self.__indices = indices
-        self.__objects = dataset._BiosignalDataset__objects
-        self.__targets = dataset._BiosignalDataset__targets
-
-    def __getitem__(self, idx):
-        if isinstance(idx, list):
-            return self.__dataset[[self.__indices[i] for i in idx]]
-        return self.__dataset[self.__indices[idx]]
-
-    def __len__(self):
-        return len(self.__indices)
+        super().__init__(dataset=dataset, indices=indices)
+        self.name = dataset.name
+        self._BiosignalDataset__objects = dataset._BiosignalDataset__objects
+        self._BiosignalDataset__targets = dataset._BiosignalDataset__targets
 
     @property
     def all_examples(self):
-        return [(o, t) for o, t in zip(self.__objects[self.__indices], self.__targets[self.__indices])]
+        return tuple([self.dataset[i] for i in self.indices])
 
     @property
     def all_objects(self):
-        return self.__objects[self.__indices]
+        return tuple([self.dataset[i][0] for i in self.indices])
 
     @property
     def all_targets(self):
-        return self.__targets[self.__indices]
+        return tuple([self.dataset[i][1] for i in self.indices])
 
     @property
     def object_timeseries_names(self):
-        return self.__dataset.object_timeseries_names
+        return self.dataset.object_timeseries_names
 
     @property
     def target_timeseries_names(self):
-        return self.__dataset.target_timeseries_names
+        return self.dataset.target_timeseries_names
+
+
+class CohortDataset(ConcatDataset, BiosignalDataset):
+
+    def __init__(self, datasets: Iterable[BiosignalDataset]):
+        super().__init__(datasets=datasets)
+        name = 'Cohort '
+        try:
+            name += ', '.join([d.name for d in datasets])
+        except TypeError:
+            try:
+                res = []
+                for d in datasets:
+                    common_patient_code = d.biosignals['object'][0].patient_code
+                    if all([biosignal.patient_code == common_patient_code for biosignal in d.biosignals['object']]) and \
+                            all([biosignal.patient_code == common_patient_code for biosignal in d.biosignals['target']]):
+                        res.append(common_patient_code)
+                name += ', '.join(res)
+            except AttributeError:
+                name = 'Cohort'
+
+        self.name = name
+
+    def __iter__(self):
+        return self.datasets.__iter__()
+
+    @property
+    def all_examples(self):
+        return tuple([x for x in self])
+
+    @property
+    def all_objects(self):
+        return tuple([x[0] for x in self])
+
+    @property
+    def all_targets(self):
+        return tuple([x[1] for x in self])
+
+    @property
+    def object_timeseries_names(self):
+        return tuple([d.object_timeseries_names for d in self.datasets])
+
+    @property
+    def target_timeseries_names(self):
+        return tuple([d.target_timeseries_names for d in self.datasets])
+
+    def _get_output_biosignals(self, output_segments:tuple, res = [], i = 0) -> list[Biosignal]:
+        for d in self.datasets:
+            if isinstance(d, CohortDataset):
+                res.append(d._get_output_biosignals(output_segments[i:], res, i))
+            else:
+                res.append(d._get_output_biosignals(output_segments[i:len(d)]))
+                i += len(d)
