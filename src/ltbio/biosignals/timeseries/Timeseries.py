@@ -254,8 +254,12 @@ class Timeseries():
         def __len__(self):
             return len(self.__samples)
 
-        def __iadd__(self, other: ndarray | list):
+        def __rshift__(self, other: ndarray | list):
             self.__samples = append(self.__samples, other)
+
+        def __add__(self, other):
+            if isinstance(other, type(self)):  # if it is a Segment
+                return self._new(samples = self.samples + other.samples, is_filtered=False)  # raw is lost
 
         def __contains__(self, item):  # Operand 'in' === belongs to
             if isinstance(item, datetime):
@@ -691,30 +695,30 @@ class Timeseries():
         raise IndexError(
             "Index types not supported. Give a datetime (can be in string format), a slice or a tuple of those.")
 
-    def __iadd__(self, other):
-        '''The built-in increment operation (+=) concatenates one Timeseries to the end of another.'''
-        if isinstance(other, Timeseries):
-            if other.initial_datetime < self.final_datetime:
-                raise ArithmeticError(
-                    "The second Timeseries must start after the first one ends ({} + {}).".format(self.initial_datetime,
-                                                                                                  other.final_datetime))
-            if other.sampling_frequency != self.sampling_frequency:
-                raise ArithmeticError("Both Timeseries must have the same sampling frequency ({} and {}).".format(
-                    self.__sampling_frequency, other.sampling_frequency))
-            if other.units is not None and self.__units is not None and other.units != self.__units:
-                raise ArithmeticError(
-                    "Both Timeseries must have the same units ({} and {}).".format(self.__units, other.units))
-            self.__segments += other.segments  # gets a list of all other's Segments and concatenates it to the self's one.
-            return self
-        elif isinstance(other, (ndarray, list)):  # Appends more samples to the last Segment
-            assert len(self.__segments) > 0
-            self.__segments[-1] += other
-        else:
-            raise TypeError(
-                "Trying to concatenate an object of type {}. Expected type: Timeseries.".format(type(other)))
-
     def __add__(self, other):
-        '''The built-in sum operation (+) adds two Timeseries.'''
+        """The built-in + operation that adds sample-by-sample two Timeseries."""
+        # Check errors
+        if not isinstance(other, Timeseries):
+            raise TypeError("Trying to add an object of type {}. Expected type: Timeseries.".format(type(other)))
+        if other.sampling_frequency != self.__sampling_frequency:
+            raise ArithmeticError("Both Timeseries must have the same sampling frequency ({} and {}).".format(
+                self.__sampling_frequency, other.sampling_frequency))
+        if other.units is not None and self.__units is not None and other.units != self.__units:
+            raise ArithmeticError(
+                "Both Timeseries must have the same units ({} and {}).".format(self.__units, other.units))
+        if self.domain != other.domain:
+            raise ArithmeticError("Timeseries to add must have the same domain.")
+
+        # Perform addition
+        new_segments = []
+        for x, y in zip(self.__segments, other.segments):
+            new_segments.append(x + y)
+
+        return self.__new(segments=new_segments, units=self.units if self.__units is not None else other.units,
+                          name=self.name + ' + ' + other.name if self.name != other.name else self.name)
+
+    def __rshift__(self, other):
+        """The built-in >> operation that concatenates two Timeseries."""
         if isinstance(other, Timeseries):
             if other.initial_datetime < self.final_datetime:
                 raise ArithmeticError(
@@ -726,9 +730,9 @@ class Timeseries():
             if other.units is not None and self.__units is not None and other.units != self.__units:
                 raise ArithmeticError(
                     "Both Timeseries must have the same units ({} and {}).".format(self.__units, other.units))
-            new_segments = self.__segments + other.segments
+            new_segments = self.__segments + other.segments  # concatenate lists
             return self.__new(segments=new_segments, units=self.units if self.__units is not None else other.units,
-                              name=other.name)
+                              name=self.name + ' >> ' + other.name if self.name != other.name else self.name)
 
         raise TypeError("Trying to concatenate an object of type {}. Expected type: Timeseries.".format(type(other)))
 

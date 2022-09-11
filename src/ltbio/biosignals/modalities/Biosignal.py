@@ -414,74 +414,139 @@ class Biosignal(ABC):
             suffix = f' (dilated up by {str(other)})' if other > 1 else f' (compressed up by {str(other)})'
             return self._apply_operation_and_new(lambda x: x*other, name=self.name + suffix)
 
+    def __sub__(self, other):
+        return self + (other * -1)
+
     def __add__(self, other):
         """
         If a float or int:
-            Add constant to every channel. Up-translation of the signal.
-
-        If Biosignals, Two functionalities:
-            - A: Temporally concatenates two Biosignal, if they have the same set of channel names.
-            - B: Joins the channels of two Biosignals of the same, if they do not have the same set of channel names.
-        Requisites:
-            - Both Biosignals must be of the same type.
-            - Both Biosignals must be associated to the same patient, if any.
+            Add constant to every channel. Translation of the signal.
+        If Biosignal:
+            Adds both sample-by-sample, if they have the same domain.
         Notes:
             - If the two Biosignals have two distinct acquisition locations, they will be lost.
             - If the two Biosignals have two distinct sources, they will be lost.
+            - If the two Biosignals have the distict patients, they will be lost.
         Raises:
             - TypeError if Biosignals are not of the same type.
-            - ArithmeticError if Biosignals are not associated to the same patient, if any.
-            - ArithmeticError if, when temporally concatenating Biosignals, the second comes before the first.
+            - ArithmeticError if Biosignals do not have the same domain.
         """
 
         if isinstance(other, (float, int)):
             return self._apply_operation_and_new(lambda x: x+other, name=self.name + f' (shifted up by) {str(other)}')
 
         if isinstance(other, Biosignal):
-            # Check for possible arithmetic errors
-
-            if self.type != other.type:
-                raise TypeError("Cannot add a {0} to a {1}".format(other.type.__name__, self.type.__name__))
-
-            if self.patient_code != other.patient_code:
-                raise ArithmeticError("Cannot add two Biosignals with different associated patient codes.")
+            # Check errors
+            #if self.type != other.type:
+            #    raise TypeError("Cannot join a {0} to a {1}".format(other.type.__name__, self.type.__name__))
+            if self.channel_names != other.channel_names:
+                raise ArithmeticError("Biosignals to add must have the same channel names.")
+            if self.domain != other.domain:
+                raise ArithmeticError("Biosignals to add must have the same domains.")
 
             # Prepare common metadata
-
+            name = f"{self.name} + {other.name}"
             acquisition_location = self.acquisition_location if self.acquisition_location == other.acquisition_location else None
-
+            patient = self.__patient if self.patient_code == other.patient_code else None
             source = type(self.source) if ((isinstance(self.source, ABCMeta) and isinstance(other.source, ABCMeta)
                                            and self.source == other.source) or
                                            (type(self.source) == type(other.source))
                                            ) else None
 
-            name = f"{self.name} and {other.name}"
-
+            # Perform addition
             res_timeseries = {}
+            for channel_name in self.channel_names:
+                res_timeseries[channel_name] = self._to_dict()[channel_name] + other._to_dict()[channel_name]
 
-            # Functionality A:
-            if self.channel_names == other.channel_names:
-                if other.initial_datetime < self.final_datetime:
-                    raise ArithmeticError("The second Biosignal comes before (in time) the first Biosignal.")
-                else:
-                    # Perform addition
-                    for channel_name in self.channel_names:
-                        res_timeseries[channel_name] = self._to_dict()[channel_name] + other._to_dict()[channel_name]
-
-            # Functionality B
-            elif not self.channel_names in other.channel_names and not other.channel_names in self.channel_names:
-                res_timeseries.update(self._to_dict())
-                res_timeseries.update(other._to_dict())
-
-            # No functionality accepted
-            else:
-                raise ArithmeticError("No new channels were given nor the same set of channels to concatenate.")
-
+            # Union of Events
             events = set(self.events).union(set(other.events))
-            new = self._new(timeseries=res_timeseries, source=source, acquisition_location=acquisition_location, name=name, events=events)
-            return new
+
+            return self._new(timeseries=res_timeseries, source=source, patient=patient, acquisition_location=acquisition_location, name=name, events=events)
 
         raise TypeError(f"Addition operation not valid with Biosignal and object of type {type(other)}.")
+
+    def __and__(self, other):
+        """
+        Joins the channels of two Biosignals of the same type, if they do not have the same set of channel names.
+        Notes:
+            - If the two Biosignals have two distinct acquisition locations, they will be lost.
+            - If the two Biosignals have two distinct sources, they will be lost.
+            - If the two Biosignals have the distict patients, they will be lost.
+        Raises:
+            - TypeError if Biosignals are not of the same type.
+            - ArithmeticError if both Biosignals have any channel name in common.
+        """
+
+        # Check errors
+        if not isinstance(other, Biosignal):
+            raise TypeError(f"Operation join channels is not valid with object of type {type(other)}.")
+        if self.type != other.type:
+            raise TypeError("Cannot join a {0} to a {1}".format(other.type.__name__, self.type.__name__))
+        if len(self.channel_names.intersection(other.channel_names)) != 0:
+            raise ArithmeticError("Channels to join cannot have the same names.")
+
+        # Prepare common metadata
+        name = f"{self.name} and {other.name}"
+        acquisition_location = self.acquisition_location if self.acquisition_location == other.acquisition_location else None
+        patient = self.__patient if self.patient_code == other.patient_code else None
+        source = type(self.source) if ((isinstance(self.source, ABCMeta) and isinstance(other.source, ABCMeta)
+                                       and self.source == other.source) or
+                                       (type(self.source) == type(other.source))
+                                       ) else None
+
+        # Join channels
+        res_timeseries = {}
+        res_timeseries.update(self._to_dict())
+        res_timeseries.update(other._to_dict())
+
+        # Union of Events
+        events = set(self.events).union(set(other.events))
+
+        return self._new(timeseries=res_timeseries, source=source, patient=patient, acquisition_location=acquisition_location, name=name, events=events)
+
+    def __rshift__(self, other):
+        """
+        Temporally concatenates two Biosignal, if they have the same set of channel names.
+        Notes:
+            - If the two Biosignals have two distinct acquisition locations, they will be lost.
+            - If the two Biosignals have two distinct sources, they will be lost.
+            - If the two Biosignals have the distict patients, they will be lost.
+        Raises:
+            - TypeError if Biosignals are not of the same type.
+            - ArithmeticError if both Biosignals do not have the same channel names.
+            - ArithmeticError if the second comes before the first.
+        """
+
+        # Check errors
+        if not isinstance(other, Biosignal):
+            raise TypeError(f"Operation join channels is not valid with object of type {type(other)}.")
+        if self.type != other.type:
+            raise TypeError("Cannot join a {0} to a {1}".format(other.type.__name__, self.type.__name__))
+        if self.channel_names != other.channel_names:
+            raise ArithmeticError("Biosignals to concatenate must have the same channel names.")
+        if other.initial_datetime < self.final_datetime:
+            raise ArithmeticError("The second Biosignal comes before (in time) the first Biosignal.")
+
+        # Prepare common metadata
+        name = f"{self.name} >> {other.name}"
+        acquisition_location = self.acquisition_location if self.acquisition_location == other.acquisition_location else None
+        patient = self.__patient if self.patient_code == other.patient_code else None
+        source = type(self.source) if ((isinstance(self.source, ABCMeta) and isinstance(other.source, ABCMeta)
+                                        and self.source == other.source) or
+                                       (type(self.source) == type(other.source))
+                                       ) else None
+
+        # Perform concatenation
+        res_timeseries = {}
+        for channel_name in self.channel_names:
+            res_timeseries[channel_name] = self._to_dict()[channel_name] >> other._to_dict()[channel_name]
+
+        # Union of Events
+        events = set(self.events).union(set(other.events))
+
+        return self._new(timeseries=res_timeseries, source=source, patient=patient, acquisition_location=acquisition_location, name=name,
+                         events=events)
+
 
     def set_channel_name(self, current:str|BodyLocation, new:str|BodyLocation):
         if current in self.__timeseries.keys():
