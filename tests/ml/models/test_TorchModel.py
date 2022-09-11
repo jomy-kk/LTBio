@@ -93,19 +93,21 @@ class TorchModelTestCase(unittest.TestCase):
         cls.train_dataset = SegmentToSegmentDataset(object=(cls.noisy_acc[train_interval], ), target=(cls.acc[train_interval], extra_acc_channel[train_interval]))
         cls.test_dataset = SegmentToSegmentDataset(object=(cls.noisy_acc[test_interval], ), target=(cls.acc[test_interval], extra_acc_channel[test_interval]))
 
-        # Design a model from SkLearn
-        cls.design = ConvAutoEncoder()
-        cls.design.to(torch.double)
         cls.name = 'my first model'
 
+    def setUp(self):
+        # Design a model from SkLearn
+        self.design = ConvAutoEncoder()
+        self.design.to(torch.double)
+
         # Define 3 sets of training conditions
-        cls.conditions1 = SupervisedTrainConditions(loss=L1Loss(), optimizer=Adam(cls.design.parameters()), 
+        self.conditions1 = SupervisedTrainConditions(loss=L1Loss(), optimizer=Adam(self.design.parameters()),
                                                     epochs=10, batch_size=1, learning_rate=0.003, validation_ratio=0.15,
                                                     test_ratio=0.15, epoch_shuffle=True)
-        cls.conditions2 = SupervisedTrainConditions(loss=L1Loss(), optimizer=Adam(cls.design.parameters()),
+        self.conditions2 = SupervisedTrainConditions(loss=L1Loss(), optimizer=Adam(self.design.parameters()),
                                                     epochs=10, batch_size=1, learning_rate=0.03, validation_ratio=0.15,
                                                     test_ratio=0.15, epoch_shuffle=True)
-        cls.conditions3 = SupervisedTrainConditions(loss=L1Loss(), optimizer=Adam(cls.design.parameters()),
+        self.conditions3 = SupervisedTrainConditions(loss=L1Loss(), optimizer=Adam(self.design.parameters()),
                                                     epochs=10, batch_size=1, learning_rate=0.3, validation_ratio=0.15,
                                                     test_ratio=0.15, epoch_shuffle=True)
 
