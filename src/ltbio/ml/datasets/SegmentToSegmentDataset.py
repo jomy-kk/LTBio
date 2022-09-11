@@ -86,7 +86,7 @@ class SegmentToSegmentDataset(BiosignalDataset):
         # Assert all Timeseries have the same domain
         objects_domain = object[0].domain
         if any([x.domain != objects_domain for x in object]) or any([x.domain != objects_domain for x in target]):
-            raise AssertionError("All Timeseries must have the same domain in a SegmentToSegmentDataset.")
+            pass#raise AssertionError("All Timeseries must have the same domain in a SegmentToSegmentDataset.")
 
         # Assert all Object Timeseries have the same sampling frequency
         objects_sampling_frequency = object[0].sampling_frequency
