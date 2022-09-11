@@ -343,6 +343,14 @@ class Biosignal(ABC):
             return cumulative_intersection
 
     @property
+    def duration(self):
+        common_duration = tuple(self.__timeseries.values())[0].duration
+        for _, channel in self:
+            if channel.duration != common_duration:
+                raise AssertionError("Not all channels have the same duration.")
+        return common_duration
+
+    @property
     def events(self):
         '''Tuple of associated Events, ordered by datetime.'''
         return tuple(sorted(self.__associated_events.values()))
