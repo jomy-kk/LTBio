@@ -162,7 +162,7 @@ class Biosignal(ABC):
             if item in self.channel_names:
                 if len(self) == 1:
                     raise IndexError("This Biosignal only has 1 channel. Index only the datetimes.")
-                ts = {item: self.__timeseries[item], }
+                ts = {item: self.__timeseries[item].__copy__(), }
                 return self._new(timeseries=ts)
 
             elif item in self.__associated_events:
@@ -222,36 +222,28 @@ class Biosignal(ABC):
                 return new
 
         if isinstance(item, DateTimeRange):  # Pass item directly to each channel
-            if len(self) == 1:
-                channel = tuple(self.__timeseries.values())[0]
-                res = channel[item]
-                if res is None:
-                    raise IndexError(f"Event is outside Biosignal domain.")
-                else:
-                    return res
-            else:
-                ts = {}
-                events = set()
-                for k in self.channel_names:
-                    res = self.__timeseries[k][item]
-                    if res is not None:
-                        ts[k] = res
-                        # Events outside the new domain get discarded, hence collecting the ones that remained
-                        events.update(set(self.__timeseries[k].events))
+            ts = {}
+            events = set()
+            for k in self.channel_names:
+                res = self.__timeseries[k][item]
+                if res is not None:
+                    ts[k] = res
+                    # Events outside the new domain get discarded, hence collecting the ones that remained
+                    events.update(set(self.__timeseries[k].events))
 
-                if len(ts) == 0:
-                    raise IndexError(f"Event is outside every channel's domain.")
+            if len(ts) == 0:
+                raise IndexError(f"Event is outside every channel's domain.")
 
-                new = self._new(timeseries=ts, events=events)
+            new = self._new(timeseries=ts, events=events)
 
 
-                try:  # to associate events, if they are inside the domain
-                    new.associate(events)
-                except ValueError:
-                    pass
+            try:  # to associate events, if they are inside the domain
+                new.associate(events)
+            except ValueError:
+                pass
 
 
-                return new
+            return new
 
 
         if isinstance(item, tuple):

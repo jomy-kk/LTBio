@@ -200,7 +200,9 @@ class ECG(Biosignal):
 
         all_hr_channels = {}
         for channel_name in self.channel_names:
-            channel = self._Biosignal__timeseries[channel_name]
+            channel = self._get_channel(channel_name)
+
+            r_indices = self.__r_indices(channel)
             all_hr = []
             for segment in channel:
                 indices = np.array([int((timepoint - segment.initial_datetime).total_seconds() * self.sampling_frequency) for timepoint in self.r_timepoints])
