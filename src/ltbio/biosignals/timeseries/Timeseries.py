@@ -160,7 +160,7 @@ class Timeseries():
         final_datetime: datetime
             The date and time of the last sample.
 
-        duration: timedelta
+        duration: timedeltao
             The total time of acquired samples, i.e., final_datetime - initial_datetime.
 
         is_filtered: bool
@@ -362,6 +362,7 @@ class Timeseries():
             """
             n_samples = int(new_frequency * len(self) / self.__sampling_frequency)
             self.__samples = resample(self.__samples, num=n_samples)
+            self.__raw_samples = resample(self.__raw_samples, num=n_samples)
             self.__sampling_frequency = new_frequency
             self.__final_datetime = self.initial_datetime + timedelta(seconds=len(self) / new_frequency.value)
 
@@ -550,7 +551,7 @@ class Timeseries():
     # Properties
 
     @property
-    def segments(self) -> list:
+    def segments(self) -> list:  # FIXME: deprecate this
         return self.__segments
 
     @property
@@ -892,7 +893,7 @@ class Timeseries():
 
         elif isinstance(datetime_or_range, DateTimeRange):
             for subdomain in self.domain:
-                if subdomain.is_intersection(datetime_or_range):
+                if subdomain.is_intersection(datetime_or_range) and datetime_or_range.start_datetime != subdomain.end_datetime:
                     intersects = True
                     break
             if not intersects:
@@ -1114,7 +1115,8 @@ class Timeseries():
             for initial_datetime, samples in segments_by_time.items():
                 seg = Timeseries.__Segment(samples, initial_datetime, sampling_frequency,
                                            is_filtered=rawsegments_by_time is not None)
-                seg._Segment__raw_samples = rawsegments_by_time[initial_datetime]
+                if rawsegments_by_time is not None:
+                    seg._Segment__raw_samples = rawsegments_by_time[initial_datetime]
                 segments.append(seg)
         else:
             # Send nothing

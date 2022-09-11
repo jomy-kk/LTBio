@@ -8,7 +8,7 @@ from ltbio.biosignals.timeseries.Unit import *
 from ltbio.biosignals.modalities.Biosignal import Biosignal
 from ltbio.biosignals.modalities.ECG import ECG
 from ltbio.biosignals.timeseries.Frequency import Frequency
-from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.biosignals import Timeseries
 from ltbio.processing.noises.GaussianNoise import GaussianNoise
 
 
@@ -238,11 +238,7 @@ class BiosignalWithNoiseTestCase(unittest.TestCase):
         with self.assertRaises(AssertionError):
             noisy_ecg = Biosignal.withAdditiveNoise(original=self.ecg13, noise=bad_noise)
 
-
     # PLOTS
-
-    from ltbio.biosignals.modalities.Biosignal import plot_comparison
-
     def test_plot_before_and_after(self):
         from ltbio.biosignals.sources import MITDB
         ecg = ECG('resources/MITDB_DAT_tests', MITDB)

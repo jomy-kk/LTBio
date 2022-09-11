@@ -651,7 +651,7 @@ class Biosignal(ABC):
         pass  # Implemented in each type
 
     def apply_operation(self, operation, **kwargs):
-        for channel in self.__timeseries:
+        for channel in self.__timeseries.values():
             channel._apply_operation(operation, **kwargs)
 
     def invert(self, channel_label:str=None):

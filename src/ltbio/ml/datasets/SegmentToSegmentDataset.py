@@ -17,7 +17,7 @@ from typing import Collection, overload
 
 import numpy as np
 
-from ltbio.biosignals import Biosignal
+from ltbio.biosignals.modalities.Biosignal import Biosignal
 from ltbio.biosignals.timeseries.Timeseries import Timeseries
 from ltbio.ml.datasets.BiosignalDataset import BiosignalDataset
 
