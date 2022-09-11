@@ -34,9 +34,7 @@ class NormalizerTestCase(unittest.TestCase):
                                          0.8989297166808298,
                                          1.398167661042927]
 
-        cls.samples_after_minmax_norm = [0.45652174, 0.45652174, 0.45652174, 0.45652174, 0.45652174, 0.45652174,
-                                         0.45652174, 0.45652174, 0.45780051, 0.46035806, 0.46675192, 0.47442455,
-                                         0.48465473, 0.49488491, 0.52685422]
+        cls.samples_after_minmax_norm = [0.4565217391304348, 0.4565217391304348, 0.4565217391304348, 0.4565217391304348, 0.4565217391304348, 0.4565217391304348, 0.4565217391304348, 0.4565217391304348, 0.4578005115089514, 0.46035805626598464, 0.46675191815856776, 0.4744245524296675, 0.4846547314578005, 0.4948849104859335, 0.5268542199488491]
 
         cls.initial = datetime(2000, 1, 1, 0, 0, 0)  # 1/1/2000 0 AM
         cls.sf = 360.
@@ -49,25 +47,25 @@ class NormalizerTestCase(unittest.TestCase):
         normalizer = Normalizer()
         self.assertTrue(all(self.timeseries.segments[0].samples[:15] == self.samples_before))
         self.assertEqual(len(self.timeseries), self.n_samples)
-        normalizer.apply(self.timeseries)
-        self.assertTrue(all(self.timeseries.segments[0].samples[:15] == self.samples_after_mean_norm))
-        self.assertEqual(len(self.timeseries), self.n_samples)
+        normalized = normalizer.apply(self.timeseries)
+        self.assertTrue(all(normalized.samples[:15] == self.samples_after_mean_norm))
+        self.assertEqual(len(normalized), self.n_samples)
 
     def test_mean_normalization(self):
         normalizer = Normalizer('mean')
         self.assertTrue(all(self.timeseries.segments[0].samples[:15] == self.samples_before))
         self.assertEqual(len(self.timeseries), self.n_samples)
-        normalizer.apply(self.timeseries)
-        self.assertTrue(all(self.timeseries.segments[0].samples[:15] == self.samples_after_mean_norm))
-        self.assertEqual(len(self.timeseries), self.n_samples)
+        normalized = normalizer.apply(self.timeseries)
+        self.assertTrue(all(normalized.samples[:15] == self.samples_after_mean_norm))
+        self.assertEqual(len(normalized), self.n_samples)
 
     def test_minmax_normalization(self):
         normalizer = Normalizer('minmax')
         self.assertTrue(all(self.timeseries.segments[0].samples[:15] == self.samples_before))
         self.assertEqual(len(self.timeseries), self.n_samples)
-        normalizer.apply(self.timeseries)
-        self.assertTrue(allclose(self.timeseries.segments[0].samples[:15], self.samples_after_minmax_norm))
-        self.assertEqual(len(self.timeseries), self.n_samples)
+        normalized = normalizer.apply(self.timeseries)
+        self.assertTrue(allclose(normalized.samples[:15], self.samples_after_minmax_norm))
+        self.assertEqual(len(normalized), self.n_samples)
 
     def test_unrecognized_method_gives_error(self):
         with self.assertRaises(ValueError):

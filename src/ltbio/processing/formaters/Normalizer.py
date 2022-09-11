@@ -43,7 +43,7 @@ class Normalizer(SinglePipelineUnit):
             return (samples - min(samples)) / (max(samples) - min(samples))
 
         if self.__method is 'mean':
-            return timeseries._apply_operation(__mean_normalization)
+            return timeseries._apply_operation_and_new(__mean_normalization)
         else:
-            return timeseries._apply_operation(__min_max_normalization)
+            return timeseries._apply_operation_and_new(__min_max_normalization)
 
