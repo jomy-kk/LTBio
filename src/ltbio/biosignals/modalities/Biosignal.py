@@ -606,11 +606,11 @@ class Biosignal(ABC):
         @param save_to: A path to save the plot as an image file; If none is provided, it is not saved.
         @return:
         '''
-        fig = plt.figure(figsize=(13, 6))
+        fig = plt.figure(figsize=(13, 2.5*len(self)))
 
         for i, channel_name in zip(range(len(self)), self.channel_names):
             channel = self.__timeseries[channel_name]
-            ax = plt.subplot(100 * (len(self)) + 10 + i + 1, title=channel_name)
+            ax = plt.subplot(len(self), 1, i+1, title=channel_name)
             ax.title.set_size(10)
             ax.margins(x=0)
             ax.set_xlabel(xlabel, fontsize=8, rotation=0, loc="right")
