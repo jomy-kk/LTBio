@@ -53,7 +53,10 @@ class HEM(BiosignalSource):
         hem_sig = hem_data.analogsignals[0]
         ch_list = seg_micromed.header['signal_channels']['name']
         # get channels that correspond to type (POL Ecg = type ecg)
-        find_idx = [hch for hch in range(len(ch_list)) if sensor.lower() in ch_list[hch].lower()]
+        if sensor == 'ECG':
+            find_idx = [hch for hch in range(len(ch_list)) if sensor.lower() in ch_list[hch].lower()]
+        else:
+            find_idx = [hch for hch in range(len(ch_list)) if sensor.lower() in ch_list[hch].lower()]
         # returns ch_list of interest, sampling frequency, initial datetime
         if metadata:
             return ch_list[find_idx], float(hem_sig.sampling_rate), hem_data.rec_datetime, hem_sig.units
@@ -67,6 +70,8 @@ class HEM(BiosignalSource):
         # this is a list of lists where the second column is the type of channel to extract
         if type is modalities.ECG:
             label = 'ecg'
+        elif type is modalities.EEG:
+            label = 'eeg'
         all_files = sorted([[path.join(dir, file), label] for file in listdir(dir) if file.lower().endswith('.trc')])
         # run the edf read function for all files in list all_files
         channels, sfreq, start_datetime, units = HEM.__read_trc(all_files[0], metadata=True)
