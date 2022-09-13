@@ -857,7 +857,7 @@ class Timeseries():
         res_segments = []
         for i in range(len(self.__segments)):  # finding the first Segment
             segment = self.__segments[i]
-            if initial_datetime >= segment.initial_datetime:
+            if segment.initial_datetime <= initial_datetime <= segment.final_datetime:
                 if final_datetime <= segment.final_datetime:
                     trimmed_segment = segment[int((
                                                           initial_datetime - segment.initial_datetime).total_seconds() * self.sampling_frequency):int(
@@ -865,9 +865,9 @@ class Timeseries():
                     res_segments.append(trimmed_segment)
                     return res_segments
                 else:
-                    trimmed_segment = segment[int((
-                                                          initial_datetime - segment.initial_datetime).total_seconds() * self.sampling_frequency):]
-                    res_segments.append(trimmed_segment)
+                    if not initial_datetime == segment.final_datetime: # skip what would be an empty set
+                        trimmed_segment = segment[int((initial_datetime - segment.initial_datetime).total_seconds() * self.sampling_frequency):]
+                        res_segments.append(trimmed_segment)
                     for j in range(i + 1,
                                    len(self.__segments)):  # adding the remaining samples, until the last Segment is found
                         segment = self.__segments[j]
