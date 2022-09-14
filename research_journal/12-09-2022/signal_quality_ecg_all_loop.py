@@ -16,6 +16,7 @@ from ltbio.processing.filters import TimeDomainFilter, ConvolutionOperation
 from ltbio.processing.filters import FrequencyResponse, FrequencyDomainFilter, BandType
 
 def ecg_quality(sig, sampling_rate):
+    print(len(sig))
     beats = bp.signals.ecg.hamilton_segmenter(sig, sampling_rate=sampling_rate)['rpeaks']
     beats = bp.signals.ecg.correct_rpeaks(signal= sig, rpeaks=beats, sampling_rate=sampling_rate)['rpeaks']
     hridx, hr =bp.signals.tools.get_heart_rate(beats, sampling_rate=sampling_rate)
@@ -28,7 +29,8 @@ def ecg_quality(sig, sampling_rate):
 
 def calculate_sqi(id0, ecg_bit, ecg_hosp, patient):
 
-    df_sqi = pd.DataFrame(columns=['id0','id1', 'kSQI', 'pSQI', 'basSQI', 'hrmean', 'hrmax', 'hrvar', 'hrmed', 'source', 'duration', 'patient'])
+    df_sqi = pd.DataFrame(columns=['id0', 'id1', 'kSQI', 'pSQI', 'basSQI', 'hrmean', 'hrmax', 'hrvar',
+                                   'hrmed', 'source', 'duration', 'patient'])
 
 
     for i in range(len(ecg_bit.domain)):
@@ -61,20 +63,17 @@ def calculate_sqi(id0, ecg_bit, ecg_hosp, patient):
     return df_sqi
 
 
-df_sqi = pd.DataFrame()
+def quality_single_patient(patient):
 
-for patient in os.listdir('G:\\PreEpiSeizures\\Patients_HEM'):
-
-    print('processing patient ', patient)
-
-    path_hosp = 'G:\\PreEpiSeizures\\Patients_HEM\\'+ patient +'\\ficheiros'
+    path_hosp = 'C:\\Users\\Mariana\\Documents\\Epilepsy\\data\\'+ patient +'\\ficheiros'
+    df_sqi = pd.DataFrame()
     try:
         ecg_hosp = ECG(path_hosp, HEM)
     except Exception as e:
         print(e)
-        continue
+        return []
 
-    path_bit = 'G:\\PreEpiSeizures\\Patients_HEM\\'+ patient +'\\Bitalino'
+    path_bit = 'C:\\Users\\Mariana\\Documents\\Epilepsy\\data\\' + patient + '\\Bitalino'
 
     id0 = 0
     while id0 < len(ecg_hosp['ecg'].domain):
@@ -88,5 +87,12 @@ for patient in os.listdir('G:\\PreEpiSeizures\\Patients_HEM'):
             df_new = calculate_sqi(id0, ecg_bit, ecg_hosp, patient)
             df_sqi = pd.concat((df_sqi, df_new), ignore_index=True)
         id0 += 1
+    return df_sqi
 
-df_sqi.to_parquet('C:\\Users\\Mariana\\PycharmProjects\\IT-LongTermBiosignals\\research_journal\\05-09-2022\\df_quality.parquet', engine='fastparquet', compression='gzip')
+
+for patient in os.listdir('D:\\PreEpiSeizures\\Patients_HEM'):
+    df_sqi = []
+    print('processing patient ', patient)
+    df_sqi = quality_single_patient(patient)
+    if len(df_sqi) > 0:
+        df_sqi.to_parquet(f'C:\\Users\\Mariana\\PycharmProjects\\IT-LongTermBiosignals\\research_journal\\12-09-2022\\df_quality_{patient}.parquet', engine='fastparquet', compression='gzip')
