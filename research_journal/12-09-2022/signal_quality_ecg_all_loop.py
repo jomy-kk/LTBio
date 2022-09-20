@@ -20,7 +20,7 @@ def ecg_quality(sig, sampling_rate):
     beats = bp.signals.ecg.hamilton_segmenter(sig, sampling_rate=sampling_rate)['rpeaks']
     beats = bp.signals.ecg.correct_rpeaks(signal= sig, rpeaks=beats, sampling_rate=sampling_rate)['rpeaks']
     hridx, hr =bp.signals.tools.get_heart_rate(beats, sampling_rate=sampling_rate)
-    sqi = bp.signals.ecg.ecgSQI(signal=sig, rpeaks=beats, sqi_metrics={'kSQI', 'pSQI', 'basSQI'}, fs=sampling_rate)
+    sqi = bp.signals.ecg.ecgSQI(signal=sig, rpeaks=beats, sqi_metrics={'basSQI'}, fs=sampling_rate)
     sqi['hrmean'] = np.mean(hr)
     sqi['hrmax'] = np.max(hr)
     sqi['hrvar'] = np.var(hr)
@@ -29,7 +29,7 @@ def ecg_quality(sig, sampling_rate):
 
 def calculate_sqi(id0, ecg_bit, ecg_hosp, patient):
 
-    df_sqi = pd.DataFrame(columns=['id0', 'id1', 'kSQI', 'pSQI', 'basSQI', 'hrmean', 'hrmax', 'hrvar',
+    df_sqi = pd.DataFrame(columns=['id0', 'id1', 'basSQI', 'hrmean', 'hrmax', 'hrvar',
                                    'hrmed', 'source', 'duration', 'patient'])
 
 
@@ -63,9 +63,9 @@ def calculate_sqi(id0, ecg_bit, ecg_hosp, patient):
     return df_sqi
 
 
-def quality_single_patient(patient):
+def quality_single_patient(pat_dir, patient):
 
-    path_hosp = 'C:\\Users\\Mariana\\Documents\\Epilepsy\\data\\'+ patient +'\\ficheiros'
+    path_hosp = pat_dir + patient +'\\ficheiros'
     df_sqi = pd.DataFrame()
     try:
         ecg_hosp = ECG(path_hosp, HEM)
@@ -73,7 +73,7 @@ def quality_single_patient(patient):
         print(e)
         return []
 
-    path_bit = 'C:\\Users\\Mariana\\Documents\\Epilepsy\\data\\' + patient + '\\Bitalino'
+    path_bit = pat_dir + patient + '\\Bitalino'
 
     id0 = 0
     while id0 < len(ecg_hosp['ecg'].domain):
@@ -89,10 +89,13 @@ def quality_single_patient(patient):
         id0 += 1
     return df_sqi
 
+# 'C:\\Users\\Mariana\\Documents\\Epilepsy\\data\\'
 
-for patient in os.listdir('D:\\PreEpiSeizures\\Patients_HEM'):
+pat_dir = 'G:\\PreEpiSeizures\\Patients_HEM\\'
+
+for patient in os.listdir('G:\\PreEpiSeizures\\Patients_HEM'):
     df_sqi = []
     print('processing patient ', patient)
-    df_sqi = quality_single_patient(patient)
+    df_sqi = quality_single_patient(pat_dir, patient)
     if len(df_sqi) > 0:
-        df_sqi.to_parquet(f'C:\\Users\\Mariana\\PycharmProjects\\IT-LongTermBiosignals\\research_journal\\12-09-2022\\df_quality_{patient}.parquet', engine='fastparquet', compression='gzip')
+        df_sqi.to_parquet(f'C:\\Users\\Mariana\\PycharmProjects\\IT-LongTermBiosignals\\research_journal\\12-09-2022\\df_quality_basSQI_{patient}.parquet', engine='fastparquet', compression='gzip')
