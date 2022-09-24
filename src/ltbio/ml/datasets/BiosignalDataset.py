@@ -107,9 +107,18 @@ class BiosignalDataset(Dataset, ABC):
         for i in range(how_many_times):
             for technique in techniques:
                 for o in self.__objects:
-                    new_objects.append([technique._apply(seg) for seg in o])
+                    if len(o.shape) == 1:
+                        new_objects.append(technique._apply(o))
+                    else:
+                        new_objects.append([technique._apply(seg) for seg in o])
                 for t in self.__targets:
-                    new_targets.append([seg.__copy__() for seg in t])
+                    if isinstance(t, ndarray):
+                        if len(t.shape) == 1:
+                            new_targets.append(t.__copy__())
+                        else:
+                            new_targets.append([seg.__copy__() for seg in t])
+                    else:
+                        new_targets.append(t)
 
         self.__objects = concatenate((self.__objects, array(new_objects)))
         self.__targets = concatenate((self.__targets, array(new_targets)))
