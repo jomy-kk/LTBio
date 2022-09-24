@@ -37,7 +37,7 @@ class SkLearnModel(_SupervisedModel.SupervisedModel):
     def __set_parameter_from_condition(self, parameter_label:str, conditions_label:str, value):
         if parameter_label in self.__required_parameters:
             if value is not None:
-                self._SupervisedModel__design.set_params({parameter_label: value})
+                self._SupervisedModel__design.set_params(**{parameter_label: value})
             else:
                 warn(f"Omitted train condition '{conditions_label}' = {self._SupervisedModel__design.get_params()[parameter_label]} being used.")
         else:
