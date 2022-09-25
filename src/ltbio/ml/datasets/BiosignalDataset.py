@@ -154,6 +154,9 @@ class BiosignalDataset(Dataset, ABC):
             self._BiosignalDataset__objects = torch.Tensor(self._BiosignalDataset__objects).to(device=device, dtype=torch.float)
             self._BiosignalDataset__targets = torch.Tensor(self._BiosignalDataset__targets).to(device=device, dtype=torch.float)
 
+    def __repr__(self):
+        return f"Name: {self.name}"
+
 
 class BiosignalSubset(Subset, BiosignalDataset):
 

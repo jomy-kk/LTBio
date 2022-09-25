@@ -97,6 +97,14 @@ class EventDetectionDataset(BiosignalDataset):
         pass
         # Shuffling is responsability of the user
 
-
+    def __repr__(self):
+        res = super(EventDetectionDataset, self).__repr__()
+        n_total = len(self)
+        n_negatives = self.all_targets.count(0)
+        n_positives = self.all_targets.count(1)
+        res += f"\nNegative Examples: {n_negatives} ({int(n_negatives/n_total*100)}%)"
+        res += f"\nPositive Examples: {n_positives} ({int(n_positives/n_total*100)}%)"
+        res += f"\nTotal: {n_total}"
+        return res
 
 
