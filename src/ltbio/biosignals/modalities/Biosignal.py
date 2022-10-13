@@ -409,6 +409,55 @@ class Biosignal(ABC):
             return cumulative_intersection
 
     @property
+    def subdomains(self) -> Tuple[DateTimeRange]:
+        if len(self) == 1:
+            return tuple(self.__timeseries.values())[0].subdomains
+        else:
+            raise NotImplementedError()
+
+    def _vblock(self, i: int):
+        """
+        Returns a block of timelly allined segments, vertially alligned for all channels.
+        Note: This assumes all channels are segmented in the same way, i.e., have exactly the same set of subdomains.
+        :param i: The block index
+        :return: ndarray of vertical stacked segmetns
+        """
+        N = self._n_segments
+        if isinstance(N, int):
+            if i < N:
+                return np.vstack([channel[i] for channel in self.__timeseries.values()])
+            else:
+                IndexError(f"This Biosignal as only {N} blocks.")
+        else:
+            raise AssertionError("Not all channels are segmented in the same way, hence blocks cannot be created.")
+
+    def _block_subdomain(self, i: int) -> DateTimeRange:
+        if len(self) == 1:
+            return tuple(self.__timeseries.values())[0]._block_subdomain(i)
+        else:
+            raise NotImplementedError()
+
+    @property
+    def _n_segments(self) -> int | dict:
+        """
+        Returns the number of segments of each Timeseries.
+        :rtype: dict, with the number of segments labelled by channel name; or int if they are all the same
+        """
+        n_segments = {}
+        last_n = None
+        all_equal = True
+        for channel_name, channel in self.__timeseries.items():
+            x = channel.n_segments
+            last_n = x
+            n_segments[channel_name] = x
+            if last_n is not None and last_n != x:
+                all_equal = False
+        if all_equal:
+            return last_n
+        else:
+            return n_segments
+
+    @property
     def duration(self):
         common_duration = tuple(self.__timeseries.values())[0].duration
         for _, channel in self:
@@ -468,7 +517,16 @@ class Biosignal(ABC):
         return res
 
     def _to_dict(self) -> Dict[str|BodyLocation, timeseries.Timeseries]:
-        return self.__timeseries
+        return deepcopy(self.__timeseries)
+
+    def _to_array(self) -> ndarray:
+        """
+        Converts Biosignal to a NumPy ndarray.
+        :return: A C x M x N array, where C is the number of channels, M the number of segments of each, and N their length.
+        :rtype: list[numpy.ndarray]
+        """
+        x = [channel._to_array() for channel in self.__timeseries.values()]
+        return np.stack(x)
 
     def __iter__(self):
         return self.__timeseries.items().__iter__()

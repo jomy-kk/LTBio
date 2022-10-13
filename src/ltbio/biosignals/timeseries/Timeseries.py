@@ -643,10 +643,16 @@ class Timeseries():
 
     def __contains__(self, item):
         '''Checks if event occurs in Timeseries.'''
-        return item in self.__associated_events
+        if isinstance(item, str):
+            return item in self.__associated_events
+        elif isinstance(item, (datetime, DateTimeRange)):
+            return any([item in segment for segment in self.__segments])
 
     def __getitem__(self, item):
         '''The built-in slicing and indexing ([x:y]) operations.'''
+        if isinstance(item, int):
+            return self.__segments[item].samples
+
         if isinstance(item, datetime):
             return self.__get_sample(item)
 
@@ -907,13 +913,15 @@ class Timeseries():
             all_timepoints += [segment.initial_datetime + timedelta(seconds=tp) for tp in timepoints]  # Append them all
         return tuple(all_timepoints)
 
-    def _to_array(self) -> list[ndarray]:
+    def _to_array(self) -> ndarray:
         """
-        Converts Timeseries to list of numpy.ndarray.
-        :return: A list with the Timeseries' samples of each segment.
-        :rtype: list[numpy.ndarray]
+        Converts Timeseries to NumPy ndarray, if it is equally segmented.
+        :return: MxN array, where M is the number of segments and N is their length.
+        :rtype: numpy.ndarray
         """
-        return [segment.samples.copy() for segment in self.__segments]
+        if not self.__is_equally_segmented:
+            raise AssertionError("Timeseries needs to be equally segmented to produce a matricial NumPy ndarray.")
+        return np.vstack([segment.samples for segment in self.__segments])
 
     # ===================================
     # INTERNAL USAGE - Plots
@@ -1160,6 +1168,26 @@ class Timeseries():
                           equally_segmented=equally_segmented, overlapping_segments=overlapping_segments,
                           events=events)
 
+    def _equally_segment_and_new(self, window_length: timedelta, overlap_length: timedelta = timedelta(seconds=0)):
+        """
+        For internal usage.
+
+        Segments the Timseries in equal junks. If the Timeseries is already segmented, if concatenates all before re-segmenting.
+
+        :param window_length:
+        :param overlap_length:
+        :return:
+        """
+
+        n_window_length = int(window_length.total_seconds() * self.sampling_frequency)
+        n_overlap_length = int(overlap_length.total_seconds() * self.sampling_frequency)
+
+        res_trimmed_segments = []
+        for segment in self.__segments:
+            res_trimmed_segments += segment._partition(n_window_length, n_overlap_length)
+
+        return self.__new(segments=res_trimmed_segments, equally_segmented=True, overlapping_segments=n_overlap_length != 0)
+
     def _segment_and_new(self, method: Callable,
                          samples_rkey: str, indexes_rkey: str,
                          iterate_over_each_segment_key: str = None,
@@ -1325,8 +1353,101 @@ class OverlappingTimeseries(Timeseries):
     def append(self, initial_datetime: datetime, samples: ndarray | list | tuple):
         assert len(self.__segments) > 0
         segment = Timeseries._Timeseries__Segment(array(samples) if not isinstance(samples, ndarray) else samples,
-                                       initial_datetime, self.__sampling_frequency)
-        self.__segments.append(segment)
+                                       initial_datetime, self._Timeseries__sampling_frequency)
+        self._Timeseries__segments.append(segment)
 
     def _concatenate_segments(self):
         raise NotImplementedError("")
+
+    def __getitem__(self, item):
+        """
+        The built-in slicing ([x:y]) operation.
+        A segment is assumed to belong to the interval [x,y] if and only if its final datetime belongs to the interval.
+        """
+
+        if isinstance(item, int):
+            return self._Timeseries__segments[item].samples
+
+        if isinstance(item, datetime):
+            raise IndexError('OverlappingTimeseries cannot return a unique value correpondent of a datetime.')
+
+        if isinstance(item, tuple) and all(isinstance(dt, datetime) for dt in item):
+            raise IndexError('OverlappingTimeseries cannot return a unique value correpondent of datetimes.')
+
+        if isinstance(item, slice):
+            if item.step is not None:
+                raise IndexError("Indexing with step is not allowed for OverlappingTimeseries. Try resampling it first.")
+            initial = to_datetime(item.start) if isinstance(item.start, str) else self.initial_datetime if item.start is None else item.start
+            final = to_datetime(item.stop) if isinstance(item.stop, str) else self.final_datetime if item.stop is None else item.stop
+            if isinstance(initial, datetime) and isinstance(final, datetime):
+                return self._Timeseries__new(segments=self.__get_samples(initial, final))
+            else:
+                raise IndexError("Index types not supported. Give a slice of datetimes (can be in string format).")
+
+        if isinstance(item, DateTimeRange):  # Not publicly documented. Only Biosignal sends DateTimeRanges, when it is dealing with Events.
+            return self._Timeseries__new(segments=self.__get_samples(item.start_datetime, item.end_datetime))
+
+        raise IndexError(
+            "Index types not supported. Give a datetime (can be in string format), a slice of those.")
+
+    def __get_samples(self, initial_datetime: datetime, final_datetime: datetime):
+        '''Returns the segemnts between the given initial and end datetimes, acording to the final datetime of each.'''
+        self.__check_boundaries(initial_datetime)
+        self.__check_boundaries(final_datetime)
+        res_segments = []
+        for i in range(len(self._Timeseries__segments)):
+            segment = self._Timeseries__segments[i]
+            if initial_datetime <= segment.final_datetime < final_datetime:  # if the last timepoint of the Segment is inside the interval
+                res_segments.append(segment)  # keep the whole Segment
+            elif initial_datetime <= segment.final_datetime == final_datetime == self.final_datetime:  # if the last timepoint of the Segment is the end of the Timeseries
+                res_segments.append(segment)  # keep that Segment as well
+
+        return res_segments
+
+    def __check_boundaries(self, datetime_or_range: datetime | DateTimeRange) -> None:
+        intersects = False
+        if isinstance(datetime_or_range, datetime):
+            for subdomain in self.domain:
+                if datetime_or_range in subdomain:
+                    intersects = True
+                    break
+            if not intersects:
+                raise IndexError(
+                    f"Datetime given is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
+
+        elif isinstance(datetime_or_range, DateTimeRange):
+            for subdomain in self.domain:
+                if subdomain.is_intersection(datetime_or_range) and datetime_or_range.start_datetime != subdomain.end_datetime:
+                    intersects = True
+                    break
+            if not intersects:
+                raise IndexError(
+                    f"Interval given is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
+
+    @property
+    def domain(self) -> Tuple[DateTimeRange]:
+        """The intervals of date and time in which the Timeseries is defined, i.e., samples were acquired."""
+        domain = [DateTimeRange(self._Timeseries__segments[0].initial_datetime, self._Timeseries__segments[0].final_datetime)]
+        for i in range(1, len(self._Timeseries__segments)):
+            if self._Timeseries__segments[i].overlaps(self._Timeseries__segments[i-1]):
+                domain[-1].set_end_datetime(self._Timeseries__segments[i].final_datetime)
+            else:
+                domain.append(DateTimeRange(self._Timeseries__segments[i].initial_datetime, self._Timeseries__segments[i].final_datetime))
+
+        return tuple(domain)
+
+    @property
+    def subdomains(self) -> Tuple[DateTimeRange]:
+        return tuple([DateTimeRange(segment.initial_datetime, segment.final_datetime) for segment in self])
+
+    def _block_subdomain(self, i) -> DateTimeRange:
+        return DateTimeRange(self._Timeseries__segments[i].initial_datetime, self._Timeseries__segments[i].final_datetime)
+
+    @property
+    def duration(self) -> timedelta:
+        """Returns real time passed from start to end, without overlaps."""
+        domain = self.domain
+        res = domain[0].timedelta
+        for i in range(1, len(domain)):
+            res += domain[i].timedelta
+        return res
