@@ -165,7 +165,7 @@ def test(model: TorchModel, test_dataset: EfficientDataset) -> PredictionResults
 
 def test_decision(test_results: PredictionResults, unseen_seizure_ix: int, unseen_ecg:ECG, decision_parameters):
     predictions = test_results.predictions
-    onset_to_predict = unseen_ecg.events[unseen_seizure_ix].onset
+    onset_to_predict = unseen_ecg.events[unseen_seizure_ix-1].onset
 
     def seizure_decision(consecutives_required: int):
         # Counting
