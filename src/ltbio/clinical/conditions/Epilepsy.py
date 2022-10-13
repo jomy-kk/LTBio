@@ -14,56 +14,164 @@
 
 # ===================================
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum, unique
+from typing import Sequence
 
-from ltbio.clinical.conditions.MedicalCondition import MedicalCondition
-
+from .. import BodyLocation, Semiology
+from .MedicalCondition import MedicalCondition
+from ...biosignals.timeseries.Event import Event
 
 @unique
 class SeizureOnset(Enum):
     F = "Focal"
+    FtoB = "Focal to Bilateral"
     G = "Generalized"
     UNK = "Unknown"
 
-@unique
-class SeizureType(Enum):
-    FAS = "Focal Aware Seizure"
-    FIAS = "Focal with Impared Awareness Seizure"
-    GTCS = "Generalized Tonic-Clonic Seizure"
-    SUB = "Subclinical/Electrographic"
 
-class Seizure:
-    def __init__(self, onset_timestamp:datetime, offset_timestamp:datetime, onset_type:SeizureOnset=None, type:SeizureType=None):
-        self.type = type
-        self.onset_type = onset_type
-        self.offset_timestamp = offset_timestamp
-        self.onset_timestamp = onset_timestamp
+class Seizure(Event):
+    """
+    :param onset: The seizure EEG onset.
+    :param duration: The seizure duration untill EEG offset, if known.
+    :param clinical_onset: The seizure clinical onset, if necessary.
+    :param awake: True, if patient was awake; False if patient was asleep; None if unknown.
+    :param onset_type: One item from SeizureOnset (usually focal (F), generalized (G), or unknown (UNK)). None means not declared.
+    :param onset_location: One item from BodyLocation, particularly brain regions.
+    :param awareness: True, if patient awarensees was kept (FAS); False, if awareness was impared (FIAS); None if unknwown (FUAS).
+    :param semiologies: One or multiple items from Semiology, in the correct order of events.
+    :param description: A text description of the seizure.
+    """
+
+    def __init__(self, onset: datetime, duration: timedelta = None, clinical_onset: datetime = None, awake: bool = None, onset_type: SeizureOnset = None,
+                 onset_location: BodyLocation = None, awareness: bool | None = None, semiologies: Sequence[Semiology] = (), description: str = ''):
+
+        # It is an Event
+        offset = onset + duration if duration is not None else None
+        super().__init__(name='seizure', onset=onset, offset=offset)
+
+        # With more information
+        self.__awake = awake
+        self.__clinical_onset = clinical_onset
+        self.__onset_type = onset_type
+        self.__onset_location = onset_location
+        self.__awareness = awareness
+        self.__semiologies = semiologies
+        self.__description = description
+
+    # Read-only getters
+
+    @property
+    def awake(self) -> bool:
+        return self.__awake
+
+    @property
+    def clinical_onset(self) -> datetime:
+        return self.__clinical_onset
+
+    @property
+    def onset_type(self) -> SeizureOnset:
+        return self.__onset_type
+
+    @property
+    def onset_location(self) -> BodyLocation:
+        return self.__onset_location
+
+    @property
+    def awareness(self) -> bool:
+        return self.__awareness
+
+    @property
+    def semiologies(self) -> tuple[Semiology]:
+        return tuple(self.__semiologies)
+
+    @property
+    def description(self) -> str:
+        return self.__description
+
+    def __repr__(self):
+        res = ''
+
+        # Onset type
+        if self.__onset_type is not None:
+            res += self.__onset_type.value
+
+        # Most-relevant component
+        if Semiology.SUBCLINICAL in self.__semiologies:
+            res += ' Electrographic seizure'
+        else:
+            if self.__onset_type is SeizureOnset.F:
+                if self.__awareness is None:
+                    res += ' with Unknown Awareness seizure (FUAS)'
+                elif self.__awareness:
+                    res += ' Aware seizure (FAS)'
+                else:
+                    res += ' with Impared Awareness seizure (FIAS)'
+            if self.__onset_type is SeizureOnset.G:
+                if Semiology.TC in self.__semiologies:
+                    res += ' Tonic-Clonic seizure (GTCS)'
+                elif Semiology.TONIC in self.__semiologies:
+                    res += ' Tonic seizure (GTS)'
+                elif Semiology.ABSENCE in self.__semiologies:
+                    res += ' Absense seizure (GAS)'
+            if self.__onset_type is SeizureOnset.UNK:
+                res += ' onset seizure'
+            if self.__onset_type is SeizureOnset.FtoB and Semiology.TC in self.semiologies:
+                res += ' to Bilateral Tonic-Clonic seizure (FBTCS)'
+            if self.__onset_type is None:
+                res += 'Onset type not declared.'
+
+        # Semiologies
+        if self.__onset_type is SeizureOnset.G:
+            if len(self.__semiologies) > 0:
+                res += "\nSemiologies: {}".format(', '.join([s.value for s in self.__semiologies if s not in (Semiology.TC, Semiology.TONIC, Semiology.ABSENCE, Semiology.SUBCLINICAL)]))
+        else:
+            if len(self.__semiologies) > 0:
+                res += "\nSemiologies: {}".format(', '.join([s.value for s in self.__semiologies if s is not Semiology.SUBCLINICAL]))
+
+        # Location
+        if self.__onset_location is not None:
+            res += f"\nOnset Location: {self.__onset_location.value}"
+
+        # Date, time and state
+        res += f"\nOnset: {self.onset}"
+        res += f"\nDuration: {self.duration}" if self.has_offset else " (No duration declared)"
+        if self.__awake is not None:
+            res += f"\nState: {'Awake/Vigilant' if self.__awake else 'Asleep'}"
+        else:
+            res += "\nUnkown vigilance state."
+
+        # Description
+        if self.__description != '':
+            res += f"\nDescription: {self.__description}"
+
+        return res
+
 
 class Epilepsy(MedicalCondition):
 
-    def __init__(self, years_since_diagnosis:float = None):
+    def __init__(self, years_since_diagnosis: float = None, seizures: tuple = ()):
         super(Epilepsy, self).__init__(years_since_diagnosis)
-        self.seizures = []
+        self.__seizures: list[Seizure] = list(seizures)
 
     def __str__(self):
         return "Epilepsy"
 
     @property
-    def n_seizures(self):
+    def n_seizures(self) -> int:
         return len(self.seizures)
 
-    def add_seizure(self, onset_timestamp:datetime, offset_timestamp:datetime, onset_type:SeizureOnset=None, type:SeizureType=None):
-        seizure = Seizure(onset_timestamp, offset_timestamp, onset_type, type)
-        self.seizures.append(seizure)
+    @property
+    def seizures(self) -> tuple[Seizure]:
+        return tuple(self.__seizures)
 
-    def seizure_frequency(self):
-        frequencies = {}
-        for seizure in self.seizures:
-            if seizure.type in frequencies.keys():
-                frequencies[seizure.type]+= 1
-            else:
-                frequencies[seizure.type] = 1
-        n_seizures = self.n_seizures
-        for type in frequencies.keys():
-            frequencies[type] /= n_seizures
+    def add_seizure(self, seizure: Seizure):
+        if not isinstance(seizure, Seizure):
+            raise TypeError("Give an instantiated Seizure object.")
+        self.__seizures.append(seizure)
+
+    def _get_events(self):
+        res = {}
+        for i in range(self.n_seizures):
+            res[self.__seizures[i].name + str(i + 1)] = self.__seizures[i]
+        return res

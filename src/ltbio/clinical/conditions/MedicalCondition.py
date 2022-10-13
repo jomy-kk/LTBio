@@ -36,6 +36,9 @@ class MedicalCondition(ABC):
         '''Get the name of the condition. This getter should be overwritten in every subclass.'''
         pass
 
+    def _get_events(self) -> dict:
+        return {}
+
     def __getstate__(self):
         """
         1: __years_since_diagnosis (float)
