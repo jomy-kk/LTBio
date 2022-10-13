@@ -13,15 +13,22 @@
 # Last Updated: 07/08/2022
 
 # ===================================
+import gc
+from pickle import dump
 
 import torch
+import torchmetrics
+from torch import float32
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
 from torch.utils.data.dataloader import DataLoader
+from torchsummary import summary
 
+from ltbio.ml.datasets.BiosignalDataset import BiosignalDataset
 from ltbio.ml.supervised.models.SupervisedModel import SupervisedModel
 from ltbio.ml.supervised.results import PredictionResults
 from ltbio.ml.supervised.results import SupervisedTrainResults
+from research_journal.utils_meic import print_resident_set_size
 
 
 class TorchModel(SupervisedModel):
@@ -35,56 +42,81 @@ class TorchModel(SupervisedModel):
 
         super().__init__(design, name)
 
-        # Check for CUDA (NVidea) or MPS (Apple M1) acceleration
+
+        # Check for CUDA (NVidea GPU) or MPS (Apple Sillicon) acceleration
         try:
             if torch.backends.mps.is_built():
-                TorchModel.DEVICE = torch.device('mps')
-                self.design.to(TorchModel.DEVICE)
+                self.DEVICE = torch.device('mps')
+                self._SupervisedModel__design.to(self.DEVICE)
+                self._SupervisedModel__design.to(float32)
         except:
             pass
         try:
             if torch.cuda.is_available():
-                TorchModel.DEVICE = torch.device('cuda')
-                self.design.to(TorchModel.DEVICE)
+                self.DEVICE = torch.device('cuda')
+                self._SupervisedModel__design.to(self.DEVICE)
         except:
             pass
 
-    def train(self, dataset, conditions, n_subprocesses: int = 0):
+    def shapes_summary(self, dataset: BiosignalDataset):
+        example_shape = dataset[0][0].shape
+        self._SupervisedModel__design.to('cpu')
+        try:
+            summary(self._SupervisedModel__design, example_shape, device='cpu')
+            self._SupervisedModel__design.to(self.DEVICE)
+        finally:
+            self._SupervisedModel__design.to(self.DEVICE)
+
+    def train(self, dataset, conditions, n_subprocesses: int = 0, track_memory: bool = False):
 
         def __train(dataloader) -> float:
             size = len(dataloader.dataset)
             self._SupervisedModel__design.train()  # Sets the module in training mode
             for i, (batch_objects, batch_targets) in enumerate(dataloader):
+                if track_memory:
+                    print_resident_set_size(f'before batch {i} processing')
+                #print('!!! batch_objects.shape =', batch_objects.shape)
+                #print('!!! batch_targets.shape =', batch_targets.shape)
                 conditions.optimizer.zero_grad()  # Zero gradients for every batch
                 pred = self._SupervisedModel__design(batch_objects)  # Make predictions for this batch
                 loss = conditions.loss(pred, batch_targets)  # Compute loss
                 loss.backward()  # Compute its gradients
                 conditions.optimizer.step()  # Adjust learning weights
 
-                if i % 100 == 0:
-                    loss, current = loss.item(), i * len(batch_objects)
+                if i % 10 == 0:
+                    loss_value, current = loss.item(), i * len(batch_objects)
                     if self.verbose:
-                        print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+                        print(f"loss: {loss_value:>7f}  [{current:>5d}/{size:>5d}]")
 
-            return loss#.data.item()  # returns the last loss
+                del batch_objects, batch_targets, loss, pred
+                gc.collect()
+
+            if track_memory:
+                print_resident_set_size('after epoch')
+            return loss_value  # returns the last loss
 
         def __validate(dataloader: DataLoader) -> float:
             size = len(dataloader.dataset)
             num_batches = len(dataloader)
             self._SupervisedModel__design.eval()  # Sets the module in evaluation mode
-            test_loss, correct = 0., 0
+            loss_value, correct = 0., 0
             with torch.no_grad():
                 for batch_objects, batch_targets in dataloader:
                     pred = self._SupervisedModel__design(batch_objects)
-                    test_loss += conditions.loss(pred, batch_targets).data.item()
+                    loss = conditions.loss(pred, batch_targets)
+                    loss_value += loss.data.item()
                     correct += (pred.argmax(1) == batch_targets).type(torch.float).sum().item()
-            test_loss /= num_batches
+
+                    del batch_objects, batch_targets, loss, pred
+                    gc.collect()
+
+            loss_value /= num_batches
             correct /= size
 
             if self.verbose:
-                print(f"Validation Error: \n Avg loss: {test_loss:>8f} \n")
+                print(f"Validation Error: \n Avg loss: {loss_value:>8f} \n")
 
-            return test_loss
+            return loss_value
 
         # Call super for version control
         super().train(dataset, conditions)
@@ -119,13 +151,13 @@ class TorchModel(SupervisedModel):
         train_dataloader = DataLoader(dataset=train_dataset,
                                       batch_size=conditions.batch_size, shuffle=epoch_shuffle,
                                       #pin_memory=True, #pin_memory_device=TorchModel.DEVICE.type,
-                                      num_workers=n_subprocesses,
+                                      num_workers=n_subprocesses, prefetch_factor=2,
                                       drop_last=True)
 
         validation_dataloader = DataLoader(dataset=validation_dataset,
                                            batch_size=conditions.batch_size, shuffle=epoch_shuffle,
                                            #pin_memory=True, #pin_memory_device=TorchModel.DEVICE.type,
-                                           num_workers=n_subprocesses,
+                                           num_workers=n_subprocesses, prefetch_factor=2,
                                            drop_last=True)
 
 
@@ -145,9 +177,16 @@ class TorchModel(SupervisedModel):
                 # Remember the smaller loss and save checkpoint
                 if t == 0:
                     best_loss = validation_loss  # defines the first
+                    count_loss_has_not_decreased = 0
                 elif validation_loss < best_loss:
                     best_loss = validation_loss
                     self._SupervisedModel__update_current_version_state(epoch_concluded=t+1)
+                else:
+                    count_loss_has_not_decreased +=1
+
+                if conditions.patience != None and count_loss_has_not_decreased == conditions.patience:
+                    print(f'Early stopping at epoch {t}')
+                    break
 
             print("Training finished")
 
@@ -168,7 +207,7 @@ class TorchModel(SupervisedModel):
         return SupervisedTrainResults(train_losses, validation_losses)
 
 
-    def test(self, dataset, evaluation_metrics = None, version = None):
+    def test(self, dataset, evaluation_metrics = (), version = None):
         # Call super for version control
         super().test(dataset, evaluation_metrics, version)
 
@@ -176,28 +215,40 @@ class TorchModel(SupervisedModel):
         conditions = self._SupervisedModel__current_version.conditions
 
         # Create dataset and dataloader
-        dataloader = DataLoader(dataset=dataset, batch_size=1,  # shuffle=conditions.shuffle,
+        dataloader = DataLoader(dataset=dataset, batch_size=1, shuffle=False,
                                 #pin_memory=True,
                                 #pin_memory_device=TorchModel.DEVICE.type
                                 )
 
-        # Test by batch
+        f1 = torchmetrics.F1Score(average='weighted', num_classes=2)
+        # auc = torchmetrics.AUROC(average='weighted', num_classes=2)
+
+        # Test by example
         size = len(dataset)
         num_batches = len(dataloader)
         self._SupervisedModel__design.eval()  # Sets the module in evaluation mode
-        test_loss, correct = 0, 0
+        test_loss = 0
         predictions = []
         with torch.no_grad():
             for batch_objects, batch_targets in dataloader:  # for each batch
                 pred = self._SupervisedModel__design(batch_objects)
                 predictions.append(pred.cpu().detach().numpy().squeeze())
                 test_loss += conditions.loss(pred, batch_targets).item()
-                correct += (pred.argmax(1) == batch_targets).type(torch.float).sum().item()
+                # compute metrics
+                pred, batch_targets = pred.to('cpu'), batch_targets.to('cpu')
+                f1(pred, batch_targets)
+                #auc(pred, batch_targets)
+
         test_loss /= num_batches
-        correct /= size
 
         if self.verbose:
-            print(f"Test Error: Avg loss: {test_loss:>8f} \n")
+            print(f"Test Error: Avg loss: {test_loss:>8f}")
+            print(f"Test F1-Score: {f1.compute()}")
+            #print(f"Test AUC: {auc.compute()}")
+
+        # FIXME: Remove these two lines below
+        #dataset.redimension_to(1)
+        #dataset.transfer_to_device('cpu')
 
         results = PredictionResults(test_loss, dataset, tuple(predictions), evaluation_metrics)
         self._SupervisedModel__update_current_version_best_test_results(results)
@@ -222,3 +273,9 @@ class TorchModel(SupervisedModel):
     def _SupervisedModel__get_state(self):
         return self._SupervisedModel__design.state_dict()
         # Optimizer state_dict is inside conditions.optimizer, hence also saved in Version
+
+    def save_design(self, path:str):
+        self._SupervisedModel__design.to('cpu')
+        with open(path, 'wb') as f:
+            dump(self._SupervisedModel__design, f)
+        self._SupervisedModel__design.to(self.DEVICE)
