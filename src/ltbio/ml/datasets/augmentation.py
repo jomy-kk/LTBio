@@ -31,16 +31,21 @@ class DatasetAugmentationTechnique(ABC):
     def _apply(self, example: ndarray):
         pass
 
+    def __call__(self, example):
+        """For PyTorch on-the-fly data augmentation."""
+        return self._apply(example)
+
+
 class Scale(DatasetAugmentationTechnique):
     """
-    Multiplies the signal by `magnitude`.
-    Common values for `magnitude` are between [0.25, 4].
+    Multiplies the signal by a random value between `minimum_magnitude` and 1.
+    Common values for `minimum_magnitude` are between [0.25, 1[.
     """
     def __init__(self, magnitude):
         super().__init__(magnitude)
 
     def _apply(self, example: ndarray):
-        return example * self.parameter
+        return example * random.uniform(self.parameter, 1)
 
 
 class Flip(DatasetAugmentationTechnique):
