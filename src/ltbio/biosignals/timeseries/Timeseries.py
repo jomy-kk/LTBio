@@ -20,6 +20,7 @@ from math import ceil
 from typing import List, Iterable, Collection, Dict, Tuple, Callable
 
 import matplotlib.pyplot as plt
+import numpy as np
 from biosppy.signals.tools import power_spectrum
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime
@@ -241,6 +242,10 @@ class Timeseries():
             return self.__final_datetime
 
         @property
+        def domain(self) -> DateTimeRange:
+            return DateTimeRange(self.__initial_datetime, self.__final_datetime)
+
+        @property
         def duration(self) -> timedelta:
             return self.__final_datetime - self.__initial_datetime
 
@@ -264,6 +269,8 @@ class Timeseries():
         def __contains__(self, item):  # Operand 'in' === belongs to
             if isinstance(item, datetime):
                 return self.initial_datetime <= item < self.final_datetime
+            if isinstance(item, DateTimeRange):
+                return item in self.domain
             if isinstance(item, type(self)):  # item is a Segment
                 # A Segment contains other Segment if its start is less than the other's and its end is greater than the other's.
                 return self.initial_datetime < item.initial_datetime and self.final_datetime > item.final_datetime
@@ -425,6 +432,31 @@ class Timeseries():
             samples = operation(self.__samples.copy(), **kwargs)
             return self._new(samples, initial_datetime=initial_datetime, sampling_frequency=sampling_frequency)
 
+        def _partition(self, individual_length: int, overlap_length: int = 0):
+            """
+            Protected Access: For use of this module.
+
+            Splits one Segment into many Segments of equal length. Overlaps can be enforced.
+
+            :param individual_length: Length of each resulting Segment.
+            :param overlap_length: Overlap length between the resulting Segments.
+
+            :return: A list of new Segments with the original samples distributed. All other properties shall remain the same,
+            except for initial_datetime which changes for each new Segment.
+            :rtype: list
+            """
+
+            res = []
+
+            step = individual_length - overlap_length
+            for i in range(0, len(self) - individual_length, step):
+                trimmed_samples = self.__samples[i: i + individual_length]
+                trimmed_raw_samples = self.__raw_samples[i: i + individual_length]
+                res.append(self._new(samples=trimmed_samples, raw_samples=trimmed_raw_samples,
+                                     initial_datetime=self.__initial_datetime + timedelta(seconds=i/self.__sampling_frequency)))
+
+            return res
+
         # ===================================
         # SERIALIZATION
 
@@ -557,9 +589,10 @@ class Timeseries():
     @property
     def samples(self) -> list | ndarray:
         if len(self.__segments) == 1:
-            return self.__segments[0].samples.copy()
+            return  self.__segments[0].samples#.copy()
         else:
-            return [segment.samples.copy() for segment in self.__segments]
+            #return [segment.samples.copy() for segment in self.__segments]
+            return [segment.samples for segment in self.__segments]
 
     @property
     def initial_datetime(self) -> datetime:
@@ -575,6 +608,10 @@ class Timeseries():
     def domain(self) -> Tuple[DateTimeRange]:
         """The intervals of date and time in which the Timeseries is defined, i.e., samples were acquired."""
         return tuple([DateTimeRange(segment.initial_datetime, segment.final_datetime) for segment in self])
+
+    @property
+    def subdomains(self) -> Tuple[DateTimeRange]:
+        return self.domain
 
     @property
     def duration(self) -> timedelta:
@@ -617,11 +654,24 @@ class Timeseries():
 
     @property
     def segment_duration(self) -> timedelta:
-        """Duration of segments, if is_equally_segmented is True."""
+        """Duration of segments, if equally segmented."""
         if not self.is_equally_segmented:
-            raise AttributeError("There is no segment duration because this Timeseries was not equally segmented.")
+            raise AttributeError("There is no segment duration because this Timeseries is not equally segmented.")
         else:
             return self.__segments[0].duration
+
+    @property
+    def segment_length(self) -> int:
+        """Number of samples of segments, if equally segmented."""
+        if not self.is_equally_segmented:
+            raise AttributeError("There is no segment length because this Timeseries is not equally segmented.")
+        else:
+            return len(self.__segments[0])
+
+    @property
+    def n_segments(self) -> int:
+        """The number of uninterrupted segments."""
+        return len(self.__segments)
 
     @property
     def events(self) -> Tuple[Event]:
