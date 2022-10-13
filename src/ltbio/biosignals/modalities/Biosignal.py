@@ -139,6 +139,15 @@ class Biosignal(ABC):
         else:
             raise AttributeError(f"No channel named '{channel_name}'.")
 
+    def get_event(self, name: str) -> Event:
+        if name in self.__associated_events:
+            return self.__associated_events[name]
+        from_conditions = self.__get_events_from_medical_conditions()
+        if name in from_conditions:
+            return from_conditions[name]
+        else:
+            raise NameError(f"No Event named '{name}' associated to the Biosignal or its paitent's conditions.")
+
     @property
     def preview(self):
         """Returns 5 seconds of the middle of the signal."""
@@ -165,10 +174,14 @@ class Biosignal(ABC):
                 ts = {item: self.__timeseries[item].__copy__(), }
                 return self._new(timeseries=ts)
 
-            elif item in self.__associated_events:
-                event = self.__associated_events[item]
+            elif item in self.__associated_events or item in self.__get_events_from_medical_conditions():
+                if item in self.__associated_events:  # Internal own Events
+                    event = self.__associated_events[item]
+                else:  # Events associated to MedicalConditions
+                    event = self.__get_events_from_medical_conditions()[item]
+
                 if event.has_onset and event.has_offset:
-                    return self[DateTimeRange(event.onset,event.offset)]
+                    return self[DateTimeRange(event.onset, event.offset)]
                 elif event.has_onset:
                     return self[event.onset]
                 elif event.has_offset:
@@ -180,20 +193,70 @@ class Biosignal(ABC):
                 except:
                     raise IndexError("Datetime in incorrect format or '{}' is not a channel nor an event of this Biosignal.".format(item))
 
-        def __get_events_with_padding(event_name, padding_before=timedelta(seconds=0), padding_after=timedelta(seconds=0)):
+        def __get_events_with_padding(event_name, padding_before=timedelta(seconds=0), padding_after=timedelta(seconds=0), exclude_event = False):
+            # Get Event object
             if event_name in self.__associated_events:
                 event = self.__associated_events[event_name]
-                if event.has_onset and event.has_offset:
-                    return self[DateTimeRange(event.onset - padding_before, event.offset + padding_after)]
-                elif event.has_onset:
-                    return self[DateTimeRange(event.onset - padding_before, event.onset + padding_after)]
-                elif event.has_offset:
-                    return self[DateTimeRange(event.offset - padding_before, event.offset + padding_after)]
+            elif event_name in self.__get_events_from_medical_conditions():
+                event = self.__get_events_from_medical_conditions()[event_name]
             else:
                 raise IndexError(f"No Event named '{event_name}' associated to this Biosignal.")
 
+            if isinstance(padding_before, datetime) and isinstance(padding_after, datetime) and exclude_event:
+                if event.has_onset and event.has_offset:
+                    return self[DateTimeRange(padding_before, event.onset)] >> self[DateTimeRange(event.offset + timedelta(seconds=1/self.sampling_frequency), padding_after)]  # FIXME: Sampling frequency might not be the same for all channels!
+                else:
+                    raise IndexError(f"Event {event_name} is a point in time, not an event with a duration.")
+
+            # Convert specific datetimes to timedeltas; is this inneficient?
+            if isinstance(padding_before, datetime):
+                if event.has_onset:
+                    padding_before = event.onset - padding_before
+                elif event.has_offset:
+                    padding_before = event.offset - padding_before
+                if exclude_event:
+                    padding_after = - event.duration
+            if isinstance(padding_after, datetime):
+                if event.has_offset:
+                    padding_after = padding_after - event.offset
+                elif event.has_onset:
+                    padding_after = padding_after - event.onset
+                if exclude_event:
+                    padding_before = - event.duration
+
+            # Index
+            if event.has_onset and event.has_offset:
+                return self[DateTimeRange(event.onset - padding_before, event.offset + padding_after)]
+            elif event.has_onset:
+                return self[DateTimeRange(event.onset - padding_before, event.onset + padding_after)]
+            elif event.has_offset:
+                return self[DateTimeRange(event.offset - padding_before, event.offset + padding_after)]
+
         if isinstance(item, slice):
-            # Index by events with padding
+
+            # Everything but event
+            if isinstance(item.stop, str) and item.start is None and item.step is None:
+                if not item.stop.startswith('-'):
+                    raise ValueError(
+                        "Indexing a Biosignal like x[:'event':] is equivalent to having its entire domain. Did you mean x[:'-event':]?")
+                return __get_events_with_padding(item.stop[1:], padding_before=self.initial_datetime, padding_after=self.final_datetime,
+                                                 exclude_event=True)
+
+            # Everything before event
+            if isinstance(item.stop, str) and item.start is None:
+                event_name, exclude_event = item.stop, False
+                if event_name.startswith('-'):
+                    event_name, exclude_event = event_name[1:], True
+                return __get_events_with_padding(event_name, padding_before=self.initial_datetime, exclude_event=exclude_event)
+
+            # Everything after event
+            if isinstance(item.start, str) and item.stop is None:
+                event_name, exclude_event = item.start, False
+                if event_name.startswith('-'):
+                    event_name, exclude_event = event_name[1:], True
+                return __get_events_with_padding(event_name, padding_after=self.final_datetime, exclude_event=exclude_event)
+
+            # Event with padding
             if isinstance(item.start, (timedelta, int)) and isinstance(item.step, (timedelta, int)) and isinstance(item.stop, str):
                 start = timedelta(seconds=item.start) if isinstance(item.start, int) else item.start  # shortcut for seconds
                 step = timedelta(seconds=item.step) if isinstance(item.step, int) else item.step  # shortcut for seconds
@@ -206,6 +269,9 @@ class Biosignal(ABC):
                 return __get_events_with_padding(item.start, padding_after=stop)
 
             # Index by datetime
+            if isinstance(item.start, datetime) and isinstance(item.stop, datetime) and item.stop < item.start:
+                raise IndexError("Given final datetime comes before the given initial datetime.")
+
             if self.__has_single_channel:  # one channel
                 channel_name = tuple(self.__timeseries.keys())[0]
                 channel = self.__timeseries[channel_name]
@@ -350,10 +416,16 @@ class Biosignal(ABC):
                 raise AssertionError("Not all channels have the same duration.")
         return common_duration
 
+    def __get_events_from_medical_conditions(self):
+        res = {}
+        for condition in self.patient_conditions:
+            res.update(condition._get_events())
+        return res
+
     @property
     def events(self):
         '''Tuple of associated Events, ordered by datetime.'''
-        return tuple(sorted(self.__associated_events.values()))
+        return tuple(sorted(list(self.__associated_events.values()) + list(self.__get_events_from_medical_conditions().values())))
 
     @property
     def sampling_frequency(self) -> float:
@@ -381,13 +453,18 @@ class Biosignal(ABC):
         '''Returns the number of channels.'''
         return len(self.__timeseries)
 
-    def __str__(self):
+    def __repr__(self):
         '''Returns a textual description of the Biosignal.'''
-        res = "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nChannels: {}\nSource: {}\n".format(self.name, self.type.__name__, self.acquisition_location, len(self), ''.join([(x.title() + ', ') for x in self.channel_names]) , self.source.__str__(None) if isinstance(self.source, ABCMeta) else str(self.source))
+        res = "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nChannels: {}\nSource: {}\n".format(self.name, self.type.__name__, self.acquisition_location, len(self), ''.join([(x + ', ') for x in self.channel_names]) , self.source.__str__(None) if isinstance(self.source, ABCMeta) else str(self.source))
         if len(self.__associated_events) != 0:
             res += "Events:\n"
-            for event in self.events:
+            for event in sorted(self.__associated_events.values()):
                 res += '- ' + str(event) + '\n'
+        events_from_medical_conditions = dict(sorted(self.__get_events_from_medical_conditions().items(), key=lambda item: item[1]))
+        if len(events_from_medical_conditions) != 0:
+            res += "Events associated to Medical Conditions:\n"
+            for key, event in events_from_medical_conditions.items():
+                res += f"- {key}:\n{event}\n"
         return res
 
     def _to_dict(self) -> Dict[str|BodyLocation, timeseries.Timeseries]:
@@ -402,10 +479,16 @@ class Biosignal(ABC):
                 return True
             if item in self.__associated_events:  # if Event occurs
                 return True
-        elif isinstance(item, datetime):
+            events_from_consitions = self.__get_events_from_medical_conditions()
+            for label, event in events_from_consitions:
+                if item == label and event.domain in self:
+                    return True
+            return False
+        elif isinstance(item, (datetime, DateTimeRange)):
             for _, channel in self:
                 if item in channel:  # if at least one channel defines this point in time
                     return True
+            return False
         else:
             raise TypeError(f'Cannot apply this operation with {type(item)}.')
 
@@ -542,7 +625,7 @@ class Biosignal(ABC):
             res_timeseries[channel_name] = self._to_dict()[channel_name] >> other._to_dict()[channel_name]
 
         # Union of Events
-        events = set(self.events).union(set(other.events))
+        events = set(self.__associated_events).union(set(other._Biosignal__associated_events))
 
         return self._new(timeseries=res_timeseries, source=source, patient=patient, acquisition_location=acquisition_location, name=name,
                          events=events)
@@ -608,6 +691,11 @@ class Biosignal(ABC):
         '''
         fig = plt.figure(figsize=(13, 2.5*len(self)))
 
+        all_events = self.events
+        all_onsets = [e.onset for e in all_events if e.has_onset]
+        all_offsets = [e.offset for e in all_events if e.has_offset]
+        all_vlines = all_onsets+all_offsets
+
         for i, channel_name in zip(range(len(self)), self.channel_names):
             channel = self.__timeseries[channel_name]
             ax = plt.subplot(len(self), 1, i+1, title=channel_name)
@@ -621,11 +709,16 @@ class Biosignal(ABC):
                 ax.grid()
             timeseries_plotting_method(self=channel)
 
+            _vlines = [int((t - channel.initial_datetime).total_seconds() * channel.sampling_frequency) for t in all_vlines if t in channel]
+            plt.vlines(_vlines, ymin=channel.min(), ymax=channel.max(), colors='red')
+
         fig.suptitle((title + ' ' if title is not None else '') + self.name + ' from patient ' + str(self.patient_code), fontsize=11)
         fig.tight_layout()
         if save_to is not None:
             fig.savefig(save_to)
         plt.show() if show else plt.close()
+
+        return fig
 
     def plot_spectrum(self, show:bool=True, save_to:str=None):
         '''
@@ -641,7 +734,7 @@ class Biosignal(ABC):
         @param show: True if plot is to be immediately displayed; False otherwise.
         @param save_to: A path to save the plot as an image file; If none is provided, it is not saved.
         '''
-        self.__draw_plot(timeseries.Timeseries._plot, None, 'Time', 'Amplitude (n.d.)', False, show, save_to)
+        return self.__draw_plot(timeseries.Timeseries._plot, None, 'Time', 'Amplitude (n.d.)', False, show, save_to)
 
     @abstractmethod
     def plot_summary(self, show:bool=True, save_to:str=None):

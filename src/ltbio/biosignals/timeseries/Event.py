@@ -83,7 +83,27 @@ class Event():
     def name(self) -> str:
         return self.__name
 
-    def __str__(self):
+    def domain_with_padding(self, before: timedelta = timedelta(seconds=0), after: timedelta = timedelta(seconds=0)):
+        """
+        The Event domain with before, after, or both paddings. Negative paddings go back in time; positive paddings go forward in time.
+        :param before: Padding before onset if defined, or offset otherwised.
+        :param after: Padding after offset if defined, or onset otherwised.
+        :return: DateTimeRange of the padded domain.
+        """
+
+        if not isinstance(before, timedelta) or not isinstance(after, timedelta):
+            raise TypeError('At least one padding (before or after) is necessary. Also, they should be timedelta objects.')
+
+        # return: event [start, end[
+        start = self.__onset if self.__onset is not None else self.__offset
+        end = self.__offset if self.__offset is not None else self.__onset
+
+        # return: event [start + before, end + after[
+        start, end = start + before, end + after
+
+        return DateTimeRange(start, end)
+
+    def __repr__(self):
         if self.__offset is None:
             return self.__name + ': Starts at ' + self.__onset.strftime("%d %b, %H:%M:%S")
         elif self.__onset is None:
