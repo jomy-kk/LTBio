@@ -19,6 +19,9 @@ from enum import unique, Enum
 @unique
 class BodyLocation(str, Enum):
     CHEST = "Chest"
+    LI = 'Chest Lead I'
+    LII = 'Chest Lead II'
+    LIII = 'Chest Lead III'
     V1 = "V1 chest lead"
     V2 = "V2 chest lead"
     V3 = "V3 chest lead"
@@ -67,6 +70,19 @@ class BodyLocation(str, Enum):
     T6 = "Temporal 6"
     A1 = "Mastoid 1"
     A2 = "Mastoid 2"
+
+    TEMPORAL_L = 'Left Temporal lobe'
+    TEMPORAL_R = 'Right Temporal lobe'
+    TEMPORAL_BL = 'Temporal lobe (bilateral)'
+
+    TP_L = "Left Temporo-Parietal lobe"
+    TP_R = "Right Temporo-Parietal lobe"
+
+    FRONTAL_L = 'Left Frontal lobe'
+    FRONTAL_R = 'Right Frontal lobe'
+
+    FT_L = "Left Fronto-Temporal lobe"
+    FT_R = "Right Fronto-Temporal lobe"
 
 
 
