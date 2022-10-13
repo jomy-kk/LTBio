@@ -31,45 +31,40 @@ class Segmenter(SinglePipelineUnit):
     PIPELINE_OUTPUT_LABELS = {'timeseries': 'timeseries'}
     ART_PATH = 'resources/pipeline_media/segmenter.png'
 
-    def __init__(self, window_length: timedelta, overlap_length: timedelta = None, name=None):
+    def __init__(self, window_length: timedelta, overlap_length: timedelta = timedelta(seconds=0), name=None):
         super().__init__(name)
         self.window_length = window_length
         self.overlap_length = overlap_length
 
     def apply(self, timeseries:_bio.Timeseries) -> _bio.Timeseries:
         # Assert it only has one Segment or that all Segments are adjacent
+
+        """  # FIXME: Uncomment this.
         if len(timeseries.segments) > 0:
             adjacent = True
             for i in range(1, len(timeseries.segments)):
                 if not timeseries.segments[i-1].adjacent(timeseries.segments[i]):  # assert they're adjacent
                     adjacent = False
                     break
+
             if not adjacent:
                 x = input(f"Segments of {timeseries.name} are not adjacent. Join them? (y/n) ").lower()
                 if x == 'y':
                     pass  # go ahead
                 else:
                     raise AssertionError('Framework does not support segmenting non-adjacent segments, unless you want to join them. Try indexing the time period of interest first.')
+        """
 
-        sf = timeseries.sampling_frequency
-        n_window_length = int(self.window_length.total_seconds()*sf)
-        if self.overlap_length is not None:
-            n_overlap_length = int(self.overlap_length.total_seconds()*sf)
-            n_step = n_window_length - n_overlap_length
-        else:
-            n_step = None
-
-
-        new = timeseries._segment_and_new(windower, 'values', 'index',
-                                          equally_segmented = True,
-                                          overlapping_segments = n_step is not None,
-                                          # **kwargs
-                                          size = n_window_length,
-                                          step = n_step,
-                                          fcn = lambda x: x  # funcao identidade
-                                          )
-
+        new = timeseries._equally_segment_and_new(self.window_length, self.overlap_length)
         new.name = timeseries.name + " segmented " + str(self.window_length) + " +/- " + str(self.overlap_length)
-
         return new
 
+    def __call__(self, *biosignals):
+        res = []
+        for b in biosignals:
+            if not isinstance(b, _bio.Biosignal):
+                raise TypeError(f"Parameter '{b}' should be of type Biosignal.")
+            new_channels = {name: self.apply(channel) for name, channel in b}
+            res.append(b._new(new_channels))
+
+        return tuple(res) if len(res) > 1 else res[0]
