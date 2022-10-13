@@ -15,7 +15,9 @@
 
 
 from abc import ABC, abstractmethod, ABCMeta
+from copy import deepcopy
 from datetime import datetime, timedelta
+from inspect import isclass
 from math import ceil
 from typing import Dict, Tuple, Collection, Set, ClassVar
 
@@ -23,7 +25,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime, ParserError
-from numpy import ndarray
+from numpy import ndarray, array
 
 from ltbio.biosignals.timeseries.Unit import Unitless
 from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
@@ -95,7 +97,7 @@ class Biosignal(ABC):
         return type(self)({ts: self.__timeseries[ts].__copy__() for ts in self.__timeseries}, self.__source, self.__patient, self.__acquisition_location, str(self.__name))
 
     def _new(self, timeseries: Dict[str|BodyLocation, timeseries.Timeseries] | str | Tuple[datetime] = None, source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, events:Collection[Event]=None, added_noise=None):
-        timeseries = [ts.__copy__() for ts in self.__timeseries] if timeseries is None else timeseries  # copy
+        timeseries = {ts: self.__timeseries[ts].__copy__() for ts in self.__timeseries} if timeseries is None else timeseries  # copy
         source = self.__source if source is None else source  # no copy
         patient = self.__patient if patient is None else patient  # no copy
         acquisition_location = self.__acquisition_location if acquisition_location is None else acquisition_location  # no copy
@@ -367,7 +369,7 @@ class Biosignal(ABC):
     @property
     def patient_conditions(self) -> Set[MedicalCondition]:
         '''Returns the set of medical conditions of the associated Patient, or None if no Patient was associated.'''
-        return self.__patient.conditions if self.__patient != None else None
+        return self.__patient.conditions if self.__patient != None else set()
 
     @property
     def acquisition_location(self):
@@ -589,10 +591,16 @@ class Biosignal(ABC):
             name = f"{self.name} + {other.name}"
             acquisition_location = self.acquisition_location if self.acquisition_location == other.acquisition_location else None
             patient = self.__patient if self.patient_code == other.patient_code else None
-            source = type(self.source) if ((isinstance(self.source, ABCMeta) and isinstance(other.source, ABCMeta)
-                                           and self.source == other.source) or
-                                           (type(self.source) == type(other.source))
-                                           ) else None
+            if isclass(self.source) and isclass(other.source):  # Un-instatiated sources
+                if self.source == other.source:
+                    source = self.__source
+                else:
+                    source = None
+            else:
+                if type(self.source) == type(other.source) and self.source == other.source:
+                    source = self.__source
+                else:
+                    source = None
 
             # Perform addition
             res_timeseries = {}
