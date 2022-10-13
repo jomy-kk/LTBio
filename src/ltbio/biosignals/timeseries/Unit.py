@@ -152,3 +152,12 @@ class Decibels(Unit):
 
     def convert_to(self, unit):
         pass
+
+class Grams(Unit):
+    def __init__(self, multiplier=Multiplier._):
+        super().__init__(multiplier)
+
+    SHORT = "g"
+
+    def convert_to(self, unit):
+        pass
