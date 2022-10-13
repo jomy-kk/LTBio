@@ -289,6 +289,15 @@ class Timeseries():
                                  raw_samples=self.__raw_samples[position])
 
         # ===================================
+        # Amplitude methods
+
+        def max(self):
+            return np.max(self.__samples)
+
+        def min(self):
+            return np.min(self.__samples)
+
+        # ===================================
         # Binary Logic using Time
 
         def __lt__(self, other):
@@ -795,6 +804,14 @@ class Timeseries():
 
     # ===================================
     # Methods
+
+    def max(self):
+        """Returns the maximum aplitude value of the Timeseries."""
+        return max([seg.max() for seg in self.__segments])
+
+    def min(self):
+        """Returns the minimum aplitude value of the Timeseries."""
+        return min([seg.min() for seg in self.__segments])
 
     def overlap(self, other) -> Tuple[DateTimeRange]:
         if isinstance(other, Timeseries):
