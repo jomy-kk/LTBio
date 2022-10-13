@@ -132,12 +132,14 @@ class ECGResNet(nn.Module):
             self.bn = nn.BatchNorm1d(in_features)
             self.relu = nn.ReLU(inplace=True)
             self.linear = nn.Linear(in_features, n_classes)
+            self.sigmoid = nn.Sigmoid()
 
         def forward(self, x):
             x = self.bn(x)
             x = self.relu(x)
             x = x.mean(-1)
             x = self.linear(x)
+            x = self.sigmoid(x)
             return x
 
     def __init__(self, n_classes: int, n_residual_blocks: int, initial_filters: int, kernel: int, stride: int, groups: int):
