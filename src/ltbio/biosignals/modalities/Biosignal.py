@@ -713,6 +713,8 @@ class Biosignal(ABC):
             raise AttributeError(f"Event named '{current}' is not associated.")
 
     def delete_events(self):
+        for _, channel in self:
+            channel.delete_events()
         self.__associated_events = {}
 
     def filter(self, filter_design:Filter) -> int:

@@ -832,6 +832,9 @@ class Timeseries():
         else:
             raise NameError(f"There's no Event '{event_name}' associated to this Timeseries.")
 
+    def delete_events(self):
+        self.__associated_events = {}
+
     def tag(self, tags: str | tuple[str]):
         """
         Mark the Timeseries with a tag. Useful to mark machine learning targets.
