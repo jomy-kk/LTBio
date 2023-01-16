@@ -50,7 +50,7 @@ class Pipeline():
     def __len__(self):
         return len(self.__steps)
 
-    def __str__(self):
+    def __repr__(self):
         res = 'Pipeline' + (' ' + self.name if self.name is not None else '')
         for i in range(len(self)):
             res += f'\nStep {i+1}: ' + str(self.__steps[i])
@@ -95,6 +95,13 @@ class Pipeline():
         while self.__current_step < N_STEPS:
             self.next()
         return self.__unpack_last_packet()
+
+    def __call__(self, *biosignals: Biosignal):
+        res = []
+        for b in biosignals:
+            new_channels = self.applyAll(b)['timeseries']
+            res.append(b._new(new_channels))
+        return tuple(res) if len(res) > 1 else res[0]
 
     def __create_first_packet(self):
         assert self.__biosignals is not None  # Check if Biosignals were loaded
