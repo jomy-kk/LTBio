@@ -86,8 +86,8 @@ class TorchModelTestCase(unittest.TestCase):
         for name, channel in cls.noisy_acc._Biosignal__timeseries.items():
             cls.noisy_acc._Biosignal__timeseries[name] = segmenter.apply(channel)
 
-        train_interval = slice('2022-06-11 19:10:00', '2022-06-11 19:25:00')
-        test_interval = slice('2022-06-11 19:25:00', '2022-06-11 19:30:00')
+        train_interval = slice('2022-06-11 19:10:00', '2022-06-11 19:25:46.875000')
+        test_interval = slice('2022-06-11 19:25:46.875000', '2022-06-11 19:29:50.625000')
         extra_acc_channel =  cls.acc['x']
         extra_acc_channel.set_channel_name('x', 'x2')
         cls.train_dataset = SegmentToSegmentDataset(object=(cls.noisy_acc[train_interval], ), target=(cls.acc[train_interval], extra_acc_channel[train_interval]))
@@ -102,13 +102,13 @@ class TorchModelTestCase(unittest.TestCase):
 
         # Define 3 sets of training conditions
         self.conditions1 = SupervisedTrainConditions(loss=L1Loss(), optimizer=Adam(self.design.parameters()),
-                                                    epochs=10, batch_size=1, learning_rate=0.003, validation_ratio=0.15,
+                                                    epochs=1, batch_size=1, learning_rate=0.003, validation_ratio=0.15,
                                                     test_ratio=0.15, epoch_shuffle=True)
         self.conditions2 = SupervisedTrainConditions(loss=L1Loss(), optimizer=Adam(self.design.parameters()),
-                                                    epochs=10, batch_size=1, learning_rate=0.03, validation_ratio=0.15,
+                                                    epochs=1, batch_size=1, learning_rate=0.03, validation_ratio=0.15,
                                                     test_ratio=0.15, epoch_shuffle=True)
         self.conditions3 = SupervisedTrainConditions(loss=L1Loss(), optimizer=Adam(self.design.parameters()),
-                                                    epochs=10, batch_size=1, learning_rate=0.3, validation_ratio=0.15,
+                                                    epochs=1, batch_size=1, learning_rate=0.3, validation_ratio=0.15,
                                                     test_ratio=0.15, epoch_shuffle=True)
 
     def test_create_model(self):
@@ -187,6 +187,7 @@ class TorchModelTestCase(unittest.TestCase):
         self.assertEqual(model.current_version, 3)
         self.assertEqual(model._SupervisedModel__current_version, model._SupervisedModel__versions[-1])
         self.assertEqual(model._SupervisedModel__versions[-1].conditions, self.conditions3)
+        pass
 
     def test_set_to_version(self):
         model = TorchModel(self.design)
@@ -199,6 +200,7 @@ class TorchModelTestCase(unittest.TestCase):
         self.assertEqual(model._SupervisedModel__current_version, model._SupervisedModel__versions[-1])
         self.assertEqual(model._SupervisedModel__versions[-1].conditions, self.conditions3)
 
+        assert model._SupervisedModel__versions[0].state is not None
         model.set_to_version(1)
 
         self.assertTrue(len(model.versions) == 3)

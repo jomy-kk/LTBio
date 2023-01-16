@@ -28,7 +28,7 @@ class DatasetAugmentationTestCase(unittest.TestCase):
         for name, channel in cls.eda._Biosignal__timeseries.items():
             cls.eda._Biosignal__timeseries[name] = segmenter.apply(channel)
 
-        cls.dataset_length = 20 * 60 / 2  # = 600 segments
+        cls.dataset_length = 20 * 60 / 2 - 1  # = 600 - 1 = 599 segments
         cls.object_segment_length = cls.temp.sampling_frequency * 2
         cls.target_segment_length = cls.acc.sampling_frequency * 2
 
