@@ -139,12 +139,19 @@ class BiosignalDataset(Dataset, ABC):
         plt.show()
 
     def redimension_to(self, dimensions: int):
-        if dimensions == 2:
-            self._BiosignalDataset__objects = self._BiosignalDataset__objects[:, None, :, :]
-            self._BiosignalDataset__targets = self._BiosignalDataset__targets[:, None, :, :]
-        if dimensions == 1:
-            self._BiosignalDataset__objects = self._BiosignalDataset__objects[:, 0, :, :]
-            self._BiosignalDataset__targets = self._BiosignalDataset__targets[:, 0, :, :]
+        if len(self._BiosignalDataset__objects.shape) == 3:
+            if dimensions == 2:
+                self._BiosignalDataset__objects = self._BiosignalDataset__objects[:, None, :, :]
+                self._BiosignalDataset__targets = self._BiosignalDataset__targets[:, None, :, :]
+            if dimensions == 1:
+                self._BiosignalDataset__objects = self._BiosignalDataset__objects[:, 0, :, :]
+                self._BiosignalDataset__targets = self._BiosignalDataset__targets[:, 0, :, :]
+        if len(self._BiosignalDataset__objects.shape) == 2:
+            if dimensions == 2:
+                self._BiosignalDataset__objects = self._BiosignalDataset__objects[:, None, :]
+                #self._BiosignalDataset__targets = self._BiosignalDataset__targets[:, None, :, None]
+        else:
+            raise NotImplementedError()
 
     def transfer_to_device(self, device):
         if device == 'cpu':
@@ -153,6 +160,10 @@ class BiosignalDataset(Dataset, ABC):
         else:
             self._BiosignalDataset__objects = torch.Tensor(self._BiosignalDataset__objects).to(device=device, dtype=torch.float)
             self._BiosignalDataset__targets = torch.Tensor(self._BiosignalDataset__targets).to(device=device, dtype=torch.float)
+
+    def to_tensor(self):
+        self._BiosignalDataset__objects = torch.Tensor(self._BiosignalDataset__objects)
+        self._BiosignalDataset__targets = torch.Tensor(self._BiosignalDataset__targets).to(torch.long)
 
     def __repr__(self):
         return f"Name: {self.name}"
