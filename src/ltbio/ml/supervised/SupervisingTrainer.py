@@ -54,7 +54,7 @@ class SupervisingTrainer(SinglePipelineUnit):
         self.reporter = SupervisingTrainerReporter()
         self.reporter.declare_model_description(self.__model, **self.__model.non_trainable_parameters)
 
-    def apply(self, dataset: BiosignalDataset):
+    def apply(self, dataset: BiosignalDataset, test_dataset: BiosignalDataset = None):
 
         if not isinstance(dataset, BiosignalDataset):
             raise TypeError(f"A BiosignalDataset is expected. Instead a {type(dataset)} was given.")
@@ -63,29 +63,32 @@ class SupervisingTrainer(SinglePipelineUnit):
         differences_in_conditions = SupervisedTrainConditions.differences_between(self.train_conditions)
 
         for i, set_of_conditions in enumerate(self.train_conditions):
-            # Train subdatset size
-            if set_of_conditions.train_size != None:
-                train_subsize = set_of_conditions.train_size
-            elif set_of_conditions.train_ratio != None:
-                train_subsize = int(set_of_conditions.train_ratio * len(dataset))
-            else:
-                train_subsize = None
-            # Test subdatset size
-            if set_of_conditions.test_size != None:
-                test_subsize = set_of_conditions.test_size
-            elif set_of_conditions.test_ratio != None:
-                test_subsize = int(set_of_conditions.test_ratio * len(dataset))
-            else:
-                test_subsize = None
-            # By inference
-            if train_subsize is None:
-                train_subsize = len(dataset) - test_subsize
-            if test_subsize is None:
-                test_subsize = len(dataset) - train_subsize
-            # SupervisedTrainConditions garantees that at least one of these four conditions is defined to make these computations.
+            if test_dataset is None:
+                # Train subdatset size
+                if set_of_conditions.train_size != None:
+                    train_subsize = set_of_conditions.train_size
+                elif set_of_conditions.train_ratio != None:
+                    train_subsize = int(set_of_conditions.train_ratio * len(dataset))
+                else:
+                    train_subsize = None
+                # Test subdatset size
+                if set_of_conditions.test_size != None:
+                    test_subsize = set_of_conditions.test_size
+                elif set_of_conditions.test_ratio != None:
+                    test_subsize = int(set_of_conditions.test_ratio * len(dataset))
+                else:
+                    test_subsize = None
+                # By inference
+                if train_subsize is None:
+                    train_subsize = len(dataset) - test_subsize
+                if test_subsize is None:
+                    test_subsize = len(dataset) - train_subsize
+                # SupervisedTrainConditions garantees that at least one of these four conditions is defined to make these computations.
 
-            # Prepare the train and test datasets
-            train_dataset, test_dataset = dataset.split(train_subsize, test_subsize, set_of_conditions.shuffle is True)
+                # Prepare the train and test datasets
+                train_dataset, test_dataset = dataset.split(train_subsize, test_subsize, set_of_conditions.shuffle is True)
+            else:
+                train_dataset = dataset
 
             # Train the model
             train_results = self.__model.train(train_dataset, set_of_conditions)
