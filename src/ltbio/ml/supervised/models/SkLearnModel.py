@@ -74,7 +74,7 @@ class SkLearnModel(_SupervisedModel.SupervisedModel):
         self._SupervisedModel__design.fit(dataset.all_objects, dataset.all_targets)
 
         # Update version
-        self._SupervisedModel__update_current_version_state(self, epochs=self._SupervisedModel__design.n_iter_)
+        self._SupervisedModel__update_current_version_state(self)#, epoch_concluded=int(self._SupervisedModel__design.n_iter_))
 
         # Create results object
         return SupervisedTrainResults(self._SupervisedModel__design.loss_, None, None)
