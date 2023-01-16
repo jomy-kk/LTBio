@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 
 class MedicalCondition(ABC):
 
-    __SERIALVERSION: int = 1
+    __SERIALVERSION: int = 2
 
     def __init__(self, years_since_diagnosis:float = None):
         self.__years_since_diagnosis = years_since_diagnosis  # not defined
@@ -50,10 +50,11 @@ class MedicalCondition(ABC):
             else (self.__SERIALVERSION, self.__years_since_diagnosis, other_attributes)
 
     def __setstate__(self, state):
-        if state[0] == 1:
+        if state[0] <= 2:
             self.__years_since_diagnosis = state[1]
             if len(state) == 3:
                 self.__dict__.update(state[2])
+            pass
         else:
             raise IOError(f'Version of MedicalCondition object not supported. Serialized version: {state[0]};'
                           f'Supported versions: 1.')

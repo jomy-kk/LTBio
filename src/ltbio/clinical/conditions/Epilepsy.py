@@ -159,7 +159,7 @@ class Epilepsy(MedicalCondition):
 
     @property
     def n_seizures(self) -> int:
-        return len(self.seizures)
+        return len(self.__seizures)
 
     @property
     def seizures(self) -> tuple[Seizure]:
@@ -175,3 +175,9 @@ class Epilepsy(MedicalCondition):
         for i in range(self.n_seizures):
             res[self.__seizures[i].name + str(i + 1)] = self.__seizures[i]
         return res
+
+    def __setstate__(self, state):
+        if state[0] == 1:  # In serial version 1, 'seizures' was a public attribute.
+            state = list(state)
+            state[2]['_Epilepsy__seizures'] = state[2].pop('seizures')
+        MedicalCondition.__setstate__(self, state)
