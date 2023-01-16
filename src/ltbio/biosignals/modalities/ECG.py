@@ -15,29 +15,30 @@
 # ===================================
 
 from datetime import timedelta
+from statistics import mean
 from typing import Callable
 
 import numpy as np
+import traces
 from biosppy.plotting import plot_ecg
 from biosppy.signals.ecg import hamilton_segmenter, correct_rpeaks, extract_heartbeats, ecg as biosppyECG, christov_segmenter, \
     engzee_segmenter
-from biosppy.signals.tools import get_heart_rate
+from biosppy.signals.tools import get_heart_rate, _filter_signal
 from biosppy.signals.ecg import sSQI, kSQI, pSQI, fSQI, bSQI
 from numpy import linspace, ndarray, average, array
 
-from ltbio.biosignals.modalities.Biosignal import Biosignal
+from ltbio.biosignals.modalities.Biosignal import Biosignal, DerivedBiosignal
 from .. import timeseries as _timeseries
-from ltbio.biosignals.timeseries.Unit import Volt, Multiplier, BeatsPerMinute
+from ltbio.biosignals.timeseries.Unit import Volt, Multiplier, BeatsPerMinute, Second
 
 
 class ECG(Biosignal):
-
     DEFAULT_UNIT = Volt(Multiplier.m)
 
     def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None):
         super(ECG, self).__init__(timeseries, source, patient, acquisition_location, name)
 
-    def plot_summary(self, show:bool=True, save_to:str=None):
+    def plot_summary(self, show: bool = True, save_to: str = None):
         for channel_name in self.channel_names:
             channel = self._Biosignal__timeseries[channel_name]
             for segment in channel.segments:
@@ -51,24 +52,25 @@ class ECG(Biosignal):
 
                 else:  # compute info with own filtered samples
                     print("Using own filtered version to show a summary")
-                    (rpeaks, ) = hamilton_segmenter(signal=segment.samples, sampling_rate=channel.sampling_frequency)
-                    (rpeaks, ) = correct_rpeaks(signal=segment.samples, rpeaks=rpeaks, sampling_rate=channel.sampling_frequency, tol=0.05)
-                    templates, rpeaks = extract_heartbeats(signal=segment.samples, rpeaks=rpeaks, sampling_rate=channel.sampling_frequency, before=0.2, after=0.4)
-                    hr_indexes, hr =get_heart_rate(beats=rpeaks, sampling_rate=channel.sampling_frequency, smooth=True, size=3)
-                    ts = linspace(0, (len(segment)-1)/channel.sampling_frequency, len(segment), endpoint=True)
-                    plot_ecg( ts=ts,
-                              raw=segment.raw_samples,
-                              filtered=segment.samples,
-                              rpeaks= rpeaks,
-                              templates_ts=linspace(-0.2, 0.4, templates.shape[1], endpoint=False),
-                              templates=templates,
-                              heart_rate_ts=ts[hr_indexes],
-                              heart_rate=hr,
-                              path=save_to,
-                              show=show
-                            )
+                    (rpeaks,) = hamilton_segmenter(signal=segment.samples, sampling_rate=channel.sampling_frequency)
+                    (rpeaks,) = correct_rpeaks(signal=segment.samples, rpeaks=rpeaks, sampling_rate=channel.sampling_frequency, tol=0.05)
+                    templates, rpeaks = extract_heartbeats(signal=segment.samples, rpeaks=rpeaks, sampling_rate=channel.sampling_frequency,
+                                                           before=0.2, after=0.4)
+                    hr_indexes, hr = get_heart_rate(beats=rpeaks, sampling_rate=channel.sampling_frequency, smooth=True, size=3)
+                    ts = linspace(0, (len(segment) - 1) / channel.sampling_frequency, len(segment), endpoint=True)
+                    plot_ecg(ts=ts,
+                             raw=segment.raw_samples,
+                             filtered=segment.samples,
+                             rpeaks=rpeaks,
+                             templates_ts=linspace(-0.2, 0.4, templates.shape[1], endpoint=False),
+                             templates=templates,
+                             heart_rate_ts=ts[hr_indexes],
+                             heart_rate=hr,
+                             path=save_to,
+                             show=show
+                             )
 
-    def plot_rpeaks(self, show:bool=True, save_to:str=None):
+    def plot_rpeaks(self, show: bool = True, save_to: str = None):
         pass  # TODO
 
     @staticmethod
@@ -83,8 +85,7 @@ class ECG(Biosignal):
         corrected_indices = correct_rpeaks(signal, indices, sampling_rate)['rpeaks']  # Correct indices
         return corrected_indices
 
-    def __r_indices(self, channel:_timeseries.Timeseries, segmenter:Callable = hamilton_segmenter):
-
+    def __r_indices(self, channel: _timeseries.Timeseries, segmenter: Callable = hamilton_segmenter):
 
         r_indices = channel._apply_operation_and_return(self.__biosppy_r_indices,
                                                         sampling_rate=channel.sampling_frequency,
@@ -93,11 +94,12 @@ class ECG(Biosignal):
         # E.g. [ [30, 63, 135, ], [23, 49, 91], ... ], where [30, 63, 135, ] are the indices of the 1st Segment.
         return r_indices
 
-    def r_timepoints(self, algorithm='hamilton') -> tuple:
+    def r_timepoints(self, algorithm='hamilton', _by_segment=False) -> tuple:
         """
         Finds the timepoints of the R peaks.
 
         @param algoritm (optional): The algorithm used to compute the R peaks. Default: Hamilton segmenter.
+        @param _by_segment (optional): Return timepoints grouped by uninterrptuned segments.
 
         @returns: The ordered sequence of timepoints of the R peaks.
         @rtype: np.array
@@ -134,10 +136,9 @@ class ECG(Biosignal):
         r_indices = self.__r_indices(channel, segmenter)
 
         # Convert from indices to timepoints
-        timepoints = channel._indices_to_timepoints(indices = r_indices)
+        timepoints = channel._indices_to_timepoints(indices=r_indices, by_segment=_by_segment)
 
         return timepoints
-
 
     def heartbeats(self, before=0.2, after=0.4):
         """
@@ -165,26 +166,25 @@ class ECG(Biosignal):
 
         all_heartbeat_channels = {}
         for channel_name in self.channel_names:
-
-            channel:_timeseries.Timeseries = self._Biosignal__timeseries[channel_name]
+            channel: _timeseries.Timeseries = self._Biosignal__timeseries[channel_name]
             r_indices = self.__r_indices(channel)
 
             new = channel._segment_and_new(extract_heartbeats, 'templates', 'rpeaks',
-                                     iterate_over_each_segment_key='rpeaks',
-                                     initial_datetimes_shift= timedelta(seconds = -before),
-                                     equally_segmented=True,
-                                     overlapping_segments=True,
-                                     # **kwargs
-                                     rpeaks = r_indices,
-                                     sampling_rate = channel.sampling_frequency,
-                                     before = before,
-                                     after = after
-                                     )
+                                           iterate_over_each_segment_key='rpeaks',
+                                           initial_datetimes_shift=timedelta(seconds=-before),
+                                           equally_segmented=True,
+                                           overlapping_segments=True,
+                                           # **kwargs
+                                           rpeaks=r_indices,
+                                           sampling_rate=channel.sampling_frequency,
+                                           before=before,
+                                           after=after
+                                           )
 
             new.name = 'Heartbeats of ' + channel.name
             all_heartbeat_channels[channel_name] = new
 
-        return self._new(all_heartbeat_channels, name= 'Heartbeats of ' + self.name)
+        return self._new(all_heartbeat_channels, name='Heartbeats of ' + self.name)
 
     def hr(self, smooth_length: float = None):
         """
@@ -211,11 +211,9 @@ class ECG(Biosignal):
             all_hr = []
             all_idx = []
             for seg in r_indices:
-                idx, hr = get_heart_rate(seg, channel.sampling_frequency, smooth = (smooth_length is not None), size=smooth_length)
+                idx, hr = get_heart_rate(seg, channel.sampling_frequency, smooth=(smooth_length is not None), size=smooth_length)
                 all_idx.append(idx)
                 all_hr += list(hr)
-
-
 
             timepoints = channel._indices_to_timepoints(all_idx)
 
@@ -229,36 +227,44 @@ class ECG(Biosignal):
             all_hr_channels[channel_name] = hr_channel
 
         from ltbio.biosignals.modalities.HR import HR
-        return HR(all_hr_channels, self.source, self._Biosignal__patient, self.acquisition_location, 'Heart Rate of ' + self.name, original_signal=self)
+        return HR(all_hr_channels, self.source, self._Biosignal__patient, self.acquisition_location, 'Heart Rate of ' + self.name,
+                  original_signal=self)
 
     def nni(self):
         """
-        Transform ECG signal to R-R peak interval signal.
-
-        Parameters
-        ----------
-        smooth_length : float, optional
-            Length of smoothing window. If not given, no smoothing is performed on the instantaneous heart rate.
+        Transform ECG signal to an evenly-sampled R-R peak interval (RRI/NNI) signal.
+        Interpolation is used.
+        It is assumed the ECG only has one channel.
 
         Returns
         -------
-        hr : HR
-            Pseudo-Biosignal where samples are the instantaneous heart rate at each timepoint.
+        nni : ECG
+            Pseudo-Biosignal where each sample is the interval of the R peak 'occured there' and the previous R peak.
         """
 
-        all_nni_channels = {}
-        for channel_name in self.channel_names:
-            channel = self._Biosignal__timeseries[channel_name]
-            all_nii = []
-            for segment in channel:
-                indices = np.array([int((timepoint - segment.initial_datetime).total_seconds() * self.sampling_frequency) for timepoint in self.r_timepoints])
-                nni = np.diff(indices)
-                all_nii.append(_timeseries.Timeseries.__Segment(nni, segment.initial_datetime, channel.sampling_frequency))
+        # Get all R peak timepoints
+        r_timepoints = self.r_timepoints(_by_segment=True)
 
-            all_nni_channels[channel_name] = _timeseries.Timeseries(all_nii, True, channel.sampling_frequency, None, 'NNI of ' + channel.name, equally_segmented=channel.is_equally_segmented)
+        nni_by_segment = {}
+        for seg in r_timepoints:
+            # Get all intervals between R peaks
+            nni = np.diff(seg)
+            # Acording to the definition of RRI, an RRI value is the interval of one R peak and the previous, so the first timepoint is dismissed.
+            seg = seg[1:]
 
-        # FIXME
-        #return NNI(all_nni_channels, self.source, self._Biosignal__patient, self.acquisition_location, 'NNI of ' + self.name, original_signal=self)
+            # Make NNI a time series
+            sf = 4  # 4 Hz is accpeted by the comunity
+            data = [(timepoint, value.total_seconds() * 1000) for timepoint, value in zip(seg, nni)]
+            ts = traces.TimeSeries(data=data)
+            regularized_nni = ts.sample(sampling_period=1/sf, start=seg[0])
+
+            # Save seg
+            nni_by_segment[seg[0]] = array(regularized_nni, dtype=np.single)[:,1]
+
+        channel_name, channel = self._get_single_channel()
+        new_channel = channel._new(nni_by_segment, sf, Second(Multiplier.m), 'NNI of ' + channel.name)
+
+        return self._new({channel_name: new_channel}, name='NNI of ' + self.name)
 
     def invert_if_necessary(self):
         """
@@ -278,12 +284,13 @@ class ECG(Biosignal):
             samples = channel.samples
             if isinstance(samples, list):
                 samples = samples[0]
-            original_signal = samples - np.mean(samples) # to remove DC component if not filtered
-            rpeaks = self.__biosppy_r_indices(original_signal, channel.sampling_frequency, hamilton_segmenter) # indexes from biosppy method
+            original_signal = samples - np.mean(samples)  # to remove DC component if not filtered
+            rpeaks = self.__biosppy_r_indices(original_signal, channel.sampling_frequency,
+                                              hamilton_segmenter)  # indexes from biosppy method
             amp_rpeaks = original_signal[rpeaks]
 
-            inv_signal = -original_signal # inverted signal
-            rpeaks_inv = self.__biosppy_r_indices(inv_signal, channel.sampling_frequency, hamilton_segmenter) # indexes from biosppy method
+            inv_signal = -original_signal  # inverted signal
+            rpeaks_inv = self.__biosppy_r_indices(inv_signal, channel.sampling_frequency, hamilton_segmenter)  # indexes from biosppy method
             amp_rpeaks_inv = inv_signal[rpeaks_inv]
 
             if np.median(amp_rpeaks) < np.median(amp_rpeaks_inv):
@@ -302,7 +309,8 @@ class ECG(Biosignal):
             if by_segment:
                 res[channel_name] = skweness_by_segment
             else:
-                res[channel_name] = average(array(skweness_by_segment), weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+                res[channel_name] = average(array(skweness_by_segment),
+                                            weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
 
         return res
 
@@ -322,8 +330,8 @@ class ECG(Biosignal):
             if by_segment:
                 res[channel_name] = skweness_by_segment
             else:
-                weights = list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain))
-                res[channel_name] = average(array(skweness_by_segment), weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+                res[channel_name] = average(array(skweness_by_segment),
+                                            weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
 
         return res
 
@@ -341,7 +349,8 @@ class ECG(Biosignal):
             if by_segment:
                 res[channel_name] = skweness_by_segment
             else:
-                res[channel_name] = average(array(skweness_by_segment), weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+                res[channel_name] = average(array(skweness_by_segment),
+                                            weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
 
         return res
 
@@ -359,12 +368,76 @@ class ECG(Biosignal):
         res = {}
         for channel_name, channel in self:
             bas_by_segment = channel._apply_operation_and_return(fSQI, fs=channel.sampling_frequency,
-                                                                      num_spectrum=(0, 1), dem_spectrum=(0, 40), mode='bas')
+                                                                 num_spectrum=(0, 1), dem_spectrum=(0, 40), mode='bas', nseg=256)
             if by_segment:
                 res[channel_name] = bas_by_segment
             else:
                 res[channel_name] = average(array(bas_by_segment),
                                             weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+
+        return res
+
+    def bsSQI(self, by_segment: bool = False):
+        """
+        Checks baseline wander in time domain.
+        If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+        otherwise the weighted average is returned. Weighted by duration of each segment.
+
+        Meant to evaluate the presence of baseline wander.
+        Ref: https://www.sciencedirect.com/science/article/pii/S0169260714003241?via%3Dihub#bib0040
+
+        :return: A dictionary of the computed ratio for each channel.
+        """
+
+        def _bsSQI(segment: ndarray) -> float:
+            r_indices = self.__biosppy_r_indices(segment, self.sampling_frequency, hamilton_segmenter)
+
+            if len(r_indices) == 0:
+                return None  # cannot compute
+
+            # Numerator
+            n_samples_before = int(self.sampling_frequency * 0.07)
+            n_samples_after = int(self.sampling_frequency * 0.08)
+            peak_to_peak_qrs = []
+            for ix in r_indices:
+                if ix < n_samples_before:
+                    qrs_neighborhood = segment[: ix + n_samples_after]
+                elif len(segment) - ix < n_samples_after:
+                    qrs_neighborhood = segment[ix - n_samples_before:]
+                else:
+                    qrs_neighborhood = segment[ix - n_samples_before: ix + n_samples_after]
+                peak_to_peak_qrs.append(abs(max(qrs_neighborhood) - min(qrs_neighborhood)))
+            numerator = mean(peak_to_peak_qrs)
+
+            # Denominator
+            n_samples_before = int(self.sampling_frequency * 1)
+            n_samples_after = int(self.sampling_frequency * 1)
+            bw, _ = _filter_signal([0.0503, ], [1, 0.9497, ], segment, )  # H(z) = 0.0503/(1 − 0.9497z−1))
+            peak_to_beak_bw = []
+            for ix in r_indices:
+                if ix < n_samples_before:
+                    qrs_neighborhood = segment[: ix + n_samples_after]
+                elif len(segment) - ix < n_samples_after:
+                    qrs_neighborhood = segment[ix - n_samples_before:]
+                else:
+                    qrs_neighborhood = segment[ix - n_samples_before: ix + n_samples_after]
+                peak_to_beak_bw.append(abs(max(qrs_neighborhood) - min(qrs_neighborhood)))
+            denominator = mean(peak_to_beak_bw)
+
+            return numerator / denominator
+
+
+        res = {}
+        for channel_name, channel in self:
+            bs_by_segment = channel._apply_operation_and_return(_bsSQI)
+            if by_segment:
+                res[channel_name] = bs_by_segment
+            else:
+                bs_by_segment = array([x for x in bs_by_segment if x is not None])  # skip Nones
+                if len(bs_by_segment) > 0:
+                    res[channel_name] = average(bs_by_segment, weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
+                else:
+                    res[channel_name] = None
 
         return res
 
@@ -378,6 +451,7 @@ class ECG(Biosignal):
 
         :return: A dictionary of the computed ratio for each channel.
         """
+
         res = {}
         for channel_name, channel in self:
             bas_by_segment = channel._apply_operation_and_return(fSQI, fs=channel.sampling_frequency,
@@ -413,3 +487,11 @@ class ECG(Biosignal):
 
         return res
 
+
+class RRI(DerivedBiosignal):
+
+    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None, original=None):
+        super().__init__(timeseries, source, patient, acquisition_location, name, original)
+
+    def plot_summary(self, show: bool = True, save_to: str = None):
+        pass
