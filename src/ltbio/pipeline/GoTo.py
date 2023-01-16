@@ -14,7 +14,7 @@
 
 # ===================================
 
-from ltbio.pipeline.PipelineUnit import SinglePipelineUnit
+from .PipelineUnit import SinglePipelineUnit
 
 
 class GoTo(SinglePipelineUnit):

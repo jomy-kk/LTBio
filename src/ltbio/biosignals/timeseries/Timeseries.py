@@ -30,7 +30,7 @@ from scipy.signal import resample
 from ltbio.biosignals.timeseries.Event import Event
 from ltbio.biosignals.timeseries.Frequency import Frequency
 from ltbio.biosignals.timeseries.Unit import Unit
-from ltbio.processing.filters.Filter import Filter
+#from ltbio.processing.filters.Filter import Filter
 
 class Timeseries():
     """
@@ -260,7 +260,17 @@ class Timeseries():
             return len(self.__samples)
 
         def __rshift__(self, other: ndarray | list):
-            self.__samples = append(self.__samples, other)
+            if isinstance(other, type(self)):  # if it's Segment
+                if other.final_datetime == self.initial_datetime and other._Segment__sampling_frequency == self.__sampling_frequency:
+                    self.__samples = append(self.__samples, other.samples)
+                    if self.is_filtered and other.is_filtered:
+                        self.__raw_samples = append(self.__samples, other.raw_samples)
+                    self.__final_datetime = other.final_datetime
+                else:
+                    raise AssertionError("Segments cannot be concatenated.")
+            else:
+                self.__samples = append(self.__samples, other)
+                self.__final_datetime += timedelta(seconds= len(other)/self.__sampling_frequency)
 
         def __add__(self, other):
             if isinstance(other, type(self)):  # if it is a Segment
@@ -353,7 +363,7 @@ class Timeseries():
 
         # Purpose-specific
 
-        def _accept_filtering(self, filter_design: Filter):
+        def _accept_filtering(self, filter_design):
             """
             Protected Access: For use of this module.
             Applies a filter to its samples, given a design.
@@ -468,6 +478,9 @@ class Timeseries():
 
         # ===================================
         # SERIALIZATION
+
+        def __hash__(self):
+            return hash(self.__initial_datetime) * hash(self.__final_datetime) * hash(self.__samples)
 
         def __getstate__(self):
             """
@@ -843,7 +856,14 @@ class Timeseries():
         assert len(self.__segments) > 0
         if self.__segments[-1].final_datetime > initial_datetime:  # Check for order and overlaps
             raise AssertionError("Cannot append more samples starting before the ones already existing.")
-
+        """ # FROM THESIS #
+            print("!! Cutting the begining of the new segment")
+            segment = Timeseries.__Segment(array(samples) if not isinstance(samples, ndarray) else samples,
+                                           initial_datetime, self.__sampling_frequency)
+            segment = segment[ceil((self.__segments[-1].final_datetime - initial_datetime).total_seconds() * self.sampling_frequency): ]
+            self.__segments.append(segment)
+        else:
+        """
         segment = Timeseries.__Segment(array(samples) if not isinstance(samples, ndarray) else samples,
                                        initial_datetime, self.__sampling_frequency)
         self.__segments.append(segment)
@@ -976,11 +996,15 @@ class Timeseries():
                 raise IndexError(
                     f"Interval given is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
 
-    def _indices_to_timepoints(self, indices: list[list[int]]) -> tuple[datetime]:
-        all_timepoints: list[datetime] = []
+    def _indices_to_timepoints(self, indices: list[list[int]], by_segment=False) -> tuple[datetime] | tuple[list[datetime]]:
+        all_timepoints = []
         for index, segment in zip(indices, self.__segments):
             timepoints = divide(index, self.__sampling_frequency)  # Transform to timepoints
-            all_timepoints += [segment.initial_datetime + timedelta(seconds=tp) for tp in timepoints]  # Append them all
+            x = [segment.initial_datetime + timedelta(seconds=tp) for tp in timepoints]
+            if by_segment:
+                all_timepoints.append(x)  # Append as list
+            else:
+                all_timepoints += x  # Join them all
         return tuple(all_timepoints)
 
     def _to_array(self) -> ndarray:
@@ -1060,7 +1084,7 @@ class Timeseries():
 
     # Purpose-specific
 
-    def _accept_filtering(self, filter_design: Filter):
+    def _accept_filtering(self, filter_design):
         filter_design._setup(self.__sampling_frequency)
         for segment in self.__segments:
             segment._accept_filtering(filter_design)
@@ -1326,7 +1350,7 @@ class Timeseries():
 
     def _concatenate_segments(self):
         if len(self.__segments) > 1:
-            self.__segments = [Timeseries.__Segment(concatenate(self._to_array()), self.initial_datetime, self.__sampling_frequency, False), ]
+            self.__segments = [Timeseries.__Segment(concatenate(self.samples), self.initial_datetime, self.__sampling_frequency, False), ]
             self.__is_equally_segmented = True
         else:
             pass  # no need
@@ -1349,6 +1373,9 @@ class Timeseries():
                 i += f
 
         self.__segments = partitions
+
+    def _delete_segments(self, selection_function: Callable[[ndarray], bool]):
+        self.__segments = list(filter(lambda seg: selection_function(seg.samples), self.__segments))
 
     # ===================================
     # SERIALIZATION
@@ -1449,12 +1476,15 @@ class OverlappingTimeseries(Timeseries):
                 raise IndexError("Indexing with step is not allowed for OverlappingTimeseries. Try resampling it first.")
             initial = to_datetime(item.start) if isinstance(item.start, str) else self.initial_datetime if item.start is None else item.start
             final = to_datetime(item.stop) if isinstance(item.stop, str) else self.final_datetime if item.stop is None else item.stop
+            #self.__check_boundaries(initial)
+            #self.__check_boundaries(final)
             if isinstance(initial, datetime) and isinstance(final, datetime):
                 return self._Timeseries__new(segments=self.__get_samples(initial, final))
             else:
                 raise IndexError("Index types not supported. Give a slice of datetimes (can be in string format).")
 
         if isinstance(item, DateTimeRange):  # Not publicly documented. Only Biosignal sends DateTimeRanges, when it is dealing with Events.
+            #self.__check_boundaries(item)
             return self._Timeseries__new(segments=self.__get_samples(item.start_datetime, item.end_datetime))
 
         raise IndexError(
@@ -1462,8 +1492,6 @@ class OverlappingTimeseries(Timeseries):
 
     def __get_samples(self, initial_datetime: datetime, final_datetime: datetime):
         '''Returns the segemnts between the given initial and end datetimes, acording to the final datetime of each.'''
-        self.__check_boundaries(initial_datetime)
-        self.__check_boundaries(final_datetime)
         res_segments = []
         for i in range(len(self._Timeseries__segments)):
             segment = self._Timeseries__segments[i]

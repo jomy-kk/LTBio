@@ -20,7 +20,7 @@ from enum import unique, Enum
 from biosppy.signals.tools import smoother as apply_convolution
 from numpy import array
 
-from ltbio.processing.filters.Filter import Filter
+from .Filter import Filter
 
 
 @unique

@@ -32,7 +32,7 @@ from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
 from ltbio.biosignals.timeseries.Event import Event
 from .. import timeseries
 from ltbio.clinical.conditions.MedicalCondition import MedicalCondition
-from ltbio.processing.filters.FrequencyDomainFilter import Filter
+#from ...processing.filters.Filter import Filter
 from ltbio.clinical.BodyLocation import BodyLocation
 from ltbio.clinical.Patient import Patient
 from ltbio.processing.noises.Noise import Noise
@@ -131,6 +131,9 @@ class Biosignal(ABC):
         return self._new(new_channels, source=source, patient=patient, acquisition_location=acquisition_location,
                          name=name, events=events)
 
+    def _apply_operation_and_return(self, operation, **kwargs):
+        pass  # TODO
+
     @property
     def __has_single_channel(self) -> bool:
         return len(self) == 1
@@ -140,6 +143,14 @@ class Biosignal(ABC):
             return self.__timeseries[channel_name]
         else:
             raise AttributeError(f"No channel named '{channel_name}'.")
+
+    def _get_single_channel(self) -> tuple[str|BodyLocation, timeseries.Timeseries]:
+        """
+        :return: channel_name, channel
+        """
+        if not self.__has_single_channel:
+            raise AttributeError(f"This Biosignal does not have a single channel. It has multiple channels.")
+        return tuple(self.__timeseries.items())[0]
 
     def get_event(self, name: str) -> Event:
         if name in self.__associated_events:
@@ -506,7 +517,15 @@ class Biosignal(ABC):
 
     def __repr__(self):
         '''Returns a textual description of the Biosignal.'''
-        res = "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nChannels: {}\nSource: {}\n".format(self.name, self.type.__name__, self.acquisition_location, len(self), ''.join([(x + ', ') for x in self.channel_names]) , self.source.__str__(None) if isinstance(self.source, ABCMeta) else str(self.source))
+        res = "Name: {}\nType: {}\nLocation: {}\nNumber of Channels: {}\nChannels: {}\nUseful Duration: {}\nSource: {}\n".format(
+            self.name,
+            self.type.__name__,
+            self.acquisition_location,
+            len(self),
+            ''.join([(x + ', ') for x in self.channel_names]),
+            self.duration,
+            self.source.__str__(None) if isinstance(self.source, ABCMeta) else str(self.source))
+
         if len(self.__associated_events) != 0:
             res += "Events:\n"
             for event in sorted(self.__associated_events.values()):
@@ -560,6 +579,9 @@ class Biosignal(ABC):
     def __sub__(self, other):
         return self + (other * -1)
 
+    def __neg__(self):
+        return self * -1
+
     def __add__(self, other):
         """
         If a float or int:
@@ -580,8 +602,14 @@ class Biosignal(ABC):
 
         if isinstance(other, Biosignal):
             # Check errors
-            #if self.type != other.type:
-            #    raise TypeError("Cannot join a {0} to a {1}".format(other.type.__name__, self.type.__name__))
+            if self.type != other.type:
+                while True:
+                    answer = input(f"Trying to add an {self.type.__name__} with an {other.type.__name__}. Do you mean to add templeates of the second as noise? (y/n)")
+                    if answer.lower() in ('y', 'n'):
+                        if answer.lower() == 'y':
+                            return Biosignal.withAdditiveNoise(self, other)
+                        else:
+                            raise TypeError("Cannot add a {0} to a {1} if not as noise.".format(other.type.__name__, self.type.__name__))
             if self.channel_names != other.channel_names:
                 raise ArithmeticError("Biosignals to add must have the same channel names.")
             if self.domain != other.domain:
@@ -717,7 +745,7 @@ class Biosignal(ABC):
             channel.delete_events()
         self.__associated_events = {}
 
-    def filter(self, filter_design:Filter) -> int:
+    def filter(self, filter_design) -> int:
         '''
         Filters every channel with to the given filter_design.
 
@@ -786,7 +814,7 @@ class Biosignal(ABC):
             fig.savefig(save_to)
         plt.show() if show else plt.close()
 
-        return fig
+        #return fig
 
     def plot_spectrum(self, show:bool=True, save_to:str=None):
         '''
@@ -1154,3 +1182,16 @@ class Biosignal(ABC):
         return load(data)
 
 
+class DerivedBiosignal(Biosignal):
+    """
+    A DerivedBiosignal is a set of Timeseries of some extracted feature from an original Biosignal.
+    It is such a feature that it is useful to manipulate it as any other Biosignal.
+    """
+
+    def __init__(self, timeseries, source = None, patient = None, acquisition_location = None, name = None, original: Biosignal = None):
+        if original is not None:
+            super().__init__(timeseries, original.source, original._Biosignal__patient, original.acquisition_location, original.name)
+        else:
+            super().__init__(timeseries, source, patient, acquisition_location, name)
+
+        self.original = original  # Save reference

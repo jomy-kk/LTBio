@@ -22,7 +22,7 @@ from biosppy.plotting import plot_filter
 from biosppy.signals.tools import get_filter as get_coefficients, _filter_signal
 from numpy import array
 
-from ltbio.processing.filters.Filter import Filter
+from .Filter import Filter
 
 
 @unique
