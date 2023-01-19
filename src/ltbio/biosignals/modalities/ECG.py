@@ -24,7 +24,7 @@ from biosppy.plotting import plot_ecg
 from biosppy.signals.ecg import hamilton_segmenter, correct_rpeaks, extract_heartbeats, ecg as biosppyECG, christov_segmenter, \
     engzee_segmenter
 from biosppy.signals.tools import get_heart_rate, _filter_signal
-from biosppy.signals.ecg import sSQI, kSQI, pSQI, fSQI, bSQI
+from biosppy.signals.ecg import sSQI, kSQI, pSQI, fSQI, bSQI, ZZ2018
 from numpy import linspace, ndarray, average, array
 
 from ltbio.biosignals.modalities.Biosignal import Biosignal, DerivedBiosignal
@@ -486,6 +486,21 @@ class ECG(Biosignal):
                                             weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
 
         return res
+
+    def zhaoSQI(self, by_segment: bool = False):
+        res = {}
+
+        for channel_name, channel in self:
+
+            peaks1 = self.__r_indices(channel, hamilton_segmenter)
+            peaks2 = self.__r_indices(channel, christov_segmenter)
+
+            res[channel_name] = [channel._apply_operation_and_return(ZZ2018, p1, p2, fs=channel.sampling_frequency, search_window=100, nseg=1024, mode='fuzzy')
+                                 for p1, p2 in zip(peaks1, peaks2)]
+
+            if not by_segment:
+                res[channel_name] = average(array(res[channel_name]),
+                                            weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
 
 
 class RRI(DerivedBiosignal):
