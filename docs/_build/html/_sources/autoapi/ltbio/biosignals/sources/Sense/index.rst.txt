@@ -1,0 +1,97 @@
+
+:py:mod:`ltbio.biosignals.sources.Sense`
+========================================
+
+.. py:module:: ltbio.biosignals.sources.Sense
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Sense <ltbio.biosignals.sources.Sense.Sense>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Sense(device_id: str, defaults_path: str = None)
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.Sense.Sense
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:attribute:: MODALITIES
+      :value: 'modalities'
+
+      
+
+   .. py:attribute:: CHANNEL_LABELS
+      :value: 'labels'
+
+      
+
+   .. py:attribute:: BODY_LOCATION
+      :value: 'location'
+
+      
+
+   .. py:attribute:: KEY_CH_LABELS_IN_HEADER
+      :value: 'Channel Labels'
+
+      
+
+   .. py:attribute:: KEY_HZ_IN_HEADER
+      :value: 'Sampling rate (Hz)'
+
+      
+
+   .. py:attribute:: KEY_TIME_IN_HEADER
+      :value: 'ISO 8601'
+
+      
+
+   .. py:attribute:: ANALOGUE_LABELS_FORMAT
+      :value: 'AI{0}_raw'
+
+      
+
+   .. py:attribute:: DEFAULTS_PATH
+      :type: str
+
+      
+
+   .. py:attribute:: DEVICE_ID
+      :type: str
+
+      
+
+   .. py:attribute:: BAD_FORMAT
+      :value: False
+
+      
+
+

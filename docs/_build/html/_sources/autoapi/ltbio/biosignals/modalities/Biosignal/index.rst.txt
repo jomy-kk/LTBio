@@ -1,0 +1,299 @@
+
+:py:mod:`ltbio.biosignals.modalities.Biosignal`
+===============================================
+
+.. py:module:: ltbio.biosignals.modalities.Biosignal
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Biosignal <ltbio.biosignals.modalities.Biosignal.Biosignal>`
+     - A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   * - :py:obj:`DerivedBiosignal <ltbio.biosignals.modalities.Biosignal.DerivedBiosignal>`
+     - A DerivedBiosignal is a set of Timeseries of some extracted feature from an original Biosignal.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Biosignal(timeseries: Dict[str | BodyLocation, timeseries.Timeseries] | str | Tuple[datetime], source: BiosignalSource.__subclasses__() = None, patient: ltbio.clinical.Patient.Patient = None, acquisition_location: ltbio.clinical.BodyLocation.BodyLocation = None, name: str = None)
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.modalities.Biosignal.Biosignal
+      :parts: 1
+
+   A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   It may be associated with a source, a patient, and a body location. It can also have a name.
+   It has an initial and final datetime. Its length is its number of channels.
+   It can be resampled, filtered, and concatenated to other Biosignals.
+   Amplitude and spectrum plots can be displayed and saved.
+
+   .. py:property:: preview
+
+      Returns 5 seconds of the middle of the signal.
+
+
+   .. py:property:: channel_names
+      :type: set[str | BodyLocation]
+
+      Returns a tuple with the labels associated to every channel.
+
+
+   .. py:property:: name
+
+      Returns the associated name, or 'No Name' if none was provided.
+
+
+   .. py:property:: patient_code
+
+      Returns the code of the associated Patient, or 'n.d.' if none was provided.
+
+
+   .. py:property:: patient_conditions
+      :type: Set[ltbio.clinical.conditions.MedicalCondition.MedicalCondition]
+
+      Returns the set of medical conditions of the associated Patient, or None if no Patient was associated.
+
+
+   .. py:property:: acquisition_location
+
+      Returns the associated acquisition location, or None if none was provided.
+
+
+   .. py:property:: source
+      :type: ltbio.biosignals.sources.BiosignalSource.BiosignalSource
+
+      Returns the BiosignalSource from where the data was read, or None if was not specified.
+
+
+   .. py:property:: type
+      :type: ClassVar
+
+      Returns the biosignal modality class. E.g.: ECG, EMG, EDA, ...
+
+
+   .. py:property:: initial_datetime
+      :type: datetime.datetime
+
+      Returns the initial datetime of the channel that starts the earliest.
+
+
+   .. py:property:: final_datetime
+      :type: datetime.datetime
+
+      Returns the final datetime of the channel that ends the latest.
+
+
+   .. py:property:: domain
+      :type: Tuple[datetimerange.DateTimeRange]
+
+
+   .. py:property:: subdomains
+      :type: Tuple[datetimerange.DateTimeRange]
+
+
+   .. py:property:: duration
+
+
+   .. py:property:: events
+
+      Tuple of associated Events, ordered by datetime.
+
+
+   .. py:property:: sampling_frequency
+      :type: float
+
+      Returns the sampling frequency of every channel (if equal), or raises an error if they are not equal.
+
+
+   .. py:property:: added_noise
+
+      Returns a reference to the noisy component, if the Biosignal was created with added noise; else the property does not exist.
+
+
+   .. py:attribute:: EXTENSION
+      :value: '.biosignal'
+
+      
+
+   .. py:method:: get_event(name: str) -> ltbio.biosignals.timeseries.Event.Event
+
+
+   .. py:method:: set_channel_name(current: str | BodyLocation, new: str | BodyLocation)
+
+
+   .. py:method:: set_event_name(current: str, new: str)
+
+
+   .. py:method:: delete_events()
+
+
+   .. py:method:: filter(filter_design) -> int
+
+      Filters every channel with to the given filter_design.
+
+      @param filter_design: A Filter object specifying the designed filter to be applied.
+      @return: 0 if the filtering is applied successfully.
+      @rtype: int
+
+
+   .. py:method:: undo_filters()
+
+      Restores the raw samples of every channel, eliminating the action of any applied filter.
+
+
+   .. py:method:: resample(frequency: float)
+
+      Resamples every channel to the new sampling frequency given, using Fourier method.
+      @param frequency: New sampling frequency (in Hertz).
+
+
+   .. py:method:: plot_spectrum(show: bool = True, save_to: str = None)
+
+      Plots the Bode plot of every channel.
+      @param show: True if plot is to be immediately displayed; False otherwise.
+      @param save_to: A path to save the plot as an image file; If none is provided, it is not saved.
+
+
+   .. py:method:: plot(show: bool = True, save_to: str = None)
+
+      Plots the amplitude in time of every channel.
+      @param show: True if plot is to be immediately displayed; False otherwise.
+      @param save_to: A path to save the plot as an image file; If none is provided, it is not saved.
+
+
+   .. py:method:: plot_summary(show: bool = True, save_to: str = None)
+      :abstractmethod:
+
+      Plots a summary of relevant aspects of common analysis of the Biosignal.
+
+
+   .. py:method:: apply_operation(operation, **kwargs)
+
+
+   .. py:method:: invert(channel_label: str = None)
+
+
+   .. py:method:: associate(events: Event | Collection[Event] | Dict[str, Event])
+
+      Associates an Event to all Timeseries.
+      Events have names that serve as keys. If keys are given,
+      i.e. if 'events' is a dict, then the Event names are overridden.
+      @param events: One or multiple Event objects.
+      @rtype: None
+
+
+   .. py:method:: disassociate(event_name: str)
+
+      Disassociates an Event from all Timeseries.
+      @param event_name: The name of the Event to be removed.
+      @rtype: None
+
+
+   .. py:method:: withAdditiveNoise(original, noise, name: str = None)
+      :classmethod:
+
+      Creates a new Biosignal from 'original' with added 'noise'.
+
+      :param original: (Biosignal) The original Biosignal to be contaminated with noise.
+      :param noise: (Noise | Timeseries | Biosignal) The noise to add to the original Biosignal.
+      :param name: (str) The name to associate to the resulting Biosignal.
+
+      When 'noise' is a Noise:
+          - A trench of noise, with the duration of the channel, will be generated to be added to each channel.
+          - 'noise' should be configured with the same sampling frequency has the channels.
+
+      When 'noise' is a Biosignal:
+          When it has the same set of channels as 'original', sampled at the same frequency:
+              - Each noisy channel will be added to the corresponding channel of 'original', in a template-wise manner.
+          When it has a unique channel:
+              - That noisy channel will be added to every channel of 'original', in a template-wise manner.
+              - That noisy channel should have the same sampling frequency has every channel of 'original'.
+          - If 'noise' has multiple segments, they are concatenated to make a hyper-template.
+          - Exception: in the case where both Timeseries having the same domain, the noisy samples will be added in a
+              segment-wise manner.
+
+      When 'noise' is a Timeseries sampled at the same frequency of 'original':
+          - Its samples will be added to every channel of 'original', in a template-wise manner.
+          - If 'noise' has multiple segments, they are concatenated to make a hyper-template.
+          - Exception: in the case where both Timeseries having the same domain, the noisy samples will be added in a
+              segment-wise manner.
+          - 'noise' should have been sampled at the same frequency as 'original'.
+
+      What is "template-wise manner"?
+          - If the template segment is longer than any original segment, the template segment will be trimmed accordingly.
+          - If the template segment is shorter than any original segment, the template will repeated in time.
+          - If the two segments are of equal length, they are added as they are.
+
+      :return: A Biosignal with the same properties as the 'original', but with noise added to the samples of every channel.
+      :rtype: Biosignal subclass
+
+
+   .. py:method:: restructure_domain(time_intervals: tuple[datetimerange.DateTimeRange])
+
+
+   .. py:method:: tag(tags: str | tuple[str])
+
+      Mark all channels with a tag. Useful to mark machine learning targets.
+      :param tags: The label or labels to tag the channels.
+      :return: None
+
+
+   .. py:method:: fromNoise(noises: Noise | Dict[str | BodyLocation, Noise], time_intervals: DateTimeRange | tuple[DateTimeRange], name: str = None)
+      :classmethod:
+
+      Creates a type of Biosignal from a noise source.
+
+      :param noises:
+          - If a Noise object is given, the Biosignal will have 1 channel for the specified time interval.
+          - If a dictionary of Noise objects is given, the Biosignal will have multiple channels, with different
+          generated samples, for the specified time interval, named after the dictionary keys.
+
+      :param time_interval: Interval [x, y[ where x will be the initial date and time of every channel, and y will be
+      the final date and time of every channel; on a union of intervals, in case a tuple is given.
+
+      :param name: The name to be associated to the Biosignal. Optional.
+
+      :return: Biosignal subclass
+
+
+   .. py:method:: save(save_to: str)
+
+
+   .. py:method:: load(filepath: str)
+      :classmethod:
+
+
+
+.. py:class:: DerivedBiosignal(timeseries, source=None, patient=None, acquisition_location=None, name=None, original: Biosignal = None)
+
+   Bases: :py:obj:`Biosignal`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.modalities.Biosignal.DerivedBiosignal
+      :parts: 1
+
+   A DerivedBiosignal is a set of Timeseries of some extracted feature from an original Biosignal.
+   It is such a feature that it is useful to manipulate it as any other Biosignal.
+
+

@@ -1,0 +1,62 @@
+
+:py:mod:`ltbio.pipeline.Pipeline`
+=================================
+
+.. py:module:: ltbio.pipeline.Pipeline
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Pipeline <ltbio.pipeline.Pipeline.Pipeline>`
+     - \-
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Pipeline(name: str = None)
+
+   .. py:property:: current_step
+      :type: int
+
+
+   .. py:property:: current_packet
+      :type: ltbio.pipeline.Packet.Packet
+
+
+   .. py:method:: add(unit: ltbio.pipeline.PipelineUnit.PipelineUnit)
+
+
+   .. py:method:: load(biosignals: Biosignal | Collection[Biosignal])
+
+
+   .. py:method:: next()
+
+
+   .. py:method:: applyAll(biosignals: Biosignal | Collection[Biosignal])
+
+
+   .. py:method:: plot_diagram(show: bool = True, save_to: str = None)
+
+
+

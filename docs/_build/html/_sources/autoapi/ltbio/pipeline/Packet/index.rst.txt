@@ -1,0 +1,95 @@
+
+:py:mod:`ltbio.pipeline.Packet`
+===============================
+
+.. py:module:: ltbio.pipeline.Packet
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Packet <ltbio.pipeline.Packet.Packet>`
+     - \-
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Packet(**load)
+
+   .. py:property:: has_timeseries
+      :type: bool
+
+      Be very careful when using this checkers.
+      Correct use case: To know if there's any Timeseries in the Packet.
+
+
+   .. py:property:: has_timeseries_collection
+      :type: bool
+
+      Be very careful when using this checkers.
+      Correct use case: To know if the timeseries, if any, in the Packet were packed/delivered collectively.
+      This holds True even if the collection only has 1 element; it's still a collection.
+      Incorrect use case: To know if there's a plurality of Timeseries. Use 'has_multiple_timeseries' instead.
+
+
+   .. py:property:: has_multiple_timeseries
+      :type: bool
+
+      Be very careful when using this checkers.
+      Correct use case: To know if the Packet contains 2 or more Timeseries
+
+
+   .. py:property:: has_single_timeseries
+      :type: bool
+
+      Be very careful when using this checkers.
+      Correct use case: To know if the Packet contains 1 and only 1 Timeseries
+      Incorrect use case: To know if 'timeseries' is not a collection. Instead, use `!has_timeseries_collection`.
+
+
+   .. py:property:: timeseries
+      :type: Timeseries | Dict[str, Timeseries]
+
+      Get (all) Timeseries as they were packed, either alone or in collection.
+
+
+   .. py:property:: contents
+      :type: dict
+
+
+   .. py:property:: who_packed
+
+
+   .. py:attribute:: TIMESERIES_LABEL
+      :value: 'timeseries'
+
+      
+
+   .. py:method:: join_packets(**packets)
+      :staticmethod:
+
+      Receives multiple packets keyed by the prefix for each, in case there are conflicts in labels.
+      Returns 1 Packet.
+
+
+

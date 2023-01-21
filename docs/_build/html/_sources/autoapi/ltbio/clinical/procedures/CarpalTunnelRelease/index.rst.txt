@@ -1,0 +1,52 @@
+
+:py:mod:`ltbio.clinical.procedures.CarpalTunnelRelease`
+=======================================================
+
+.. py:module:: ltbio.clinical.procedures.CarpalTunnelRelease
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`CarpalTunnelRelease <ltbio.clinical.procedures.CarpalTunnelRelease.CarpalTunnelRelease>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: CarpalTunnelRelease(date: datetime.datetime = None, outcome=bool)
+
+   Bases: :py:obj:`ltbio.clinical.procedures.SurgicalProcedure.SurgicalProcedure`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.procedures.CarpalTunnelRelease.CarpalTunnelRelease
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+

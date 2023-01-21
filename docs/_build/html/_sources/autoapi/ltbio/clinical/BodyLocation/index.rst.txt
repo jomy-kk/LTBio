@@ -1,0 +1,350 @@
+
+:py:mod:`ltbio.clinical.BodyLocation`
+=====================================
+
+.. py:module:: ltbio.clinical.BodyLocation
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`BodyLocation <ltbio.clinical.BodyLocation.BodyLocation>`
+     - str(object='') -> str
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: BodyLocation
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.BodyLocation.BodyLocation
+      :parts: 1
+
+   str(object='') -> str
+   str(bytes_or_buffer[, encoding[, errors]]) -> str
+
+   Create a new string object from the given object. If encoding or
+   errors is specified, then the object must expose a data buffer
+   that will be decoded using the given encoding and error handler.
+   Otherwise, returns the result of object.__str__() (if defined)
+   or repr(object).
+   encoding defaults to sys.getdefaultencoding().
+   errors defaults to 'strict'.
+
+   .. py:attribute:: CHEST
+      :value: 'Chest'
+
+      
+
+   .. py:attribute:: LI
+      :value: 'Chest Lead I'
+
+      
+
+   .. py:attribute:: LII
+      :value: 'Chest Lead II'
+
+      
+
+   .. py:attribute:: LIII
+      :value: 'Chest Lead III'
+
+      
+
+   .. py:attribute:: V1
+      :value: 'V1 chest lead'
+
+      
+
+   .. py:attribute:: V2
+      :value: 'V2 chest lead'
+
+      
+
+   .. py:attribute:: V3
+      :value: 'V3 chest lead'
+
+      
+
+   .. py:attribute:: V4
+      :value: 'V4 chest lead'
+
+      
+
+   .. py:attribute:: V5
+      :value: 'V5 chest lead'
+
+      
+
+   .. py:attribute:: V6
+      :value: 'V6 chest lead'
+
+      
+
+   .. py:attribute:: RA
+      :value: 'Right arm (RA) lead'
+
+      
+
+   .. py:attribute:: LA
+      :value: 'Left arm (LA) lead'
+
+      
+
+   .. py:attribute:: RL
+      :value: 'Right leg (RL) lead'
+
+      
+
+   .. py:attribute:: LL
+      :value: 'Left leg (LL) lead'
+
+      
+
+   .. py:attribute:: MLII
+      :value: 'Modified Limb Lead II'
+
+      
+
+   .. py:attribute:: ABDOMEN
+      :value: 'Abdomen'
+
+      
+
+   .. py:attribute:: WRIST_L
+      :value: 'Left Wrist'
+
+      
+
+   .. py:attribute:: WRIST_R
+      :value: 'Right Wrist'
+
+      
+
+   .. py:attribute:: BICEP_L
+      :value: 'Left Bicep'
+
+      
+
+   .. py:attribute:: BICEP_R
+      :value: 'Right Bicep'
+
+      
+
+   .. py:attribute:: FOREARM_L
+      :value: 'Left Forearm'
+
+      
+
+   .. py:attribute:: FOREARM_R
+      :value: 'Right Forearm'
+
+      
+
+   .. py:attribute:: UPPERARM_L
+      :value: 'Left Upper Arm'
+
+      
+
+   .. py:attribute:: UPPERARM_R
+      :value: 'Right Upper Arm'
+
+      
+
+   .. py:attribute:: ARM_L
+      :value: 'Left Arm'
+
+      
+
+   .. py:attribute:: ARM_R
+      :value: 'Right Arm'
+
+      
+
+   .. py:attribute:: INDEX_L
+      :value: 'Left index finger'
+
+      
+
+   .. py:attribute:: INDEX_R
+      :value: 'Right index finger'
+
+      
+
+   .. py:attribute:: SCALP
+      :value: 'Scalp'
+
+      
+
+   .. py:attribute:: FP1
+      :value: 'Fronto-parietal 1'
+
+      
+
+   .. py:attribute:: FP2
+      :value: 'Fronto-parietal 2'
+
+      
+
+   .. py:attribute:: F3
+      :value: 'Frontal 3'
+
+      
+
+   .. py:attribute:: F4
+      :value: 'Frontal 4'
+
+      
+
+   .. py:attribute:: F7
+      :value: 'Frontal 7'
+
+      
+
+   .. py:attribute:: F8
+      :value: 'Frontal 8'
+
+      
+
+   .. py:attribute:: FZ
+      :value: 'Frontal Z'
+
+      
+
+   .. py:attribute:: CZ
+      :value: 'Central Z'
+
+      
+
+   .. py:attribute:: C3
+      :value: 'Central 3'
+
+      
+
+   .. py:attribute:: C4
+      :value: 'Central 4'
+
+      
+
+   .. py:attribute:: PZ
+      :value: 'Parietal Z'
+
+      
+
+   .. py:attribute:: P3
+      :value: 'Parietal 3'
+
+      
+
+   .. py:attribute:: P4
+      :value: 'Parietal 4'
+
+      
+
+   .. py:attribute:: O1
+      :value: 'Occipital 1'
+
+      
+
+   .. py:attribute:: O2
+      :value: 'Occipital 2'
+
+      
+
+   .. py:attribute:: T3
+      :value: 'Temporal 3'
+
+      
+
+   .. py:attribute:: T4
+      :value: 'Temporal 4'
+
+      
+
+   .. py:attribute:: T5
+      :value: 'Temporal 5'
+
+      
+
+   .. py:attribute:: T6
+      :value: 'Temporal 6'
+
+      
+
+   .. py:attribute:: A1
+      :value: 'Mastoid 1'
+
+      
+
+   .. py:attribute:: A2
+      :value: 'Mastoid 2'
+
+      
+
+   .. py:attribute:: TEMPORAL_L
+      :value: 'Left Temporal lobe'
+
+      
+
+   .. py:attribute:: TEMPORAL_R
+      :value: 'Right Temporal lobe'
+
+      
+
+   .. py:attribute:: TEMPORAL_BL
+      :value: 'Temporal lobe (bilateral)'
+
+      
+
+   .. py:attribute:: TP_L
+      :value: 'Left Temporo-Parietal lobe'
+
+      
+
+   .. py:attribute:: TP_R
+      :value: 'Right Temporo-Parietal lobe'
+
+      
+
+   .. py:attribute:: FRONTAL_L
+      :value: 'Left Frontal lobe'
+
+      
+
+   .. py:attribute:: FRONTAL_R
+      :value: 'Right Frontal lobe'
+
+      
+
+   .. py:attribute:: FT_L
+      :value: 'Left Fronto-Temporal lobe'
+
+      
+
+   .. py:attribute:: FT_R
+      :value: 'Right Fronto-Temporal lobe'
+
+      
+
+

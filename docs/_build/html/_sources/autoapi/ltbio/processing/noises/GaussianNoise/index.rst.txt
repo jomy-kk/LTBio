@@ -1,0 +1,44 @@
+
+:py:mod:`ltbio.processing.noises.GaussianNoise`
+===============================================
+
+.. py:module:: ltbio.processing.noises.GaussianNoise
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`GaussianNoise <ltbio.processing.noises.GaussianNoise.GaussianNoise>`
+     - \-
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: GaussianNoise(mean: float, deviation: float, sampling_frequency: float, name: str = None)
+
+   Bases: :py:obj:`ltbio.processing.noises.Noise.Noise`
+
+   .. autoapi-inheritance-diagram:: ltbio.processing.noises.GaussianNoise.GaussianNoise
+      :parts: 1
+
+

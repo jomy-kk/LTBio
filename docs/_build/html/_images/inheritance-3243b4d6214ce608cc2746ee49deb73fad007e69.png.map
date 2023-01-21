@@ -1,0 +1,5 @@
+<map id="inheritancea4d00b1e85" name="inheritancea4d00b1e85">
+<area shape="rect" id="node1" title="Helper class that provides a standard way to create an ABC using" alt="" coords="5,5,77,31"/>
+<area shape="rect" id="node2" href="../../../../ltbio.biosignals.sources.html#ltbio.biosignals.sources.BiosignalSource.BiosignalSource" target="_top" title="BiosignalSource" alt="" coords="125,5,241,31"/>
+<area shape="rect" id="node3" href="../../../../ltbio.biosignals.sources.html#ltbio.biosignals.sources.MITDB.MITDB" target="_top" title="This class represents the source of MIT&#45;BIH Arrhythmia Database and includes methods to read and write" alt="" coords="289,5,361,31"/>
+</map>

@@ -1,0 +1,75 @@
+
+:py:mod:`ltbio.biosignals.timeseries.Event`
+===========================================
+
+.. py:module:: ltbio.biosignals.timeseries.Event
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Event <ltbio.biosignals.timeseries.Event.Event>`
+     - \-
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Event(name: str, onset: datetime | str = None, offset: datetime | str = None)
+
+   .. py:property:: has_onset
+      :type: bool
+
+
+   .. py:property:: has_offset
+      :type: bool
+
+
+   .. py:property:: onset
+      :type: datetime.datetime
+
+
+   .. py:property:: offset
+      :type: datetime.datetime
+
+
+   .. py:property:: duration
+      :type: datetime.timedelta
+
+
+   .. py:property:: domain
+      :type: datetimerange.DateTimeRange
+
+
+   .. py:property:: name
+      :type: str
+
+
+   .. py:method:: domain_with_padding(before: datetime.timedelta = timedelta(seconds=0), after: datetime.timedelta = timedelta(seconds=0))
+
+      The Event domain with before, after, or both paddings. Negative paddings go back in time; positive paddings go forward in time.
+      :param before: Padding before onset if defined, or offset otherwised.
+      :param after: Padding after offset if defined, or onset otherwised.
+      :return: DateTimeRange of the padded domain.
+
+
+

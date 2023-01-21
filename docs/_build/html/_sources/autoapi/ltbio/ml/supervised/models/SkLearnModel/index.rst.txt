@@ -1,0 +1,58 @@
+
+:py:mod:`ltbio.ml.supervised.models.SkLearnModel`
+=================================================
+
+.. py:module:: ltbio.ml.supervised.models.SkLearnModel
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`SkLearnModel <ltbio.ml.supervised.models.SkLearnModel.SkLearnModel>`
+     - A generic machine learning supervised model.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: SkLearnModel(design, name: str = None)
+
+   Bases: :py:obj:`ltbio.ml.supervised.models.SupervisedModel.SupervisedModel`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.supervised.models.SkLearnModel.SkLearnModel
+      :parts: 1
+
+   A generic machine learning supervised model.
+
+   .. py:property:: trained_parameters
+
+
+   .. py:property:: non_trainable_parameters
+
+
+   .. py:method:: train(dataset, conditions)
+
+
+   .. py:method:: test(dataset, evaluation_metrics=None, version=None)
+
+
+

@@ -1,0 +1,47 @@
+ltbio.clinical package
+======================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   ltbio.clinical.conditions
+   ltbio.clinical.medications
+   ltbio.clinical.procedures
+
+Submodules
+----------
+
+ltbio.clinical.BodyLocation module
+----------------------------------
+
+.. automodule:: ltbio.clinical.BodyLocation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.clinical.Patient module
+-----------------------------
+
+.. automodule:: ltbio.clinical.Patient
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.clinical.Semiology module
+-------------------------------
+
+.. automodule:: ltbio.clinical.Semiology
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.clinical
+   :members:
+   :undoc-members:
+   :show-inheritance:

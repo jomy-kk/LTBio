@@ -1,0 +1,102 @@
+
+:py:mod:`ltbio.ml.datasets`
+===========================
+
+.. py:module:: ltbio.ml.datasets
+
+
+Overview
+----------------
+
+
+Submodules
+~~~~~~~
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   BiosignalDataset/index.rst
+   EventDetectionDataset/index.rst
+   SegmentToSegmentDataset/index.rst
+   ValueToValueDataset/index.rst
+   augmentation/index.rst
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`SegmentToSegmentDataset <ltbio.ml.datasets.SegmentToSegmentDataset>`
+     - An abstract class representing a dataset of Biosignals.
+   * - :py:obj:`ValueToValueDataset <ltbio.ml.datasets.ValueToValueDataset>`
+     - An abstract class representing a dataset of Biosignals.
+   * - :py:obj:`EventDetectionDataset <ltbio.ml.datasets.EventDetectionDataset>`
+     - An abstract class representing a dataset of Biosignals.
+
+
+
+
+
+
+
+
+
+Contents
+----------------
+
+.. py:class:: SegmentToSegmentDataset(object: Collection[ltbio.biosignals.modalities.Biosignal.Biosignal], target: Collection[ltbio.biosignals.modalities.Biosignal.Biosignal], name: str = None)           SegmentToSegmentDataset(object: Collection[ltbio.biosignals.timeseries.Timeseries.Timeseries], target: Collection[ltbio.biosignals.timeseries.Timeseries.Timeseries], name: str = None)
+
+   Bases: :py:obj:`ltbio.ml.datasets.BiosignalDataset.BiosignalDataset`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.SegmentToSegmentDataset
+      :parts: 1
+
+   An abstract class representing a dataset of Biosignals.
+   All subclasses should store the ordered list of objects and targets, respectively, in `__objects` and `__targets`.
+   Also, subclasses have to overwrite `__getitem__`, supporting fetching an example for a given key. An example is a
+   pair (object, target).
+
+
+.. py:class:: ValueToValueDataset(object: Collection[ltbio.biosignals.modalities.Biosignal.Biosignal], target: Collection[ltbio.biosignals.modalities.Biosignal.Biosignal], name: str = None)           ValueToValueDataset(object: Collection[ltbio.biosignals.timeseries.Timeseries.Timeseries], target: Collection[ltbio.biosignals.timeseries.Timeseries.Timeseries], name: str = None)
+
+   Bases: :py:obj:`ltbio.ml.datasets.BiosignalDataset.BiosignalDataset`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.ValueToValueDataset
+      :parts: 1
+
+   An abstract class representing a dataset of Biosignals.
+   All subclasses should store the ordered list of objects and targets, respectively, in `__objects` and `__targets`.
+   Also, subclasses have to overwrite `__getitem__`, supporting fetching an example for a given key. An example is a
+   pair (object, target).
+
+
+.. py:class:: EventDetectionDataset(*objects: ltbio.biosignals.modalities.Biosignal.Biosignal, event_names: str | tuple[str], paddings: tuple[timedelta | int | None] = (None, None), ignore_margins: tuple[timedelta | int | None] = (None, None), name: str = None)
+
+   Bases: :py:obj:`ltbio.ml.datasets.BiosignalDataset.BiosignalDataset`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.EventDetectionDataset
+      :parts: 1
+
+   An abstract class representing a dataset of Biosignals.
+   All subclasses should store the ordered list of objects and targets, respectively, in `__objects` and `__targets`.
+   Also, subclasses have to overwrite `__getitem__`, supporting fetching an example for a given key. An example is a
+   pair (object, target).
+
+   .. py:property:: class_weights
+      :type: tuple[float, float]
+
+
+   .. py:method:: draw_timeline(precision: float)
+
+
+   .. py:method:: balance_with_augmentation(*techniques: ltbio.ml.datasets.augmentation.DatasetAugmentationTechnique)
+
+
+

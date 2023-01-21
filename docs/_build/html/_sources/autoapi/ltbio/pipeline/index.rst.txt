@@ -1,0 +1,190 @@
+
+:py:mod:`ltbio.pipeline`
+========================
+
+.. py:module:: ltbio.pipeline
+
+
+Overview
+----------------
+
+
+Submodules
+~~~~~~~
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   GoTo/index.rst
+   Input/index.rst
+   Packet/index.rst
+   Pipeline/index.rst
+   PipelineUnit/index.rst
+   reports/index.rst
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`GoTo <ltbio.pipeline.GoTo>`
+     - A Single Pipeline Unit is any agent that can act (use, process or make changes) to a collection (usually of Timeseries).
+   * - :py:obj:`Input <ltbio.pipeline.Input>`
+     - A Single Pipeline Unit is any agent that can act (use, process or make changes) to a collection (usually of Timeseries).
+   * - :py:obj:`Pipeline <ltbio.pipeline.Pipeline>`
+     - \-
+   * - :py:obj:`ApplySeparately <ltbio.pipeline.ApplySeparately>`
+     - An ApplySeparately is a collection of single units, to which each will be applied to one Timeseries at a time.
+   * - :py:obj:`ApplyTogether <ltbio.pipeline.ApplyTogether>`
+     - An ApplyTogether is a collection of single units, to which each will be applied to all Timeseries at once.
+
+
+
+
+
+
+
+
+
+Contents
+----------------
+
+.. py:class:: GoTo(name=None)
+
+   Bases: :py:obj:`ltbio.pipeline.PipelineUnit.SinglePipelineUnit`
+
+   .. autoapi-inheritance-diagram:: ltbio.pipeline.GoTo
+      :parts: 1
+
+   A Single Pipeline Unit is any agent that can act (use, process or make changes) to a collection (usually of Timeseries).
+   Following the Command design pattern, a SingleUnit is the abstract 'Command', so that Pipeline can execute various
+   kinds of processing by calling the 'apply' method of each concrete unit.
+
+   Subclasses
+   ------------
+   E.g. Filter, Segmenter, FeatureExtractor, FeatureSelector, SupervisingTrainer, DecisionMaker
+   Any subclass that implements 'apply'.
+
+   Abstract Method 'apply'
+   ------------
+   Every subclass must define 'apply' and implement a concrete behaviour.
+   To map the parameters' names of 'apply' to the labels inside any arriving Packet, PIPELINE_INPUT_LABELS should be
+   defined. To map the outputs to the labels of the resulting Packet, PIPELINE_OUTPUT_LABELS should be defined.
+
+   Labels
+   ------------
+   PIPELINE_INPUT_LABELS
+   Maps every label of a needed input inside a Packet to the name of the corresponding 'apply' parameter.
+   PIPELINE_OUTPUT_LABELS
+   Maps every output name of 'apply' to a label to be saved inside a Packet.
+
+   .. py:attribute:: ART_PATH
+      :value: 'resources/pipeline_media/goto.png'
+
+      
+
+   .. py:method:: apply(step_number: int)
+
+
+
+.. py:class:: Input(label: str, data, name: str = None)
+
+   Bases: :py:obj:`ltbio.pipeline.PipelineUnit.SinglePipelineUnit`
+
+   .. autoapi-inheritance-diagram:: ltbio.pipeline.Input
+      :parts: 1
+
+   A Single Pipeline Unit is any agent that can act (use, process or make changes) to a collection (usually of Timeseries).
+   Following the Command design pattern, a SingleUnit is the abstract 'Command', so that Pipeline can execute various
+   kinds of processing by calling the 'apply' method of each concrete unit.
+
+   Subclasses
+   ------------
+   E.g. Filter, Segmenter, FeatureExtractor, FeatureSelector, SupervisingTrainer, DecisionMaker
+   Any subclass that implements 'apply'.
+
+   Abstract Method 'apply'
+   ------------
+   Every subclass must define 'apply' and implement a concrete behaviour.
+   To map the parameters' names of 'apply' to the labels inside any arriving Packet, PIPELINE_INPUT_LABELS should be
+   defined. To map the outputs to the labels of the resulting Packet, PIPELINE_OUTPUT_LABELS should be defined.
+
+   Labels
+   ------------
+   PIPELINE_INPUT_LABELS
+   Maps every label of a needed input inside a Packet to the name of the corresponding 'apply' parameter.
+   PIPELINE_OUTPUT_LABELS
+   Maps every output name of 'apply' to a label to be saved inside a Packet.
+
+   .. py:attribute:: PIPELINE_INPUT_LABELS
+
+      
+
+   .. py:attribute:: PIPELINE_OUTPUT_LABELS
+
+      
+
+   .. py:attribute:: ART_PATH
+      :value: 'resources/pipeline_media/input.png'
+
+      
+
+   .. py:method:: apply()
+
+
+
+.. py:class:: Pipeline(name: str = None)
+
+   .. py:property:: current_step
+      :type: int
+
+
+   .. py:property:: current_packet
+      :type: ltbio.pipeline.Packet.Packet
+
+
+   .. py:method:: add(unit: ltbio.pipeline.PipelineUnit.PipelineUnit)
+
+
+   .. py:method:: load(biosignals: Biosignal | Collection[Biosignal])
+
+
+   .. py:method:: next()
+
+
+   .. py:method:: applyAll(biosignals: Biosignal | Collection[Biosignal])
+
+
+   .. py:method:: plot_diagram(show: bool = True, save_to: str = None)
+
+
+
+.. py:class:: ApplySeparately(units: SinglePipelineUnit | Collection[SinglePipelineUnit], name: str = None)
+
+   Bases: :py:obj:`PipelineUnitsUnion`
+
+   .. autoapi-inheritance-diagram:: ltbio.pipeline.ApplySeparately
+      :parts: 1
+
+   An ApplySeparately is a collection of single units, to which each will be applied to one Timeseries at a time.
+   Following the Template Method design pattern, this is a concrete class, where '__delegate' is implemented.
+
+
+.. py:class:: ApplyTogether(units: SinglePipelineUnit | Collection[SinglePipelineUnit], name: str = None)
+
+   Bases: :py:obj:`PipelineUnitsUnion`
+
+   .. autoapi-inheritance-diagram:: ltbio.pipeline.ApplyTogether
+      :parts: 1
+
+   An ApplyTogether is a collection of single units, to which each will be applied to all Timeseries at once.
+   Following the Template Method design pattern, this is a concrete class, where '__delegate' is implemented.
+
+

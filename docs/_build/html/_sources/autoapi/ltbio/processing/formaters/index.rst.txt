@@ -1,0 +1,115 @@
+
+:py:mod:`ltbio.processing.formaters`
+====================================
+
+.. py:module:: ltbio.processing.formaters
+
+
+Overview
+----------------
+
+
+Submodules
+~~~~~~~
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   Normalizer/index.rst
+   Segmenter/index.rst
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Segmenter <ltbio.processing.formaters.Segmenter>`
+     - This PipelineUnit can segment one Timeseries at a time.
+   * - :py:obj:`Normalizer <ltbio.processing.formaters.Normalizer>`
+     - Pipeline Unit that normalizes Timeseries.
+
+
+
+
+
+
+
+
+
+Contents
+----------------
+
+.. py:class:: Segmenter(window_length: datetime.timedelta, overlap_length: datetime.timedelta = timedelta(seconds=0), name=None)
+
+   Bases: :py:obj:`ltbio.pipeline.PipelineUnit.SinglePipelineUnit`
+
+   .. autoapi-inheritance-diagram:: ltbio.processing.formaters.Segmenter
+      :parts: 1
+
+   This PipelineUnit can segment one Timeseries at a time.
+
+   .. py:attribute:: PIPELINE_INPUT_LABELS
+
+      
+
+   .. py:attribute:: PIPELINE_OUTPUT_LABELS
+
+      
+
+   .. py:attribute:: ART_PATH
+      :value: 'resources/pipeline_media/segmenter.png'
+
+      
+
+   .. py:method:: apply(timeseries: ltbio.biosignals.Timeseries) -> ltbio.biosignals.Timeseries
+
+      # FIXME: Uncomment this.
+      if len(timeseries.segments) > 0:
+          adjacent = True
+          for i in range(1, len(timeseries.segments)):
+              if not timeseries.segments[i-1].adjacent(timeseries.segments[i]):  # assert they're adjacent
+                  adjacent = False
+                  break
+
+          if not adjacent:
+              x = input(f"Segments of {timeseries.name} are not adjacent. Join them? (y/n) ").lower()
+              if x == 'y':
+                  pass  # go ahead
+              else:
+                  raise AssertionError('Framework does not support segmenting non-adjacent segments, unless you want to join them. Try indexing the time period of interest first.')
+
+
+
+.. py:class:: Normalizer(method='mean', name: str = '')
+
+   Bases: :py:obj:`ltbio.pipeline.PipelineUnit.SinglePipelineUnit`
+
+   .. autoapi-inheritance-diagram:: ltbio.processing.formaters.Normalizer
+      :parts: 1
+
+   Pipeline Unit that normalizes Timeseries.
+
+   .. py:attribute:: PIPELINE_INPUT_LABELS
+
+      
+
+   .. py:attribute:: PIPELINE_OUTPUT_LABELS
+
+      
+
+   .. py:attribute:: ART_PATH
+      :value: 'resources/pipeline_media/segmenter.png'
+
+      
+
+   .. py:method:: apply(timeseries: ltbio.biosignals.Timeseries)
+
+
+

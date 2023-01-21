@@ -1,0 +1,47 @@
+
+:py:mod:`ltbio.biosignals.sources.Seer`
+=======================================
+
+.. py:module:: ltbio.biosignals.sources.Seer
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Seer <ltbio.biosignals.sources.Seer.Seer>`
+     - This class represents the source of Seer Epilepsy Database and includes methods to read and write
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Seer
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.Seer.Seer
+      :parts: 1
+
+   This class represents the source of Seer Epilepsy Database and includes methods to read and write
+   biosignal files provided by them. Usually they are in .edf format.
+
+

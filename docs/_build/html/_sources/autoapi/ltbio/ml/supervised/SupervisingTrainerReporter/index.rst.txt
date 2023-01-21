@@ -1,0 +1,64 @@
+
+:py:mod:`ltbio.ml.supervised.SupervisingTrainerReporter`
+========================================================
+
+.. py:module:: ltbio.ml.supervised.SupervisingTrainerReporter
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`SupervisingTrainerReporter <ltbio.ml.supervised.SupervisingTrainerReporter.SupervisingTrainerReporter>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: SupervisingTrainerReporter(writer=None)
+
+   Bases: :py:obj:`ltbio.pipeline.reports.Reporter`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.supervised.SupervisingTrainerReporter.SupervisingTrainerReporter
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:method:: body()
+
+
+   .. py:method:: declare_model_description(model: ltbio.ml.supervised.models.SupervisedModel, **descriptors)
+
+
+   .. py:method:: declare_training_session(train_conditions: ltbio.ml.supervised.SupervisedTrainConditions, train_results: ltbio.ml.supervised.results.SupervisedTrainResults, test_results: ltbio.ml.supervised.results.PredictionResults)
+
+
+   .. py:method:: print_loss_plot(image_path: str)
+
+
+   .. py:method:: print_small_plots(image_paths: str)
+
+      Prints a grid of n lines and 2 columns.
+
+
+

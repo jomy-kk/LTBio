@@ -1,0 +1,37 @@
+ltbio.ml.supervised.models package
+==================================
+
+Submodules
+----------
+
+ltbio.ml.supervised.models.SkLearnModel module
+----------------------------------------------
+
+.. automodule:: ltbio.ml.supervised.models.SkLearnModel
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.ml.supervised.models.SupervisedModel module
+-------------------------------------------------
+
+.. automodule:: ltbio.ml.supervised.models.SupervisedModel
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.ml.supervised.models.TorchModel module
+--------------------------------------------
+
+.. automodule:: ltbio.ml.supervised.models.TorchModel
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.ml.supervised.models
+   :members:
+   :undoc-members:
+   :show-inheritance:

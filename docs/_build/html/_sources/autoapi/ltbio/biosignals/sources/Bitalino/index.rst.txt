@@ -1,0 +1,47 @@
+
+:py:mod:`ltbio.biosignals.sources.Bitalino`
+===========================================
+
+.. py:module:: ltbio.biosignals.sources.Bitalino
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Bitalino <ltbio.biosignals.sources.Bitalino.Bitalino>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Bitalino
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.Bitalino.Bitalino
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+

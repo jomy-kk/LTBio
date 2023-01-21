@@ -1,0 +1,47 @@
+
+:py:mod:`ltbio.clinical.conditions.COVID19`
+===========================================
+
+.. py:module:: ltbio.clinical.conditions.COVID19
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`COVID19 <ltbio.clinical.conditions.COVID19.COVID19>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: COVID19(years_since_diagnosis: float = None)
+
+   Bases: :py:obj:`ltbio.clinical.conditions.MedicalCondition.MedicalCondition`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.conditions.COVID19.COVID19
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+

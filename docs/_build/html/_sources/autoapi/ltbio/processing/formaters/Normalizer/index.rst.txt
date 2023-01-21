@@ -1,0 +1,62 @@
+
+:py:mod:`ltbio.processing.formaters.Normalizer`
+===============================================
+
+.. py:module:: ltbio.processing.formaters.Normalizer
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Normalizer <ltbio.processing.formaters.Normalizer.Normalizer>`
+     - Pipeline Unit that normalizes Timeseries.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Normalizer(method='mean', name: str = '')
+
+   Bases: :py:obj:`ltbio.pipeline.PipelineUnit.SinglePipelineUnit`
+
+   .. autoapi-inheritance-diagram:: ltbio.processing.formaters.Normalizer.Normalizer
+      :parts: 1
+
+   Pipeline Unit that normalizes Timeseries.
+
+   .. py:attribute:: PIPELINE_INPUT_LABELS
+
+      
+
+   .. py:attribute:: PIPELINE_OUTPUT_LABELS
+
+      
+
+   .. py:attribute:: ART_PATH
+      :value: 'resources/pipeline_media/segmenter.png'
+
+      
+
+   .. py:method:: apply(timeseries: ltbio.biosignals.Timeseries)
+
+
+

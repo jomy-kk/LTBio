@@ -1,0 +1,4 @@
+<map id="inheritance65456ac765" name="inheritance65456ac765">
+<area shape="rect" id="node1" href="../../../../ltbio.biosignals.timeseries.html#ltbio.biosignals.timeseries.Timeseries.OverlappingTimeseries" target="_top" title="An OverlappingTimeseries is a Timeseries that violates the rule that to each time point of its domain it must" alt="" coords="140,5,295,31"/>
+<area shape="rect" id="node2" href="../../../../ltbio.biosignals.timeseries.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" target="_top" title="A Timeseries is a sequence of data points that occur in successive order over some period of time." alt="" coords="5,5,92,31"/>
+</map>

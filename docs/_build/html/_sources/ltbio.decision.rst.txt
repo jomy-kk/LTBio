@@ -1,0 +1,45 @@
+ltbio.decision package
+======================
+
+Submodules
+----------
+
+ltbio.decision.BinaryDecision module
+------------------------------------
+
+.. automodule:: ltbio.decision.BinaryDecision
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.decision.Decision module
+------------------------------
+
+.. automodule:: ltbio.decision.Decision
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.decision.DecisionMaker module
+-----------------------------------
+
+.. automodule:: ltbio.decision.DecisionMaker
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.decision.NAryDecision module
+----------------------------------
+
+.. automodule:: ltbio.decision.NAryDecision
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.decision
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,314 @@
+
+:py:mod:`ltbio.clinical.medications`
+====================================
+
+.. py:module:: ltbio.clinical.medications
+
+
+Overview
+----------------
+
+
+Submodules
+~~~~~~~
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   Medication/index.rst
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Medication <ltbio.clinical.medications.Medication>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`LEV <ltbio.clinical.medications.LEV>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`CBZ <ltbio.clinical.medications.CBZ>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`ZNS <ltbio.clinical.medications.ZNS>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`LTG <ltbio.clinical.medications.LTG>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`PER <ltbio.clinical.medications.PER>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`Clobazam <ltbio.clinical.medications.Clobazam>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`DZP <ltbio.clinical.medications.DZP>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`VPA <ltbio.clinical.medications.VPA>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`ESL <ltbio.clinical.medications.ESL>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`CNZ <ltbio.clinical.medications.CNZ>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`PHT <ltbio.clinical.medications.PHT>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`OXC <ltbio.clinical.medications.OXC>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`LCS <ltbio.clinical.medications.LCS>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`TPM <ltbio.clinical.medications.TPM>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+----------------
+
+.. py:class:: Medication(dose: float = None, unit: ltbio.biosignals.timeseries.Unit.Unit = None, frequency: str = None)
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.Medication
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+      :abstractmethod:
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: LEV(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.LEV
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: CBZ(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.CBZ
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: ZNS(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.ZNS
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: LTG(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.LTG
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: PER(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.PER
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: Clobazam(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.Clobazam
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: DZP(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.DZP
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: VPA(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.VPA
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: ESL(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.ESL
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: CNZ(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.CNZ
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: PHT(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.PHT
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: OXC(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.OXC
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: LCS(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.LCS
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+
+.. py:class:: TPM(dose=None, unit=None, frequency=None)
+
+   Bases: :py:obj:`Medication.Medication`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.TPM
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+

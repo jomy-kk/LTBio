@@ -1,0 +1,46 @@
+
+:py:mod:`ltbio.ml.supervised.SupervisedTrainConditions`
+=======================================================
+
+.. py:module:: ltbio.ml.supervised.SupervisedTrainConditions
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`SupervisedTrainConditions <ltbio.ml.supervised.SupervisedTrainConditions.SupervisedTrainConditions>`
+     - \-
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: SupervisedTrainConditions(loss, optimizer=None, train_size: int = None, train_ratio: float = None, test_size: int = None, test_ratio: float = None, validation_ratio: float = None, epochs: int = None, learning_rate: float = None, batch_size: int = None, shuffle: bool = False, epoch_shuffle: bool = False, stop_at_deltaloss: float = None, patience: int = None, **hyperparameters)
+
+   .. py:method:: differences_between(sets_of_conditions: Collection) -> tuple[dict, Ellipsis]
+      :staticmethod:
+
+
+   .. py:method:: check_it_has(attributes: Iterable[str])
+
+
+

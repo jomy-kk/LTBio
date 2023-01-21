@@ -1,0 +1,103 @@
+
+:py:mod:`ltbio.processing.filters.TimeDomainFilter`
+===================================================
+
+.. py:module:: ltbio.processing.filters.TimeDomainFilter
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`ConvolutionOperation <ltbio.processing.filters.TimeDomainFilter.ConvolutionOperation>`
+     - str(object='') -> str
+   * - :py:obj:`TimeDomainFilter <ltbio.processing.filters.TimeDomainFilter.TimeDomainFilter>`
+     - Describes the design of a digital time-domain filter and holds the ability to apply that filter to any array of samples.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: ConvolutionOperation
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+   .. autoapi-inheritance-diagram:: ltbio.processing.filters.TimeDomainFilter.ConvolutionOperation
+      :parts: 1
+
+   str(object='') -> str
+   str(bytes_or_buffer[, encoding[, errors]]) -> str
+
+   Create a new string object from the given object. If encoding or
+   errors is specified, then the object must expose a data buffer
+   that will be decoded using the given encoding and error handler.
+   Otherwise, returns the result of object.__str__() (if defined)
+   or repr(object).
+   encoding defaults to sys.getdefaultencoding().
+   errors defaults to 'strict'.
+
+   .. py:attribute:: MEDIAN
+      :value: 'Median'
+
+      
+
+   .. py:attribute:: HAMMING
+      :value: 'Hamming'
+
+      
+
+   .. py:attribute:: HANN
+      :value: 'Hann'
+
+      
+
+   .. py:attribute:: PARZEN
+      :value: 'Parzen'
+
+      
+
+   .. py:attribute:: KAISER
+      :value: 'Kaiser'
+
+      
+
+   .. py:attribute:: GAUSSIAN
+      :value: 'Gaussian'
+
+      
+
+
+.. py:class:: TimeDomainFilter(operation: ConvolutionOperation, window_length: datetime.timedelta, overlap_length: datetime.timedelta = timedelta(seconds=0), name: str = None, **options)
+
+   Bases: :py:obj:`ltbio.processing.filters.Filter.Filter`
+
+   .. autoapi-inheritance-diagram:: ltbio.processing.filters.TimeDomainFilter.TimeDomainFilter
+      :parts: 1
+
+   Describes the design of a digital time-domain filter and holds the ability to apply that filter to any array of samples.
+   It acts as a concrete visitor in the Visitor Design Pattern.
+
+   To instantiate, give:
+       - operation: The operation to apply to each window. Choose one from TimeOperation enumeration.
+       - window_length: The length of the window (in timedelta).
+       - overlap_window: The length of the overlap between window slides (in timedelta). Default: 0 seconds.
+
+

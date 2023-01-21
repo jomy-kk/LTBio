@@ -1,0 +1,192 @@
+
+:py:mod:`ltbio.biosignals.sources`
+==================================
+
+.. py:module:: ltbio.biosignals.sources
+
+
+Overview
+----------------
+
+
+Submodules
+~~~~~~~
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   BiosignalSource/index.rst
+   Bitalino/index.rst
+   E4/index.rst
+   HEM/index.rst
+   HSM/index.rst
+   MITDB/index.rst
+   Multisource/index.rst
+   Seer/index.rst
+   Sense/index.rst
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Bitalino <ltbio.biosignals.sources.Bitalino>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`E4 <ltbio.biosignals.sources.E4>`
+     - This class represents the source of Seer Epilepsy Database and includes methods to read and write
+   * - :py:obj:`HEM <ltbio.biosignals.sources.HEM>`
+     - This class represents the source of Hospital de Santa Maria (Lisboa, PT) and includes methods to read and write
+   * - :py:obj:`HSM <ltbio.biosignals.sources.HSM>`
+     - This class represents the source of Hospital de Santa Maria (Lisboa, PT) and includes methods to read and write
+   * - :py:obj:`MITDB <ltbio.biosignals.sources.MITDB>`
+     - This class represents the source of MIT-BIH Arrhythmia Database and includes methods to read and write
+   * - :py:obj:`Seer <ltbio.biosignals.sources.Seer>`
+     - This class represents the source of Seer Epilepsy Database and includes methods to read and write
+   * - :py:obj:`Sense <ltbio.biosignals.sources.Sense>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+----------------
+
+.. py:class:: Bitalino
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.Bitalino
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+
+.. py:class:: E4
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.E4
+      :parts: 1
+
+   This class represents the source of Seer Epilepsy Database and includes methods to read and write
+   biosignal files provided by them. Usually they are in .edf format.
+
+
+.. py:class:: HEM
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.HEM
+      :parts: 1
+
+   This class represents the source of Hospital de Santa Maria (Lisboa, PT) and includes methods to read and write
+   biosignal files provided by them. Usually they are in the European EDF/EDF+ format.
+
+
+.. py:class:: HSM
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.HSM
+      :parts: 1
+
+   This class represents the source of Hospital de Santa Maria (Lisboa, PT) and includes methods to read and write
+   biosignal files provided by them. Usually they are in the European EDF/EDF+ format.
+
+
+.. py:class:: MITDB
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.MITDB
+      :parts: 1
+
+   This class represents the source of MIT-BIH Arrhythmia Database and includes methods to read and write
+   biosignal files provided by them. Usually they are in .dat format.
+
+
+.. py:class:: Seer
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.Seer
+      :parts: 1
+
+   This class represents the source of Seer Epilepsy Database and includes methods to read and write
+   biosignal files provided by them. Usually they are in .edf format.
+
+
+.. py:class:: Sense(device_id: str, defaults_path: str = None)
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.Sense
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:attribute:: MODALITIES
+      :value: 'modalities'
+
+      
+
+   .. py:attribute:: CHANNEL_LABELS
+      :value: 'labels'
+
+      
+
+   .. py:attribute:: BODY_LOCATION
+      :value: 'location'
+
+      
+
+   .. py:attribute:: KEY_CH_LABELS_IN_HEADER
+      :value: 'Channel Labels'
+
+      
+
+   .. py:attribute:: KEY_HZ_IN_HEADER
+      :value: 'Sampling rate (Hz)'
+
+      
+
+   .. py:attribute:: KEY_TIME_IN_HEADER
+      :value: 'ISO 8601'
+
+      
+
+   .. py:attribute:: ANALOGUE_LABELS_FORMAT
+      :value: 'AI{0}_raw'
+
+      
+
+   .. py:attribute:: DEFAULTS_PATH
+      :type: str
+
+      
+
+   .. py:attribute:: DEVICE_ID
+      :type: str
+
+      
+
+   .. py:attribute:: BAD_FORMAT
+      :value: False
+
+      
+
+

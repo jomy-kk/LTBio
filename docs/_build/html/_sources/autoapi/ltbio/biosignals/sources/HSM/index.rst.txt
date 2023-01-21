@@ -1,0 +1,47 @@
+
+:py:mod:`ltbio.biosignals.sources.HSM`
+======================================
+
+.. py:module:: ltbio.biosignals.sources.HSM
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`HSM <ltbio.biosignals.sources.HSM.HSM>`
+     - This class represents the source of Hospital de Santa Maria (Lisboa, PT) and includes methods to read and write
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: HSM
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.HSM.HSM
+      :parts: 1
+
+   This class represents the source of Hospital de Santa Maria (Lisboa, PT) and includes methods to read and write
+   biosignal files provided by them. Usually they are in the European EDF/EDF+ format.
+
+

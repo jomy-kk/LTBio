@@ -1,0 +1,45 @@
+ltbio.biosignals.timeseries package
+===================================
+
+Submodules
+----------
+
+ltbio.biosignals.timeseries.Event module
+----------------------------------------
+
+.. automodule:: ltbio.biosignals.timeseries.Event
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.timeseries.Frequency module
+--------------------------------------------
+
+.. automodule:: ltbio.biosignals.timeseries.Frequency
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.timeseries.Timeseries module
+---------------------------------------------
+
+.. automodule:: ltbio.biosignals.timeseries.Timeseries
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.timeseries.Unit module
+---------------------------------------
+
+.. automodule:: ltbio.biosignals.timeseries.Unit
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.biosignals.timeseries
+   :members:
+   :undoc-members:
+   :show-inheritance:

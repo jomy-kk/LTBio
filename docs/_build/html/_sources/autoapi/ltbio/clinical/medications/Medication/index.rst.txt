@@ -1,0 +1,53 @@
+
+:py:mod:`ltbio.clinical.medications.Medication`
+===============================================
+
+.. py:module:: ltbio.clinical.medications.Medication
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Medication <ltbio.clinical.medications.Medication.Medication>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Medication(dose: float = None, unit: ltbio.biosignals.timeseries.Unit.Unit = None, frequency: str = None)
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.medications.Medication.Medication
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+      :abstractmethod:
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+

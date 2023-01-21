@@ -1,0 +1,103 @@
+
+:py:mod:`ltbio.ml.supervised.models`
+====================================
+
+.. py:module:: ltbio.ml.supervised.models
+
+
+Overview
+----------------
+
+
+Submodules
+~~~~~~~
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   SkLearnModel/index.rst
+   SupervisedModel/index.rst
+   TorchModel/index.rst
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`SkLearnModel <ltbio.ml.supervised.models.SkLearnModel>`
+     - A generic machine learning supervised model.
+   * - :py:obj:`TorchModel <ltbio.ml.supervised.models.TorchModel>`
+     - A generic machine learning supervised model.
+
+
+
+
+
+
+
+
+
+Contents
+----------------
+
+.. py:class:: SkLearnModel(design, name: str = None)
+
+   Bases: :py:obj:`ltbio.ml.supervised.models.SupervisedModel.SupervisedModel`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.supervised.models.SkLearnModel
+      :parts: 1
+
+   A generic machine learning supervised model.
+
+   .. py:property:: trained_parameters
+
+
+   .. py:property:: non_trainable_parameters
+
+
+   .. py:method:: train(dataset, conditions)
+
+
+   .. py:method:: test(dataset, evaluation_metrics=None, version=None)
+
+
+
+.. py:class:: TorchModel(design: torch.nn.Module, name: str = None)
+
+   Bases: :py:obj:`ltbio.ml.supervised.models.SupervisedModel.SupervisedModel`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.supervised.models.TorchModel
+      :parts: 1
+
+   A generic machine learning supervised model.
+
+   .. py:property:: trained_parameters
+
+
+   .. py:property:: non_trainable_parameters
+
+
+   .. py:attribute:: DEVICE
+
+      
+
+   .. py:method:: shapes_summary(dataset: ltbio.ml.datasets.BiosignalDataset.BiosignalDataset)
+
+
+   .. py:method:: train(dataset, conditions, n_subprocesses: int = 0, track_memory: bool = False)
+
+
+   .. py:method:: test(dataset, evaluation_metrics=(), version=None)
+
+
+   .. py:method:: save_design(path: str)
+
+
+

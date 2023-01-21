@@ -1,0 +1,62 @@
+
+:py:mod:`ltbio.processing.filters.Filter`
+=========================================
+
+.. py:module:: ltbio.processing.filters.Filter
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Filter <ltbio.processing.filters.Filter.Filter>`
+     - It acts as the Visitor class in the Visitor Design Pattern.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Filter(name: str = None)
+
+   Bases: :py:obj:`ltbio.pipeline.PipelineUnit.SinglePipelineUnit`, :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.processing.filters.Filter.Filter
+      :parts: 1
+
+   It acts as the Visitor class in the Visitor Design Pattern.
+
+   .. py:attribute:: PIPELINE_INPUT_LABELS
+
+      
+
+   .. py:attribute:: PIPELINE_OUTPUT_LABELS
+
+      
+
+   .. py:attribute:: ART_PATH
+      :value: 'resources/pipeline_media/filter.png'
+
+      
+
+   .. py:method:: apply(timeseries: ltbio.biosignals.Timeseries)
+
+
+

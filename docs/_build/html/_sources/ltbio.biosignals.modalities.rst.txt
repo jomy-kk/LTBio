@@ -1,0 +1,101 @@
+ltbio.biosignals.modalities package
+===================================
+
+Submodules
+----------
+
+ltbio.biosignals.modalities.ACC module
+--------------------------------------
+
+.. automodule:: ltbio.biosignals.modalities.ACC
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.modalities.Biosignal module
+--------------------------------------------
+
+.. automodule:: ltbio.biosignals.modalities.Biosignal
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.modalities.ECG module
+--------------------------------------
+
+.. automodule:: ltbio.biosignals.modalities.ECG
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.modalities.EDA module
+--------------------------------------
+
+.. automodule:: ltbio.biosignals.modalities.EDA
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.modalities.EEG module
+--------------------------------------
+
+.. automodule:: ltbio.biosignals.modalities.EEG
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.modalities.EMG module
+--------------------------------------
+
+.. automodule:: ltbio.biosignals.modalities.EMG
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.modalities.HR module
+-------------------------------------
+
+.. automodule:: ltbio.biosignals.modalities.HR
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.modalities.MultimodalBiosignal module
+------------------------------------------------------
+
+.. automodule:: ltbio.biosignals.modalities.MultimodalBiosignal
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.modalities.PPG module
+--------------------------------------
+
+.. automodule:: ltbio.biosignals.modalities.PPG
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.modalities.RESP module
+---------------------------------------
+
+.. automodule:: ltbio.biosignals.modalities.RESP
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.modalities.TEMP module
+---------------------------------------
+
+.. automodule:: ltbio.biosignals.modalities.TEMP
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.biosignals.modalities
+   :members:
+   :undoc-members:
+   :show-inheritance:

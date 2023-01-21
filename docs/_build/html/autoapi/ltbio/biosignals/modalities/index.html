@@ -1,0 +1,949 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="ltbio.biosignals.modalities.ACC" href="ACC/index.html" /><link rel="prev" title="ltbio.biosignals" href="../index.html" />
+
+    <!-- Generated with Sphinx 5.0.2 and Furo 2022.12.07 -->
+        <title>ltbio.biosignals.modalities - LTBio 1.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-announcement-background: #F2F2F7;
+  --color-announcement-text: grey;
+  --color-brand-primary: #0089BF;
+  --font-stack: Lexend, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: SFMono-Regular, Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../../index.html"><div class="brand">LTBio 1.0.1 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../../_static/colour.png" alt="Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../learn/learn.html">Learn the Basics</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../learn/basic/ltbio101.html">LTBio Python 101</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../learn/basic/properties.html">Enrich your Biosignals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../learn/basic/events.html">Annotate with Events</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../../../index.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l3 current has-children"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l4 current has-children current-page"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="ACC/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.ACC</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="Biosignal/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="ECG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.ECG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="EDA/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EDA</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="EEG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EEG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="EMG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EMG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="HR/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.HR</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="MultimodalBiosignal/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.MultimodalBiosignal</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="PPG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.PPG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="RESP/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.RESP</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="TEMP/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.TEMP</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../sources/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../sources/BiosignalSource/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.BiosignalSource</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../sources/Bitalino/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Bitalino</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../sources/E4/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.E4</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../sources/HEM/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.HEM</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../sources/HSM/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.HSM</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../sources/MITDB/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.MITDB</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../sources/Multisource/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Multisource</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../sources/Seer/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Seer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../sources/Sense/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Sense</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../timeseries/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../timeseries/Event/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Event</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../timeseries/Frequency/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Frequency</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../timeseries/Timeseries/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Timeseries</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../timeseries/Unit/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Unit</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../statistics/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.statistics</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../clinical/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../clinical/conditions/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../clinical/conditions/COVID19/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions.COVID19</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../clinical/conditions/Epilepsy/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions.Epilepsy</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../clinical/conditions/MedicalCondition/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions.MedicalCondition</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../clinical/medications/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.medications</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../clinical/medications/Medication/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.medications.Medication</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../clinical/procedures/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.procedures</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../clinical/procedures/CarpalTunnelRelease/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.procedures.CarpalTunnelRelease</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../clinical/procedures/SurgicalProcedure/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.procedures.SurgicalProcedure</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../clinical/BodyLocation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.BodyLocation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../clinical/Patient/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.Patient</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../clinical/Semiology/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.Semiology</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../decision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../decision/BinaryDecision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.BinaryDecision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../decision/Decision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.Decision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../decision/DecisionMaker/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.DecisionMaker</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../decision/NAryDecision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.NAryDecision</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../features/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../features/FeatureExtractor/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.FeatureExtractor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../features/FeatureSelector/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.FeatureSelector</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../features/Features/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.Features</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../features/SegmentSelector/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.SegmentSelector</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../ml/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../ml/datasets/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../ml/datasets/BiosignalDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.BiosignalDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../ml/datasets/EventDetectionDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.EventDetectionDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../ml/datasets/SegmentToSegmentDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.SegmentToSegmentDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../ml/datasets/ValueToValueDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.ValueToValueDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../ml/datasets/augmentation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.augmentation</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../ml/supervised/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="../../ml/supervised/models/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="../../ml/supervised/models/SkLearnModel/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models.SkLearnModel</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../../ml/supervised/models/SupervisedModel/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models.SupervisedModel</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../../ml/supervised/models/TorchModel/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models.TorchModel</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="../../ml/supervised/SupervisedTrainConditions/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.SupervisedTrainConditions</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../ml/supervised/SupervisingTrainer/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.SupervisingTrainer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../ml/supervised/SupervisingTrainerReporter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.SupervisingTrainerReporter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../ml/supervised/results/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.results</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../ml/metrics/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.metrics</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../pipeline/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../pipeline/GoTo/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.GoTo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../pipeline/Input/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.Input</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../pipeline/Packet/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.Packet</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../pipeline/Pipeline/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.Pipeline</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../pipeline/PipelineUnit/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.PipelineUnit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../pipeline/reports/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.reports</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../processing/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../processing/filters/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../processing/filters/Filter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.Filter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../processing/filters/FrequencyDomainFilter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.FrequencyDomainFilter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../processing/filters/TimeDomainFilter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.TimeDomainFilter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../processing/formaters/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.formaters</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../processing/formaters/Normalizer/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.formaters.Normalizer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../processing/formaters/Segmenter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.formaters.Segmenter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../processing/noises/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.noises</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../processing/noises/GaussianNoise/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.noises.GaussianNoise</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../processing/noises/Noise/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.noises.Noise</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="module-ltbio.biosignals.modalities">
+<span id="ltbio-biosignals-modalities"></span><h1><a class="reference internal" href="#module-ltbio.biosignals.modalities" title="ltbio.biosignals.modalities"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities</span></code></a><a class="headerlink" href="#module-ltbio.biosignals.modalities" title="Permalink to this heading">#</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">#</a></h2>
+<section id="submodules">
+<h3>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">#</a></h3>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ACC/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.ACC</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="Biosignal/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="ECG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.ECG</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="EDA/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EDA</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="EEG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EEG</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="EMG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EMG</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="HR/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.HR</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="MultimodalBiosignal/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.MultimodalBiosignal</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="PPG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.PPG</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="RESP/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.RESP</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="TEMP/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.TEMP</span></code></a></li>
+</ul>
+</div>
+</section>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading">#</a></h3>
+<div class="table-wrapper colwidths-auto summarytable docutils container">
+<table class="summarytable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ltbio.biosignals.modalities.ACC" title="ltbio.biosignals.modalities.ACC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ACC</span></code></a></p></td>
+<td><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ltbio.biosignals.modalities.ECG" title="ltbio.biosignals.modalities.ECG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ECG</span></code></a></p></td>
+<td><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ltbio.biosignals.modalities.EDA" title="ltbio.biosignals.modalities.EDA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EDA</span></code></a></p></td>
+<td><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ltbio.biosignals.modalities.EEG" title="ltbio.biosignals.modalities.EEG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EEG</span></code></a></p></td>
+<td><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ltbio.biosignals.modalities.EMG" title="ltbio.biosignals.modalities.EMG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EMG</span></code></a></p></td>
+<td><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ltbio.biosignals.modalities.HR" title="ltbio.biosignals.modalities.HR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HR</span></code></a></p></td>
+<td><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ltbio.biosignals.modalities.PPG" title="ltbio.biosignals.modalities.PPG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PPG</span></code></a></p></td>
+<td><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ltbio.biosignals.modalities.RESP" title="ltbio.biosignals.modalities.RESP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RESP</span></code></a></p></td>
+<td><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ltbio.biosignals.modalities.TEMP" title="ltbio.biosignals.modalities.TEMP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TEMP</span></code></a></p></td>
+<td><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ACC">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.biosignals.modalities.</span></span><span class="sig-name descname"><span class="pre">ACC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acquisition_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ACC" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" title="ltbio.biosignals.modalities.Biosignal.Biosignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal.Biosignal</span></code></a></p>
+<div class="graphviz"><img src="../../../../_images/inheritance-aa49d7779a6c2bc85b80e2bbc9e244ed2661453e.png" alt="Inheritance diagram of ltbio.biosignals.modalities.ACC" usemap="#inheritanceb77bafae05" class="inheritance graphviz" /></div>
+<map id="inheritanceb77bafae05" name="inheritanceb77bafae05">
+<area shape="rect" id="node3" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" target="_top" title="A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable." alt="" coords="125,5,200,31"/>
+<area shape="rect" id="node2" href="ACC/index.html#ltbio.biosignals.modalities.ACC.ACC" target="_top" title="ACC" alt="" coords="248,5,320,31"/>
+</map><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+It may be associated with a source, a patient, and a body location. It can also have a name.
+It has an initial and final datetime. Its length is its number of channels.
+It can be resampled, filtered, and concatenated to other Biosignals.
+Amplitude and spectrum plots can be displayed and saved.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ACC.DEFAULT_UNIT">
+<span class="sig-name descname"><span class="pre">DEFAULT_UNIT</span></span><a class="headerlink" href="#ltbio.biosignals.modalities.ACC.DEFAULT_UNIT" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ACC.plot_summary">
+<span class="sig-name descname"><span class="pre">plot_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ACC.plot_summary" title="Permalink to this definition">#</a></dt>
+<dd><p>Plots a summary of relevant aspects of common analysis of the Biosignal.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.biosignals.modalities.</span></span><span class="sig-name descname"><span class="pre">ECG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acquisition_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" title="ltbio.biosignals.modalities.Biosignal.Biosignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal.Biosignal</span></code></a></p>
+<div class="graphviz"><img src="../../../../_images/inheritance-6d836d2cc8af60a618c8187f658f363ec9cd3be5.png" alt="Inheritance diagram of ltbio.biosignals.modalities.ECG" usemap="#inheritance10f4dc8352" class="inheritance graphviz" /></div>
+<map id="inheritance10f4dc8352" name="inheritance10f4dc8352">
+<area shape="rect" id="node2" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" target="_top" title="A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable." alt="" coords="125,5,200,31"/>
+<area shape="rect" id="node3" href="ECG/index.html#ltbio.biosignals.modalities.ECG.ECG" target="_top" title="ECG" alt="" coords="248,5,320,31"/>
+</map><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+It may be associated with a source, a patient, and a body location. It can also have a name.
+It has an initial and final datetime. Its length is its number of channels.
+It can be resampled, filtered, and concatenated to other Biosignals.
+Amplitude and spectrum plots can be displayed and saved.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.DEFAULT_UNIT">
+<span class="sig-name descname"><span class="pre">DEFAULT_UNIT</span></span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.DEFAULT_UNIT" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.plot_summary">
+<span class="sig-name descname"><span class="pre">plot_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.plot_summary" title="Permalink to this definition">#</a></dt>
+<dd><p>Plots a summary of relevant aspects of common analysis of the Biosignal.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.plot_rpeaks">
+<span class="sig-name descname"><span class="pre">plot_rpeaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.plot_rpeaks" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.r_timepoints">
+<span class="sig-name descname"><span class="pre">r_timepoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hamilton'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_by_segment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.r_timepoints" title="Permalink to this definition">#</a></dt>
+<dd><p>Finds the timepoints of the R peaks.</p>
+<p>&#64;param algoritm (optional): The algorithm used to compute the R peaks. Default: Hamilton segmenter.
+&#64;param _by_segment (optional): Return timepoints grouped by uninterrptuned segments.</p>
+<p>&#64;returns: The ordered sequence of timepoints of the R peaks.
+&#64;rtype: np.array</p>
+<p>Note: Index one channel first.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.heartbeats">
+<span class="sig-name descname"><span class="pre">heartbeats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">before</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">after</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.heartbeats" title="Permalink to this definition">#</a></dt>
+<dd><p>Segment the signal by heartbeats.
+Works like a Segmenter, except output Timeseries is not necessarily equally segmented.</p>
+<dl class="simple">
+<dt>before<span class="classifier">float, optional</span></dt><dd><p>Window size to include before the R peak (seconds).</p>
+</dd>
+<dt>after<span class="classifier">int, optional</span></dt><dd><p>Window size to include after the R peak (seconds).</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>heartbeats<span class="classifier">ECG</span></dt><dd><p>Biosignal segmented where each Segment is a heartbeat.</p>
+</dd>
+</dl>
+<p>If filtered, the raw samples are not recoverable by ‘undo_filters’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.hr">
+<span class="sig-name descname"><span class="pre">hr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smooth_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.hr" title="Permalink to this definition">#</a></dt>
+<dd><p>Transform ECG signal to instantaneous heart rate.</p>
+<dl class="simple">
+<dt>smooth_length<span class="classifier">float, optional</span></dt><dd><p>Length of smoothing window. If not given, no smoothing is performed on the instantaneous heart rate.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>hr<span class="classifier">HR</span></dt><dd><p>Pseudo-Biosignal where samples are the instantaneous heart rate at each timepoint.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.nni">
+<span class="sig-name descname"><span class="pre">nni</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.nni" title="Permalink to this definition">#</a></dt>
+<dd><p>Transform ECG signal to an evenly-sampled R-R peak interval (RRI/NNI) signal.
+Interpolation is used.
+It is assumed the ECG only has one channel.</p>
+<dl class="simple">
+<dt>nni<span class="classifier">ECG</span></dt><dd><p>Pseudo-Biosignal where each sample is the interval of the R peak ‘occured there’ and the previous R peak.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.invert_if_necessary">
+<span class="sig-name descname"><span class="pre">invert_if_necessary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.invert_if_necessary" title="Permalink to this definition">#</a></dt>
+<dd><p>Investigates which ECG channels need to be inverted, and, the ones that do, get inverted just like method ‘invert’.
+Based on the median of the R-peaks amplitudes. Works preferably with leads I and II.</p>
+<p>None</p>
+<p>None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.skewness">
+<span class="sig-name descname"><span class="pre">skewness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by_segment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict[str:float</span> <span class="pre">|</span> <span class="pre">list[float]]</span></span></span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.skewness" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes the skweness of each channel.
+If <cite>by_segment</cite> is True, a list of skweness values is returned for each contiguous uninterrupted segment,
+otherwise the weighted average is returned. Weighted by duration of each segment.
+:return: A dictionary of skewness value(s) for each channel.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.kurtosis">
+<span class="sig-name descname"><span class="pre">kurtosis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by_segment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.kurtosis" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes the kurtosis of each channel.
+If <cite>by_segment</cite> is True, a list of kurtosis values is returned for each contiguous uninterrupted segment,
+otherwise the weighted average is returned. Weighted by duration of each segment.</p>
+<p>If kurtosis &lt;= 5, it means there’s a great amount of noise present.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary of kurtosis value(s) for each channel.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.flatline_percentage">
+<span class="sig-name descname"><span class="pre">flatline_percentage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by_segment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.flatline_percentage" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes the % of flatline of each channel.
+If <cite>by_segment</cite> is True, a list of values is returned for each contiguous uninterrupted segment,
+otherwise the weighted average is returned. Weighted by duration of each segment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary of % of flatline value(s) for each channel.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.basSQI">
+<span class="sig-name descname"><span class="pre">basSQI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by_segment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.basSQI" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes the ration between [0, 1] Hz and [0, 40] Hz frequency power bands.
+If <cite>by_segment</cite> is True, a list of values is returned for each contiguous uninterrupted segment,
+otherwise the weighted average is returned. Weighted by duration of each segment.</p>
+<p>Adequate to evaluate the presence of baseline drift.
+Values between [0.95, 1] mean ECG shows optimal quality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary of the computed ratio for each channel.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.bsSQI">
+<span class="sig-name descname"><span class="pre">bsSQI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by_segment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.bsSQI" title="Permalink to this definition">#</a></dt>
+<dd><p>Checks baseline wander in time domain.
+If <cite>by_segment</cite> is True, a list of values is returned for each contiguous uninterrupted segment,
+otherwise the weighted average is returned. Weighted by duration of each segment.</p>
+<p>Meant to evaluate the presence of baseline wander.
+Ref: <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0169260714003241?via%3Dihub#bib0040">https://www.sciencedirect.com/science/article/pii/S0169260714003241?via%3Dihub#bib0040</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary of the computed ratio for each channel.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.pSQI">
+<span class="sig-name descname"><span class="pre">pSQI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by_segment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.pSQI" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes the ration between [5, 15] Hz and [5, 40] Hz frequency power bands.
+If <cite>by_segment</cite> is True, a list of values is returned for each contiguous uninterrupted segment,
+otherwise the weighted average is returned. Weighted by duration of each segment.</p>
+<p>Values between [0.5, 0.8] mean QRS complexes show high quality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary of the computed ratio for each channel.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.qSQI">
+<span class="sig-name descname"><span class="pre">qSQI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by_segment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.qSQI" title="Permalink to this definition">#</a></dt>
+<dd><p>Evaluates agreement between two R detectors.
+If <cite>by_segment</cite> is True, a list of values is returned for each contiguous uninterrupted segment,
+otherwise the weighted average is returned. Weighted by duration of each segment.</p>
+<p>Values &gt; 90% mean optimal R-peak consensus.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary of the computed qSQI for each channel.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.ECG.zhaoSQI">
+<span class="sig-name descname"><span class="pre">zhaoSQI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by_segment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.ECG.zhaoSQI" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.EDA">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.biosignals.modalities.</span></span><span class="sig-name descname"><span class="pre">EDA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acquisition_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.EDA" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" title="ltbio.biosignals.modalities.Biosignal.Biosignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal.Biosignal</span></code></a></p>
+<div class="graphviz"><img src="../../../../_images/inheritance-70917d3e96f7dcd192287245c825b83c96fb9e7c.png" alt="Inheritance diagram of ltbio.biosignals.modalities.EDA" usemap="#inheritancec44801c31f" class="inheritance graphviz" /></div>
+<map id="inheritancec44801c31f" name="inheritancec44801c31f">
+<area shape="rect" id="node2" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" target="_top" title="A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable." alt="" coords="125,5,200,31"/>
+<area shape="rect" id="node3" href="EDA/index.html#ltbio.biosignals.modalities.EDA.EDA" target="_top" title="EDA" alt="" coords="248,5,320,31"/>
+</map><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+It may be associated with a source, a patient, and a body location. It can also have a name.
+It has an initial and final datetime. Its length is its number of channels.
+It can be resampled, filtered, and concatenated to other Biosignals.
+Amplitude and spectrum plots can be displayed and saved.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.EDA.DEFAULT_UNIT">
+<span class="sig-name descname"><span class="pre">DEFAULT_UNIT</span></span><a class="headerlink" href="#ltbio.biosignals.modalities.EDA.DEFAULT_UNIT" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.EDA.plot_summary">
+<span class="sig-name descname"><span class="pre">plot_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.EDA.plot_summary" title="Permalink to this definition">#</a></dt>
+<dd><p>Plots a summary of relevant aspects of common analysis of the Biosignal.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.EEG">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.biosignals.modalities.</span></span><span class="sig-name descname"><span class="pre">EEG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acquisition_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.EEG" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" title="ltbio.biosignals.modalities.Biosignal.Biosignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal.Biosignal</span></code></a></p>
+<div class="graphviz"><img src="../../../../_images/inheritance-c4125b7b0769e660b6c0b5430f32e77deb66a824.png" alt="Inheritance diagram of ltbio.biosignals.modalities.EEG" usemap="#inheritance0be53a4365" class="inheritance graphviz" /></div>
+<map id="inheritance0be53a4365" name="inheritance0be53a4365">
+<area shape="rect" id="node2" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" target="_top" title="A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable." alt="" coords="125,5,200,31"/>
+<area shape="rect" id="node3" href="EEG/index.html#ltbio.biosignals.modalities.EEG.EEG" target="_top" title="EEG" alt="" coords="248,5,320,31"/>
+</map><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+It may be associated with a source, a patient, and a body location. It can also have a name.
+It has an initial and final datetime. Its length is its number of channels.
+It can be resampled, filtered, and concatenated to other Biosignals.
+Amplitude and spectrum plots can be displayed and saved.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.EEG.DEFAULT_UNIT">
+<span class="sig-name descname"><span class="pre">DEFAULT_UNIT</span></span><a class="headerlink" href="#ltbio.biosignals.modalities.EEG.DEFAULT_UNIT" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.EEG.plot_summary">
+<span class="sig-name descname"><span class="pre">plot_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.EEG.plot_summary" title="Permalink to this definition">#</a></dt>
+<dd><p>Plots a summary of relevant aspects of common analysis of the Biosignal.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.EMG">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.biosignals.modalities.</span></span><span class="sig-name descname"><span class="pre">EMG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acquisition_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.EMG" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" title="ltbio.biosignals.modalities.Biosignal.Biosignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal.Biosignal</span></code></a></p>
+<div class="graphviz"><img src="../../../../_images/inheritance-89408a05ea1d34ae0f8b8dae6207151a361e9c3d.png" alt="Inheritance diagram of ltbio.biosignals.modalities.EMG" usemap="#inheritance5219908b9f" class="inheritance graphviz" /></div>
+<map id="inheritance5219908b9f" name="inheritance5219908b9f">
+<area shape="rect" id="node2" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" target="_top" title="A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable." alt="" coords="125,5,200,31"/>
+<area shape="rect" id="node3" href="EMG/index.html#ltbio.biosignals.modalities.EMG.EMG" target="_top" title="EMG" alt="" coords="248,5,320,31"/>
+</map><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+It may be associated with a source, a patient, and a body location. It can also have a name.
+It has an initial and final datetime. Its length is its number of channels.
+It can be resampled, filtered, and concatenated to other Biosignals.
+Amplitude and spectrum plots can be displayed and saved.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.EMG.DEFAULT_UNIT">
+<span class="sig-name descname"><span class="pre">DEFAULT_UNIT</span></span><a class="headerlink" href="#ltbio.biosignals.modalities.EMG.DEFAULT_UNIT" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.EMG.plot_summary">
+<span class="sig-name descname"><span class="pre">plot_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.EMG.plot_summary" title="Permalink to this definition">#</a></dt>
+<dd><p>Plots a summary of relevant aspects of common analysis of the Biosignal.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.HR">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.biosignals.modalities.</span></span><span class="sig-name descname"><span class="pre">HR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acquisition_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ltbio.biosignals.modalities.ECG" title="ltbio.biosignals.modalities.ECG"><span class="pre">ECG</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#ltbio.biosignals.modalities.PPG" title="ltbio.biosignals.modalities.PPG"><span class="pre">PPG</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.HR" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" title="ltbio.biosignals.modalities.Biosignal.Biosignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal.Biosignal</span></code></a></p>
+<div class="graphviz"><img src="../../../../_images/inheritance-c7acd8cbf8095429f7b0dad3ee5b95c7ecacefdf.png" alt="Inheritance diagram of ltbio.biosignals.modalities.HR" usemap="#inheritance72c1380760" class="inheritance graphviz" /></div>
+<map id="inheritance72c1380760" name="inheritance72c1380760">
+<area shape="rect" id="node2" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" target="_top" title="A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable." alt="" coords="125,5,200,31"/>
+<area shape="rect" id="node3" href="HR/index.html#ltbio.biosignals.modalities.HR.HR" target="_top" title="HR" alt="" coords="248,5,320,31"/>
+</map><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+It may be associated with a source, a patient, and a body location. It can also have a name.
+It has an initial and final datetime. Its length is its number of channels.
+It can be resampled, filtered, and concatenated to other Biosignals.
+Amplitude and spectrum plots can be displayed and saved.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.HR.plot_summary">
+<span class="sig-name descname"><span class="pre">plot_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.HR.plot_summary" title="Permalink to this definition">#</a></dt>
+<dd><p>Plots a summary of relevant aspects of common analysis of the Biosignal.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.PPG">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.biosignals.modalities.</span></span><span class="sig-name descname"><span class="pre">PPG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acquisition_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.PPG" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" title="ltbio.biosignals.modalities.Biosignal.Biosignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal.Biosignal</span></code></a></p>
+<div class="graphviz"><img src="../../../../_images/inheritance-b766e580e81c89e14d0d238e52285cefcf1b9db5.png" alt="Inheritance diagram of ltbio.biosignals.modalities.PPG" usemap="#inheritance881f7d0c36" class="inheritance graphviz" /></div>
+<map id="inheritance881f7d0c36" name="inheritance881f7d0c36">
+<area shape="rect" id="node2" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" target="_top" title="A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable." alt="" coords="125,5,200,31"/>
+<area shape="rect" id="node3" href="PPG/index.html#ltbio.biosignals.modalities.PPG.PPG" target="_top" title="PPG" alt="" coords="248,5,320,31"/>
+</map><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+It may be associated with a source, a patient, and a body location. It can also have a name.
+It has an initial and final datetime. Its length is its number of channels.
+It can be resampled, filtered, and concatenated to other Biosignals.
+Amplitude and spectrum plots can be displayed and saved.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.PPG.DEFAULT_UNIT">
+<span class="sig-name descname"><span class="pre">DEFAULT_UNIT</span></span><a class="headerlink" href="#ltbio.biosignals.modalities.PPG.DEFAULT_UNIT" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.PPG.plot_summary">
+<span class="sig-name descname"><span class="pre">plot_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.PPG.plot_summary" title="Permalink to this definition">#</a></dt>
+<dd><p>Plots a summary of relevant aspects of common analysis of the Biosignal.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.RESP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.biosignals.modalities.</span></span><span class="sig-name descname"><span class="pre">RESP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acquisition_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.RESP" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" title="ltbio.biosignals.modalities.Biosignal.Biosignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal.Biosignal</span></code></a></p>
+<div class="graphviz"><img src="../../../../_images/inheritance-c5f422d78bb33b73b94ed8c332af8d8f42402aeb.png" alt="Inheritance diagram of ltbio.biosignals.modalities.RESP" usemap="#inheritance6dd1892b73" class="inheritance graphviz" /></div>
+<map id="inheritance6dd1892b73" name="inheritance6dd1892b73">
+<area shape="rect" id="node2" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" target="_top" title="A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable." alt="" coords="125,5,200,31"/>
+<area shape="rect" id="node3" href="RESP/index.html#ltbio.biosignals.modalities.RESP.RESP" target="_top" title="RESP" alt="" coords="248,5,320,31"/>
+</map><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+It may be associated with a source, a patient, and a body location. It can also have a name.
+It has an initial and final datetime. Its length is its number of channels.
+It can be resampled, filtered, and concatenated to other Biosignals.
+Amplitude and spectrum plots can be displayed and saved.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.RESP.DEFAULT_UNIT">
+<span class="sig-name descname"><span class="pre">DEFAULT_UNIT</span></span><a class="headerlink" href="#ltbio.biosignals.modalities.RESP.DEFAULT_UNIT" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.RESP.plot_summary">
+<span class="sig-name descname"><span class="pre">plot_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.RESP.plot_summary" title="Permalink to this definition">#</a></dt>
+<dd><p>Plots a summary of relevant aspects of common analysis of the Biosignal.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.TEMP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.biosignals.modalities.</span></span><span class="sig-name descname"><span class="pre">TEMP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acquisition_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.TEMP" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" title="ltbio.biosignals.modalities.Biosignal.Biosignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal.Biosignal</span></code></a></p>
+<div class="graphviz"><img src="../../../../_images/inheritance-df33df24e95ef3d97b1df723b43d0256c4ec0884.png" alt="Inheritance diagram of ltbio.biosignals.modalities.TEMP" usemap="#inheritance5173a4622c" class="inheritance graphviz" /></div>
+<map id="inheritance5173a4622c" name="inheritance5173a4622c">
+<area shape="rect" id="node2" href="Biosignal/index.html#ltbio.biosignals.modalities.Biosignal.Biosignal" target="_top" title="A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable." alt="" coords="125,5,200,31"/>
+<area shape="rect" id="node3" href="TEMP/index.html#ltbio.biosignals.modalities.TEMP.TEMP" target="_top" title="TEMP" alt="" coords="248,5,320,31"/>
+</map><p>A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+It may be associated with a source, a patient, and a body location. It can also have a name.
+It has an initial and final datetime. Its length is its number of channels.
+It can be resampled, filtered, and concatenated to other Biosignals.
+Amplitude and spectrum plots can be displayed and saved.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.TEMP.DEFAULT_UNIT">
+<span class="sig-name descname"><span class="pre">DEFAULT_UNIT</span></span><a class="headerlink" href="#ltbio.biosignals.modalities.TEMP.DEFAULT_UNIT" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.biosignals.modalities.TEMP.plot_summary">
+<span class="sig-name descname"><span class="pre">plot_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.biosignals.modalities.TEMP.plot_summary" title="Permalink to this definition">#</a></dt>
+<dd><p>Plots a summary of relevant aspects of common analysis of the Biosignal.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="ACC/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.ACC</span></code></div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals</span></code></div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, ScientISST
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/jomy-kk/IT-LongTermBiosignals" aria-label="GitHub">
+                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                    </svg>
+                </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities</span></code></a><ul>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#contents">Contents</a><ul>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ACC">ACC</a><ul>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ACC.DEFAULT_UNIT">DEFAULT_UNIT</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ACC.plot_summary">plot_summary</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG">ECG</a><ul>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.DEFAULT_UNIT">DEFAULT_UNIT</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.plot_summary">plot_summary</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.plot_rpeaks">plot_rpeaks</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.r_timepoints">r_timepoints</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.heartbeats">heartbeats</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.hr">hr</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.nni">nni</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.invert_if_necessary">invert_if_necessary</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.skewness">skewness</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.kurtosis">kurtosis</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.flatline_percentage">flatline_percentage</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.basSQI">basSQI</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.bsSQI">bsSQI</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.pSQI">pSQI</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.qSQI">qSQI</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.ECG.zhaoSQI">zhaoSQI</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.EDA">EDA</a><ul>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.EDA.DEFAULT_UNIT">DEFAULT_UNIT</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.EDA.plot_summary">plot_summary</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.EEG">EEG</a><ul>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.EEG.DEFAULT_UNIT">DEFAULT_UNIT</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.EEG.plot_summary">plot_summary</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.EMG">EMG</a><ul>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.EMG.DEFAULT_UNIT">DEFAULT_UNIT</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.EMG.plot_summary">plot_summary</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.HR">HR</a><ul>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.HR.plot_summary">plot_summary</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.PPG">PPG</a><ul>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.PPG.DEFAULT_UNIT">DEFAULT_UNIT</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.PPG.plot_summary">plot_summary</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.RESP">RESP</a><ul>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.RESP.DEFAULT_UNIT">DEFAULT_UNIT</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.RESP.plot_summary">plot_summary</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.TEMP">TEMP</a><ul>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.TEMP.DEFAULT_UNIT">DEFAULT_UNIT</a></li>
+<li><a class="reference internal" href="#ltbio.biosignals.modalities.TEMP.plot_summary">plot_summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/scripts/furo.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    </body>
+</html>

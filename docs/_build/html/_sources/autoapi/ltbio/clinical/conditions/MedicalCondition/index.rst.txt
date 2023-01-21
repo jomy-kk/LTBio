@@ -1,0 +1,50 @@
+
+:py:mod:`ltbio.clinical.conditions.MedicalCondition`
+====================================================
+
+.. py:module:: ltbio.clinical.conditions.MedicalCondition
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`MedicalCondition <ltbio.clinical.conditions.MedicalCondition.MedicalCondition>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: MedicalCondition(years_since_diagnosis: float = None)
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.conditions.MedicalCondition.MedicalCondition
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: years_since_diagnosis
+
+
+

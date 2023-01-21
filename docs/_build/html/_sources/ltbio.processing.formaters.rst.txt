@@ -1,0 +1,29 @@
+ltbio.processing.formaters package
+==================================
+
+Submodules
+----------
+
+ltbio.processing.formaters.Normalizer module
+--------------------------------------------
+
+.. automodule:: ltbio.processing.formaters.Normalizer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.processing.formaters.Segmenter module
+-------------------------------------------
+
+.. automodule:: ltbio.processing.formaters.Segmenter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.processing.formaters
+   :members:
+   :undoc-members:
+   :show-inheritance:

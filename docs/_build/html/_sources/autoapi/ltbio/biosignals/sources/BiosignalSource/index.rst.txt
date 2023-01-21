@@ -1,0 +1,47 @@
+
+:py:mod:`ltbio.biosignals.sources.BiosignalSource`
+==================================================
+
+.. py:module:: ltbio.biosignals.sources.BiosignalSource
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`BiosignalSource <ltbio.biosignals.sources.BiosignalSource.BiosignalSource>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: BiosignalSource
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.BiosignalSource.BiosignalSource
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+

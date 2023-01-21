@@ -1,0 +1,5 @@
+<map id="inheritance1a6e49cb8c" name="inheritance1a6e49cb8c">
+<area shape="rect" id="node1" title="Helper class that provides a standard way to create an ABC using" alt="" coords="5,31,77,56"/>
+<area shape="rect" id="node2" href="#ltbio.pipeline.PipelineUnit.PipelineUnit" target="_top" title="Pipeline Units are the building blocks of Pipelines." alt="" coords="125,5,217,31"/>
+<area shape="rect" id="node3" href="#ltbio.pipeline.PipelineUnit.PipelineUnitsUnion" target="_top" title="A Union is a collection of single units where the Pipeline branches to each of them." alt="" coords="265,31,399,56"/>
+</map>

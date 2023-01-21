@@ -1,0 +1,54 @@
+
+:py:mod:`ltbio.ml.supervised.results`
+=====================================
+
+.. py:module:: ltbio.ml.supervised.results
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`SupervisedTrainResults <ltbio.ml.supervised.results.SupervisedTrainResults>`
+     - Stores the results of a training session of a supervised ML model.
+   * - :py:obj:`PredictionResults <ltbio.ml.supervised.results.PredictionResults>`
+     - Stores the results of predictions made with of a supervised ML model.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: SupervisedTrainResults(train_losses: list, validation_losses: list)
+
+   Stores the results of a training session of a supervised ML model.
+
+
+.. py:class:: PredictionResults(loss: float, test_dataset: ltbio.ml.datasets.BiosignalDataset.BiosignalDataset, predictions: tuple, evaluation_metrics: Collection[ltbio.ml.metrics.Metric] = None, name: str = None)
+
+   Stores the results of predictions made with of a supervised ML model.
+
+   .. py:property:: biosignals
+
+
+   .. py:property:: timeseries
+
+
+

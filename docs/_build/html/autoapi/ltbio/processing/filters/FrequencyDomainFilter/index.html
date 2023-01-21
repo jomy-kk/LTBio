@@ -1,0 +1,591 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="ltbio.processing.filters.TimeDomainFilter" href="../TimeDomainFilter/index.html" /><link rel="prev" title="ltbio.processing.filters.Filter" href="../Filter/index.html" />
+
+    <!-- Generated with Sphinx 5.0.2 and Furo 2022.12.07 -->
+        <title>ltbio.processing.filters.FrequencyDomainFilter - LTBio 1.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-announcement-background: #F2F2F7;
+  --color-announcement-text: grey;
+  --color-brand-primary: #0089BF;
+  --font-stack: Lexend, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: SFMono-Regular, Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../../../index.html"><div class="brand">LTBio 1.0.1 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../../../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../../../_static/colour.png" alt="Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="../../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../../learn/learn.html">Learn the Basics</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../learn/basic/ltbio101.html">LTBio Python 101</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../learn/basic/properties.html">Enrich your Biosignals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../learn/basic/events.html">Annotate with Events</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../../../../index.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="../../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../biosignals/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../biosignals/modalities/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/modalities/ACC/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.ACC</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/modalities/Biosignal/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/modalities/ECG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.ECG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/modalities/EDA/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EDA</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/modalities/EEG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EEG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/modalities/EMG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EMG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/modalities/HR/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.HR</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/modalities/MultimodalBiosignal/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.MultimodalBiosignal</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/modalities/PPG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.PPG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/modalities/RESP/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.RESP</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/modalities/TEMP/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.TEMP</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../biosignals/sources/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/sources/BiosignalSource/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.BiosignalSource</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/sources/Bitalino/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Bitalino</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/sources/E4/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.E4</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/sources/HEM/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.HEM</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/sources/HSM/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.HSM</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/sources/MITDB/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.MITDB</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/sources/Multisource/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Multisource</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/sources/Seer/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Seer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/sources/Sense/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Sense</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../biosignals/timeseries/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/timeseries/Event/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Event</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/timeseries/Frequency/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Frequency</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/timeseries/Timeseries/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Timeseries</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../biosignals/timeseries/Unit/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Unit</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../../biosignals/statistics/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.statistics</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../clinical/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../clinical/conditions/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../../clinical/conditions/COVID19/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions.COVID19</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../clinical/conditions/Epilepsy/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions.Epilepsy</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../clinical/conditions/MedicalCondition/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions.MedicalCondition</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../clinical/medications/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.medications</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../../clinical/medications/Medication/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.medications.Medication</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../clinical/procedures/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.procedures</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../../clinical/procedures/CarpalTunnelRelease/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.procedures.CarpalTunnelRelease</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../clinical/procedures/SurgicalProcedure/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.procedures.SurgicalProcedure</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../../clinical/BodyLocation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.BodyLocation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../clinical/Patient/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.Patient</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../clinical/Semiology/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.Semiology</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../decision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../decision/BinaryDecision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.BinaryDecision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../decision/Decision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.Decision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../decision/DecisionMaker/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.DecisionMaker</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../decision/NAryDecision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.NAryDecision</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../features/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../features/FeatureExtractor/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.FeatureExtractor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../features/FeatureSelector/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.FeatureSelector</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../features/Features/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.Features</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../features/SegmentSelector/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.SegmentSelector</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../ml/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../ml/datasets/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../../ml/datasets/BiosignalDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.BiosignalDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../ml/datasets/EventDetectionDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.EventDetectionDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../ml/datasets/SegmentToSegmentDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.SegmentToSegmentDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../ml/datasets/ValueToValueDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.ValueToValueDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../ml/datasets/augmentation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.augmentation</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../ml/supervised/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="../../../ml/supervised/models/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="../../../ml/supervised/models/SkLearnModel/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models.SkLearnModel</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../../../ml/supervised/models/SupervisedModel/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models.SupervisedModel</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../../../ml/supervised/models/TorchModel/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models.TorchModel</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="../../../ml/supervised/SupervisedTrainConditions/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.SupervisedTrainConditions</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../ml/supervised/SupervisingTrainer/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.SupervisingTrainer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../ml/supervised/SupervisingTrainerReporter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.SupervisingTrainerReporter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../ml/supervised/results/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.results</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../../ml/metrics/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.metrics</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../pipeline/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../pipeline/GoTo/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.GoTo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../pipeline/Input/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.Input</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../pipeline/Packet/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.Packet</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../pipeline/Pipeline/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.Pipeline</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../pipeline/PipelineUnit/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.PipelineUnit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../pipeline/reports/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.reports</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 current has-children"><a class="reference internal" href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l4 current has-children"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l5"><a class="reference internal" href="../Filter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.Filter</span></code></a></li>
+<li class="toctree-l5 current current-page"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.FrequencyDomainFilter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../TimeDomainFilter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.TimeDomainFilter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../formaters/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.formaters</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../formaters/Normalizer/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.formaters.Normalizer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../formaters/Segmenter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.formaters.Segmenter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../noises/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.noises</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../noises/GaussianNoise/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.noises.GaussianNoise</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../noises/Noise/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.noises.Noise</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="module-ltbio.processing.filters.FrequencyDomainFilter">
+<span id="ltbio-processing-filters-frequencydomainfilter"></span><h1><a class="reference internal" href="../index.html#ltbio.processing.filters.FrequencyDomainFilter" title="ltbio.processing.filters.FrequencyDomainFilter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.FrequencyDomainFilter</span></code></a><a class="headerlink" href="#module-ltbio.processing.filters.FrequencyDomainFilter" title="Permalink to this heading">#</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">#</a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading">#</a></h3>
+<div class="table-wrapper colwidths-auto summarytable docutils container">
+<table class="summarytable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse" title="ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FrequencyResponse</span></code></a></p></td>
+<td><p>str(object=’’) -&gt; str</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.BandType" title="ltbio.processing.filters.FrequencyDomainFilter.BandType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BandType</span></code></a></p></td>
+<td><p>str(object=’’) -&gt; str</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter" title="ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FrequencyDomainFilter</span></code></a></p></td>
+<td><p>Describes the design of a digital frequency-domain filter and holds the ability to apply that filter to any array of samples.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.processing.filters.FrequencyDomainFilter.</span></span><span class="sig-name descname"><span class="pre">FrequencyResponse</span></span><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>str(object=’’) -&gt; str
+str(bytes_or_buffer[, encoding[, errors]]) -&gt; str</p>
+<p>Create a new string object from the given object. If encoding or
+errors is specified, then the object must expose a data buffer
+that will be decoded using the given encoding and error handler.
+Otherwise, returns the result of object.__str__() (if defined)
+or repr(object).
+encoding defaults to sys.getdefaultencoding().
+errors defaults to ‘strict’.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.FIR">
+<span class="sig-name descname"><span class="pre">FIR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Finite</span> <span class="pre">Impulse</span> <span class="pre">Response</span> <span class="pre">(FIR)'</span></em><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.FIR" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.BUTTER">
+<span class="sig-name descname"><span class="pre">BUTTER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'IIR</span> <span class="pre">Butterworth'</span></em><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.BUTTER" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.CHEBY1">
+<span class="sig-name descname"><span class="pre">CHEBY1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'IIR</span> <span class="pre">Chebyshev</span> <span class="pre">1'</span></em><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.CHEBY1" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.CHEBY2">
+<span class="sig-name descname"><span class="pre">CHEBY2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'IIR</span> <span class="pre">Chebyshev</span> <span class="pre">2'</span></em><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.CHEBY2" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.ELLIP">
+<span class="sig-name descname"><span class="pre">ELLIP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'IIR</span> <span class="pre">Elliptic'</span></em><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.ELLIP" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.BESSEL">
+<span class="sig-name descname"><span class="pre">BESSEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'IIR</span> <span class="pre">Bessel'</span></em><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.BESSEL" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.BandType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.processing.filters.FrequencyDomainFilter.</span></span><span class="sig-name descname"><span class="pre">BandType</span></span><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.BandType" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>str(object=’’) -&gt; str
+str(bytes_or_buffer[, encoding[, errors]]) -&gt; str</p>
+<p>Create a new string object from the given object. If encoding or
+errors is specified, then the object must expose a data buffer
+that will be decoded using the given encoding and error handler.
+Otherwise, returns the result of object.__str__() (if defined)
+or repr(object).
+encoding defaults to sys.getdefaultencoding().
+errors defaults to ‘strict’.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.BandType.LOWPASS">
+<span class="sig-name descname"><span class="pre">LOWPASS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Low-pass'</span></em><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.BandType.LOWPASS" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.BandType.HIGHPASS">
+<span class="sig-name descname"><span class="pre">HIGHPASS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'High-pass'</span></em><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.BandType.HIGHPASS" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.BandType.BANDPASS">
+<span class="sig-name descname"><span class="pre">BANDPASS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Band-pass'</span></em><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.BandType.BANDPASS" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.BandType.BANDSTOP">
+<span class="sig-name descname"><span class="pre">BANDSTOP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Band-stop'</span></em><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.BandType.BANDSTOP" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.processing.filters.FrequencyDomainFilter.</span></span><span class="sig-name descname"><span class="pre">FrequencyDomainFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fresponse</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse" title="ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse"><span class="pre">FrequencyResponse</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">band_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.BandType" title="ltbio.processing.filters.FrequencyDomainFilter.BandType"><span class="pre">BandType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../Filter/index.html#ltbio.processing.filters.Filter.Filter" title="ltbio.processing.filters.Filter.Filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ltbio.processing.filters.Filter.Filter</span></code></a></p>
+<p>Describes the design of a digital frequency-domain filter and holds the ability to apply that filter to any array of samples.
+It acts as a concrete visitor in the Visitor Design Pattern.</p>
+<dl class="simple">
+<dt>To instantiate, give:</dt><dd><ul class="simple">
+<li><p>fresponse: The frequency response of the filter. Choose one from FrequencyResponse enumeration.</p></li>
+<li><p>band_type: Choose whether it should low, high, or band pass or reject a band of the samples’ spectrum. Choose one from BandType enumeration.</p></li>
+<li><p>order: The order of the filter (in int).</p></li>
+<li><p>cutoff: The cutoff frequency at 3 dB (for lowpass and highpass) or a tuple of two cutoffs (for bandpass or bandstop) (in Hertz, float).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter.last_numerator_coefficients">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">last_numerator_coefficients</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.array</span></em><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter.last_numerator_coefficients" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter.last_denominator_coefficients">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">last_denominator_coefficients</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.array</span></em><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter.last_denominator_coefficients" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter.plot_bode">
+<span class="sig-name descname"><span class="pre">plot_bode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter.plot_bode" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../TimeDomainFilter/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.TimeDomainFilter</span></code></div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../Filter/index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.Filter</span></code></div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, ScientISST
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/jomy-kk/IT-LongTermBiosignals" aria-label="GitHub">
+                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                    </svg>
+                </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.FrequencyDomainFilter</span></code></a><ul>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#contents">Contents</a><ul>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse">FrequencyResponse</a><ul>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.FIR">FIR</a></li>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.BUTTER">BUTTER</a></li>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.CHEBY1">CHEBY1</a></li>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.CHEBY2">CHEBY2</a></li>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.ELLIP">ELLIP</a></li>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse.BESSEL">BESSEL</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.BandType">BandType</a><ul>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.BandType.LOWPASS">LOWPASS</a></li>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.BandType.HIGHPASS">HIGHPASS</a></li>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.BandType.BANDPASS">BANDPASS</a></li>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.BandType.BANDSTOP">BANDSTOP</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter">FrequencyDomainFilter</a><ul>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter.last_numerator_coefficients">last_numerator_coefficients</a></li>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter.last_denominator_coefficients">last_denominator_coefficients</a></li>
+<li><a class="reference internal" href="#ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter.plot_bode">plot_bode</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/scripts/furo.js"></script>
+    <script src="../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../_static/copybutton.js"></script>
+    </body>
+</html>

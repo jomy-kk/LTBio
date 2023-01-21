@@ -1,0 +1,483 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
+
+    <!-- Generated with Sphinx 5.0.2 and Furo 2022.12.07 -->
+        <title>How to instantiate a Biosignal - LTBio 1.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-announcement-background: #F2F2F7;
+  --color-announcement-text: grey;
+  --color-brand-primary: #0089BF;
+  --font-stack: Lexend, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: SFMono-Regular, Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">LTBio 1.0.1 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/colour.png" alt="Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="learn.html">Learn the Basics</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="ltbio.html">API</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="ltbio.biosignals.html">ltbio.biosignals package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.biosignals.modalities.html">ltbio.biosignals.modalities package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.biosignals.sources.html">ltbio.biosignals.sources package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.biosignals.timeseries.html">ltbio.biosignals.timeseries package</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="ltbio.clinical.html">ltbio.clinical package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.conditions.html">ltbio.clinical.conditions package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html">ltbio.clinical.medications package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.procedures.html">ltbio.clinical.procedures package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.decision.html">ltbio.decision package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.features.html">ltbio.features package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="ltbio.ml.html">ltbio.ml package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.ml.datasets.html">ltbio.ml.datasets package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ltbio.ml.supervised.html">ltbio.ml.supervised package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.ml.supervised.models.html">ltbio.ml.supervised.models package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.pipeline.html">ltbio.pipeline package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="ltbio.processing.html">ltbio.processing package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.processing.filters.html">ltbio.processing.filters package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.processing.formaters.html">ltbio.processing.formaters package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.processing.noises.html">ltbio.processing.noises package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <p>A Biosignal is a set of one or more channels measuring a biological variable. Each channel is represented by a <a href="[Class] Timeseries">Timeseries</a> object. See this structure illustrated below:</p>
+<p><img alt="biosignal" src="https://user-images.githubusercontent.com/25588495/167432054-7ec77e72-1639-404e-bb74-235b3600bb27.png" /></p>
+<p>A Biosignal also has some properties like the patient it belongs to, the body location where it was measured, and the source where it was acquired (instrument, hospital, …).</p>
+<section id="how-to-instantiate-a-biosignal">
+<h1>How to instantiate a Biosignal<a class="headerlink" href="#how-to-instantiate-a-biosignal" title="Permalink to this heading">#</a></h1>
+<p>Biosignal is an abstract class, meaning objects cannot be instantiated from it. You need to instantiate one of its <strong>types</strong>, corresponding to its acquisition modality. Types are:</p>
+<ul class="simple">
+<li><p>🫀 Electrocardiography (ECG) [<span class="xref myst">See Class</span>]</p></li>
+<li><p>🧠 Electroencephalography (EEG) [<span class="xref myst">See Class</span>]</p></li>
+<li><p>💪🏼 Electromyography (EMG) [<span class="xref myst">See Class</span>]</p></li>
+<li><p>🫁 Respiration (RESP) [<span class="xref myst">See Class</span>]</p></li>
+<li><p>💦 Electrodermal Activity (EDA) [<span class="xref myst">See Class</span>]</p></li>
+<li><p>🏃🏾‍♂️ Accelerometry (ACC) [<span class="xref myst">See Class</span>]</p></li>
+</ul>
+<p>These types, each codified in their own class, inherit the properties and general behavior from Biosignal. In the followinf examples, we will show you how to instantiate an ECG, but they are applicable to any other biosignal modality. You have three ways 🤯 of getting a Biosignal to work with!</p>
+<section id="way-1-instantiate-a-biosignal-from-files">
+<h2>Way 1: Instantiate a Biosignal from files 📁<a class="headerlink" href="#way-1-instantiate-a-biosignal-from-files" title="Permalink to this heading">#</a></h2>
+<p>Give the path where the files are located and specify the source (in <a href="[Class] BiosignalSource">BiosignalSource</a>) from where the files come from:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">biosignal</span> <span class="o">=</span> <span class="n">ECG</span><span class="p">(</span><span class="s2">&quot;path_to_files&quot;</span><span class="p">,</span> <span class="n">HSM</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, <a href="[BiosignalSource] HSM">HSM</a> represents “Hospital de Santa Maria” 🏥, which is the source of where we acquired some of our biosignals! But you can choose from a variety of biosignal sources like other Portuguese hospitals, Bitalino devices, and ScientISST SENSE boards. If your biosignals don’t come from one of these sources, you can even <a href="404">create your own source</a>! 😱</p>
+</section>
+<section id="way-2-instantiate-a-biosignal-from-a-database-comming">
+<h2>Way 2: Instantiate a Biosignal from a Database [comming 🔜]<a class="headerlink" href="#way-2-instantiate-a-biosignal-from-a-database-comming" title="Permalink to this heading">#</a></h2>
+<p>Give the patient code, the source (in <a href="[Class] BiosignalSource">BiosignalSource</a>) from where the files were acquired from, and the interval of time (in tuple) you want to fetch from the database:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">biosignal</span> <span class="o">=</span> <span class="n">ECG</span><span class="p">(</span><span class="n">patient_code</span><span class="o">=</span><span class="mi">101</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">HSM</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;2022-01-01 16:00&#39;</span><span class="p">,</span> <span class="s1">&#39;2022-01-01 17:30&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>This feature will only be available in the future since the Research Database is still being developed.</p>
+</div></blockquote>
+</section>
+<section id="way-3-instantiate-a-biosignal-ad-hoc-01">
+<h2>Way 3: Instantiate a Biosignal ad-hoc 0️⃣1️⃣<a class="headerlink" href="#way-3-instantiate-a-biosignal-ad-hoc-01" title="Permalink to this heading">#</a></h2>
+<p>Give a dictionary where the keys are the channel names and the values are the corresponding <a href="[Class] Timeseries">Timeseries</a> objects:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">biosignal</span> <span class="o">=</span> <span class="n">ECG</span><span class="p">({</span><span class="s2">&quot;xx&quot;</span><span class="p">:</span> <span class="n">timeseriesXX</span><span class="p">,</span> <span class="s2">&quot;yy&quot;</span><span class="p">:</span> <span class="n">timeseriesYY</span><span class="p">,</span> <span class="o">...</span><span class="p">})</span>
+</pre></div>
+</div>
+</section>
+<section id="channels-names">
+<h2>Channels Names<a class="headerlink" href="#channels-names" title="Permalink to this heading">#</a></h2>
+<p>Each channel is represented as a Timeseries and needs to be labeled with a str or a standard <a href="[Enum] Body Location">BodyLocation</a>. Hence, for instance, ad-hoc you might do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">biosignal</span> <span class="o">=</span> <span class="n">ECG</span><span class="p">({</span><span class="n">BodyLocation</span><span class="o">.</span><span class="n">V1</span><span class="p">:</span> <span class="n">timeseriesXX</span><span class="p">,</span> <span class="n">BodyLocation</span><span class="o">.</span><span class="n">V2</span><span class="p">:</span> <span class="n">timeseriesYY</span><span class="p">,</span> <span class="o">...</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>Reading from files or fetching from the database you can also get channel names with standardised body locations.</p>
+</section>
+<section id="more-properties">
+<h2>More Properties<a class="headerlink" href="#more-properties" title="Permalink to this heading">#</a></h2>
+<p>If you want your Biosignal objects really to be complete, and have all the associated information, you might consider specifying more properties:</p>
+<ul class="simple">
+<li><p>🤕 <strong>Patient:</strong> <code class="docutils literal notranslate"><span class="pre">biosignal</span> <span class="pre">=</span> <span class="pre">ECG(...</span> <span class="pre">,</span> <span class="pre">patient=x)</span></code> where <code class="docutils literal notranslate"><span class="pre">x</span></code> is an object <a href="[Class] Patient">Patient</a> where you can drop any information regarding the patient associated to the Biosignal. Beware that if reading from a file or fetching from the database might fill this property automatically.</p></li>
+<li><p>📍 <strong>Location:</strong> <code class="docutils literal notranslate"><span class="pre">biosignal</span> <span class="pre">=</span> <span class="pre">ECG(...,</span> <span class="pre">acquisition_location=x)</span></code> where <code class="docutils literal notranslate"><span class="pre">x</span></code> is a <a href="[Enum] Body Location">BodyLocation</a>, to remember where the sensors were placed.</p></li>
+<li><p>🏷️ <strong>Name:</strong> <code class="docutils literal notranslate"><span class="pre">biosignal</span> <span class="pre">=</span> <span class="pre">ECG(...,</span> <span class="pre">name=x)</span></code> where <code class="docutils literal notranslate"><span class="pre">x</span></code> might be a string you want to associate to the Biosignal.</p></li>
+</ul>
+</section>
+</section>
+<section id="getters-and-setters">
+<h1>Getters and Setters<a class="headerlink" href="#getters-and-setters" title="Permalink to this heading">#</a></h1>
+<p>You can only reset the <code class="docutils literal notranslate"><span class="pre">name</span></code> after instantiation. But you can <strong>get</strong> any of the following properties:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">channel_names</span></code> returns a set with the channel labels (in Set[str] or Set[<a href="[Enum] Body Location">BodyLocation</a>])</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">acquisition_location</span></code> returns the body location where the biosignal was acquired (in <a href="[Enum] Body Location">BodyLocation</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> returns the source where the Biosignal was acquired: hospital, device, etc. (in <a href="[Class] BiosignalSource">BiosignalSource</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">patient_code</span></code> returns the code of the patient whose the biosignal belongs (in int or str)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">patient_coditions</span></code> returns a set of the medical conditions the patient has (in Set[<a href="[Abstract] Medical Condition">MedicalCondition</a>])</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> returns the biosignal modality (in any Biosignal subclass)</p></li>
+</ul>
+<blockquote>
+<div><p>Due to privacy-by-design, no other patient information might be requested.</p>
+</div></blockquote>
+<p>To get the <strong>number of channels</strong>, use <code class="docutils literal notranslate"><span class="pre">len</span></code>. E.g.: <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">len(biosignal)</span></code>.</p>
+</section>
+<section id="print">
+<h1>Print<a class="headerlink" href="#print" title="Permalink to this heading">#</a></h1>
+<p>You can print a description of a Biosignal to know what is inside using <code class="docutils literal notranslate"><span class="pre">print(biosignal1)</span></code>. Something similar to this will propmt:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Name</span><span class="p">:</span> <span class="n">My</span> <span class="n">Biosignal</span> <span class="n">I</span> <span class="n">collected</span> <span class="n">the</span> <span class="n">other</span> <span class="n">day</span>
+<span class="n">Type</span><span class="p">:</span> <span class="n">ECG</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">channels</span><span class="p">:</span> <span class="mi">3</span>
+<span class="n">Source</span><span class="p">:</span> <span class="n">vEEG</span> <span class="kn">from</span> <span class="nn">Hospital</span> <span class="n">de</span> <span class="n">Santa</span> <span class="n">Maria</span>
+<span class="n">Patient</span><span class="p">:</span> <span class="c1">#53 (Epilepsy)</span>
+<span class="n">Day</span><span class="p">:</span> <span class="mi">09</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">2022</span>
+<span class="n">Total</span> <span class="n">recording</span> <span class="n">hours</span><span class="p">:</span> <span class="mi">5142</span> <span class="n">h</span>
+</pre></div>
+</div>
+</section>
+<section id="indexing">
+<h1>Indexing<a class="headerlink" href="#indexing" title="Permalink to this heading">#</a></h1>
+<section id="access-one-channel">
+<h2>Access One Channel<a class="headerlink" href="#access-one-channel" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">biosignal['xx']</span></code> returns a Biosignal only with the channel named <code class="docutils literal notranslate"><span class="pre">xx</span></code>.</p>
+<blockquote>
+<div><p>Raises <strong>Index Error</strong> when the given channel does not exist.</p>
+</div></blockquote>
+</section>
+<section id="access-multiple-channels">
+<h2>Access Multiple Channels<a class="headerlink" href="#access-multiple-channels" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">biosignal['xx',</span> <span class="pre">'yy',</span> <span class="pre">...]</span></code> returns a Biosignal with all the channels named <code class="docutils literal notranslate"><span class="pre">xx</span></code>, <code class="docutils literal notranslate"><span class="pre">yy</span></code>, …</p>
+<blockquote>
+<div><p>Raises <strong>Index Error</strong> if a given channel does not exist.</p>
+</div></blockquote>
+</section>
+<section id="slices">
+<h2>Slices<a class="headerlink" href="#slices" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">biosignal['2022-01-01</span> <span class="pre">12:00'</span> <span class="pre">:</span> <span class="pre">'2022-01-01</span> <span class="pre">13:30']</span></code> returns a Biosignal with all the original channels trimmed from 12 AM to 1:30 PM.</p>
+<p><code class="docutils literal notranslate"><span class="pre">biosignal[datetime(2022,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">12)</span> <span class="pre">:</span> <span class="pre">datetime(2022,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">13,</span> <span class="pre">30)]</span></code> returns the same.</p>
+<blockquote>
+<div><p>Raises <strong>Index Error</strong> when the interval given is out of boundaries.</p>
+</div></blockquote>
+<p>To directly get the <a href="[Class] Timeseries">Timeseries</a> of a channel <code class="docutils literal notranslate"><span class="pre">xx</span></code> from the timepoints <code class="docutils literal notranslate"><span class="pre">a</span></code> to <code class="docutils literal notranslate"><span class="pre">b</span></code>, do double indexing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">biosignal</span><span class="p">[</span><span class="s1">&#39;xx&#39;</span><span class="p">][</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="operations">
+<h1>Operations<a class="headerlink" href="#operations" title="Permalink to this heading">#</a></h1>
+<section id="concatenation">
+<h2>Concatenation<a class="headerlink" href="#concatenation" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">biosignal3</span> <span class="pre">=</span> <span class="pre">biosignal1</span> <span class="pre">+</span> <span class="pre">biosignal2</span></code> concatenates the beginning of all channels of <code class="docutils literal notranslate"><span class="pre">biosignal2</span></code> to the end of <code class="docutils literal notranslate"><span class="pre">biosignal1</span></code>, and stores it in <code class="docutils literal notranslate"><span class="pre">biosignal3</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">biosignal1</span> <span class="pre">+=</span> <span class="pre">biosignal2</span></code> concatenates the beginning of all channels of <code class="docutils literal notranslate"><span class="pre">biosignal2</span></code> to the end of <code class="docutils literal notranslate"><span class="pre">biosignal1</span></code>, and stores it in <code class="docutils literal notranslate"><span class="pre">biosignal1</span></code>.</p>
+<blockquote>
+<div><p>Raises <strong>Type Error</strong> when the biosignals are from different modalities.</p>
+</div></blockquote>
+<blockquote>
+<div><p>Raises <strong>Arithmetic Error</strong> when the biosignals have a different number of channels or different channel names.</p>
+</div></blockquote>
+<blockquote>
+<div><p>Raises <strong>Arithmetic Error</strong> when the biosignals have associated patients with different codes.</p>
+</div></blockquote>
+<blockquote>
+<div><p>Raises <strong>Arithmetic Error</strong> when the biosignals have different associated acquisition locations.</p>
+</div></blockquote>
+<blockquote>
+<div><p>Raises <strong>Arithmetic Error</strong> when any channel of <code class="docutils literal notranslate"><span class="pre">biosignal2</span></code> comes before (in time) than any channel of <code class="docutils literal notranslate"><span class="pre">biosignal1</span></code>.</p>
+</div></blockquote>
+</section>
+<section id="filtering">
+<h2>Filtering<a class="headerlink" href="#filtering" title="Permalink to this heading">#</a></h2>
+<p>The method <code class="docutils literal notranslate"><span class="pre">filter(Filter</span> <span class="pre">f)</span></code> applies a designed filter <code class="docutils literal notranslate"><span class="pre">f</span></code> to all channels of a biosignal. [See class <span class="xref myst">Filter</span>]</p>
+</section>
+</section>
+<section id="plotting">
+<h1>Plotting<a class="headerlink" href="#plotting" title="Permalink to this heading">#</a></h1>
+<p>For details about plotting, see the rules of methods <a href="[Methods] plot_{}">plot_{}</a>.</p>
+<section id="amplitude-plot">
+<h2>Amplitude plot 📉<a class="headerlink" href="#amplitude-plot" title="Permalink to this heading">#</a></h2>
+<p>Use the method <code class="docutils literal notranslate"><span class="pre">plot</span></code> as you wish.</p>
+<p><em>Example 1</em> - Plot all channels: <code class="docutils literal notranslate"><span class="pre">biosignal.plot()</span></code></p>
+<p><em>Example 2</em> - Plot only channels <code class="docutils literal notranslate"><span class="pre">xx</span></code> and <code class="docutils literal notranslate"><span class="pre">zz</span></code>: <code class="docutils literal notranslate"><span class="pre">biosignal['xx','zz'].plot()</span></code></p>
+<p><em>Example 3</em> - Plot just a half an hour: <code class="docutils literal notranslate"><span class="pre">biosignal['2022-05-12</span> <span class="pre">16:00','2022-05-12</span> <span class="pre">16:30'].plot()</span></code></p>
+</section>
+<section id="spectrum-plot">
+<h2>Spectrum plot 📈<a class="headerlink" href="#spectrum-plot" title="Permalink to this heading">#</a></h2>
+<p>Use the method <code class="docutils literal notranslate"><span class="pre">plot_spectrum</span></code> as you wish.</p>
+<p><em>Example 1</em> - Plot all channels: <code class="docutils literal notranslate"><span class="pre">biosignal.plot_spectrum()</span></code></p>
+<p><em>Example 2</em> - Plot only channels <code class="docutils literal notranslate"><span class="pre">xx</span></code> and <code class="docutils literal notranslate"><span class="pre">zz</span></code>: <code class="docutils literal notranslate"><span class="pre">biosignal['xx','zz'].plot_spectrum()</span></code></p>
+<p><em>Example 3</em> - Plot just a half an hour: <code class="docutils literal notranslate"><span class="pre">biosignal['2022-05-12</span> <span class="pre">16:00','2022-05-12</span> <span class="pre">16:30'].plot_spectrum()</span></code></p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, ScientISST
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/jomy-kk/IT-LongTermBiosignals" aria-label="GitHub">
+                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                    </svg>
+                </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">How to instantiate a Biosignal</a><ul>
+<li><a class="reference internal" href="#way-1-instantiate-a-biosignal-from-files">Way 1: Instantiate a Biosignal from files 📁</a></li>
+<li><a class="reference internal" href="#way-2-instantiate-a-biosignal-from-a-database-comming">Way 2: Instantiate a Biosignal from a Database [comming 🔜]</a></li>
+<li><a class="reference internal" href="#way-3-instantiate-a-biosignal-ad-hoc-01">Way 3: Instantiate a Biosignal ad-hoc 0️⃣1️⃣</a></li>
+<li><a class="reference internal" href="#channels-names">Channels Names</a></li>
+<li><a class="reference internal" href="#more-properties">More Properties</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#getters-and-setters">Getters and Setters</a></li>
+<li><a class="reference internal" href="#print">Print</a></li>
+<li><a class="reference internal" href="#indexing">Indexing</a><ul>
+<li><a class="reference internal" href="#access-one-channel">Access One Channel</a></li>
+<li><a class="reference internal" href="#access-multiple-channels">Access Multiple Channels</a></li>
+<li><a class="reference internal" href="#slices">Slices</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#operations">Operations</a><ul>
+<li><a class="reference internal" href="#concatenation">Concatenation</a></li>
+<li><a class="reference internal" href="#filtering">Filtering</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plotting">Plotting</a><ul>
+<li><a class="reference internal" href="#amplitude-plot">Amplitude plot 📉</a></li>
+<li><a class="reference internal" href="#spectrum-plot">Spectrum plot 📈</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    </body>
+</html>

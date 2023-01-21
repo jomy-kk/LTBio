@@ -1,0 +1,140 @@
+
+:py:mod:`ltbio.clinical.conditions.Epilepsy`
+============================================
+
+.. py:module:: ltbio.clinical.conditions.Epilepsy
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`SeizureOnset <ltbio.clinical.conditions.Epilepsy.SeizureOnset>`
+     - Generic enumeration.
+   * - :py:obj:`Seizure <ltbio.clinical.conditions.Epilepsy.Seizure>`
+     - :param onset: The seizure EEG onset.
+   * - :py:obj:`Epilepsy <ltbio.clinical.conditions.Epilepsy.Epilepsy>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: SeizureOnset
+
+   Bases: :py:obj:`enum.Enum`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.conditions.Epilepsy.SeizureOnset
+      :parts: 1
+
+   Generic enumeration.
+
+   Derive from this class to define new enumerations.
+
+   .. py:attribute:: F
+      :value: 'Focal'
+
+      
+
+   .. py:attribute:: FtoB
+      :value: 'Focal to Bilateral'
+
+      
+
+   .. py:attribute:: G
+      :value: 'Generalized'
+
+      
+
+   .. py:attribute:: UNK
+      :value: 'Unknown'
+
+      
+
+
+.. py:class:: Seizure(onset: datetime.datetime, duration: datetime.timedelta = None, clinical_onset: datetime.datetime = None, awake: bool = None, onset_type: SeizureOnset = None, onset_location: ltbio.clinical.BodyLocation = None, awareness: bool | None = None, semiologies: Sequence[ltbio.clinical.Semiology] = (), description: str = '')
+
+   Bases: :py:obj:`ltbio.biosignals.timeseries.Event.Event`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.conditions.Epilepsy.Seizure
+      :parts: 1
+
+   :param onset: The seizure EEG onset.
+   :param duration: The seizure duration untill EEG offset, if known.
+   :param clinical_onset: The seizure clinical onset, if necessary.
+   :param awake: True, if patient was awake; False if patient was asleep; None if unknown.
+   :param onset_type: One item from SeizureOnset (usually focal (F), generalized (G), or unknown (UNK)). None means not declared.
+   :param onset_location: One item from BodyLocation, particularly brain regions.
+   :param awareness: True, if patient awarensees was kept (FAS); False, if awareness was impared (FIAS); None if unknwown (FUAS).
+   :param semiologies: One or multiple items from Semiology, in the correct order of events.
+   :param description: A text description of the seizure.
+
+   .. py:property:: awake
+      :type: bool
+
+
+   .. py:property:: clinical_onset
+      :type: datetime.datetime
+
+
+   .. py:property:: onset_type
+      :type: SeizureOnset
+
+
+   .. py:property:: onset_location
+      :type: ltbio.clinical.BodyLocation
+
+
+   .. py:property:: awareness
+      :type: bool
+
+
+   .. py:property:: semiologies
+      :type: tuple[ltbio.clinical.Semiology]
+
+
+   .. py:property:: description
+      :type: str
+
+
+
+.. py:class:: Epilepsy(years_since_diagnosis: float = None, seizures: tuple = ())
+
+   Bases: :py:obj:`ltbio.clinical.conditions.MedicalCondition.MedicalCondition`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.conditions.Epilepsy.Epilepsy
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: n_seizures
+      :type: int
+
+
+   .. py:property:: seizures
+      :type: tuple[Seizure]
+
+
+   .. py:method:: add_seizure(seizure: Seizure)
+
+
+

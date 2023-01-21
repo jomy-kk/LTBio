@@ -1,0 +1,47 @@
+
+:py:mod:`ltbio.biosignals.sources.Multisource`
+==============================================
+
+.. py:module:: ltbio.biosignals.sources.Multisource
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Multisource <ltbio.biosignals.sources.Multisource.Multisource>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Multisource(**sources: Dict[str:BiosignalSource])
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.Multisource.Multisource
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+

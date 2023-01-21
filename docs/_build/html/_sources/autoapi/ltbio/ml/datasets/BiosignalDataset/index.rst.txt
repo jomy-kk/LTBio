@@ -1,0 +1,172 @@
+
+:py:mod:`ltbio.ml.datasets.BiosignalDataset`
+============================================
+
+.. py:module:: ltbio.ml.datasets.BiosignalDataset
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`BiosignalDataset <ltbio.ml.datasets.BiosignalDataset.BiosignalDataset>`
+     - An abstract class representing a dataset of Biosignals.
+   * - :py:obj:`BiosignalSubset <ltbio.ml.datasets.BiosignalDataset.BiosignalSubset>`
+     - Subset of a dataset at specified indices.
+   * - :py:obj:`CohortDataset <ltbio.ml.datasets.BiosignalDataset.CohortDataset>`
+     - Dataset as a concatenation of multiple datasets.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: BiosignalDataset(name: str = None)
+
+   Bases: :py:obj:`torch.utils.data.dataset.Dataset`, :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.BiosignalDataset.BiosignalDataset
+      :parts: 1
+
+   An abstract class representing a dataset of Biosignals.
+   All subclasses should store the ordered list of objects and targets, respectively, in `__objects` and `__targets`.
+   Also, subclasses have to overwrite `__getitem__`, supporting fetching an example for a given key. An example is a
+   pair (object, target).
+
+   .. py:property:: all_examples
+      :type: list[tuple[numpy.ndarray, numpy.ndarray]]
+
+      All examples in the dataset.
+
+
+   .. py:property:: all_objects
+      :type: numpy.ndarray
+
+      All objects in the dataset.
+
+
+   .. py:property:: all_targets
+      :type: numpy.ndarray
+
+      All targets in the dataset.
+
+
+   .. py:property:: biosignals
+      :type: dict[str, ltbio.biosignals.modalities.Biosignal.Biosignal]
+
+      The Biosignals from which the dataset was populated.
+
+
+   .. py:property:: object_timeseries_names
+
+
+   .. py:property:: target_timeseries_names
+
+
+   .. py:method:: split(subsetA_size: int, subsetB_size: int, randomly: bool)
+
+
+   .. py:method:: augment(techniques: Collection[ltbio.ml.datasets.augmentation.DatasetAugmentationTechnique], how_many_times=1, show_example=False)
+
+
+   .. py:method:: plot_example_object(number: int = None)
+
+
+   .. py:method:: redimension_to(dimensions: int)
+
+
+   .. py:method:: transfer_to_device(device)
+
+
+   .. py:method:: to_tensor()
+
+
+
+.. py:class:: BiosignalSubset(dataset: BiosignalDataset, indices: Sequence[int])
+
+   Bases: :py:obj:`torch.utils.data.dataset.Subset`, :py:obj:`BiosignalDataset`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.BiosignalDataset.BiosignalSubset
+      :parts: 1
+
+   Subset of a dataset at specified indices.
+
+   Args:
+       dataset (Dataset): The whole Dataset
+       indices (sequence): Indices in the whole set selected for subset
+
+   .. py:property:: all_examples
+
+      All examples in the dataset.
+
+
+   .. py:property:: all_objects
+
+      All objects in the dataset.
+
+
+   .. py:property:: all_targets
+
+      All targets in the dataset.
+
+
+   .. py:property:: object_timeseries_names
+
+
+   .. py:property:: target_timeseries_names
+
+
+
+.. py:class:: CohortDataset(datasets: Iterable[BiosignalDataset])
+
+   Bases: :py:obj:`torch.utils.data.dataset.ConcatDataset`, :py:obj:`BiosignalDataset`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.BiosignalDataset.CohortDataset
+      :parts: 1
+
+   Dataset as a concatenation of multiple datasets.
+
+   This class is useful to assemble different existing datasets.
+
+   Args:
+       datasets (sequence): List of datasets to be concatenated
+
+   .. py:property:: all_examples
+
+      All examples in the dataset.
+
+
+   .. py:property:: all_objects
+
+      All objects in the dataset.
+
+
+   .. py:property:: all_targets
+
+      All targets in the dataset.
+
+
+   .. py:property:: object_timeseries_names
+
+
+   .. py:property:: target_timeseries_names
+
+
+

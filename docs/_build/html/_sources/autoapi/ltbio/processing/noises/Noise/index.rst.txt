@@ -1,0 +1,68 @@
+
+:py:mod:`ltbio.processing.noises.Noise`
+=======================================
+
+.. py:module:: ltbio.processing.noises.Noise
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Noise <ltbio.processing.noises.Noise.Noise>`
+     - \-
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Noise(sampling_frequency: float, name: str = None)
+
+   .. py:property:: samples
+      :type: numpy.ndarray
+
+      The last generated samples using indexing.
+
+
+   .. py:property:: sampling_frequency
+      :type: float
+
+      The frequency at which the samples were produced, in Hz.
+
+
+   .. py:property:: name
+
+      The name of the Timeseries, if any.
+
+
+   .. py:method:: resample(frequency: float)
+
+      Resamples the noisy data to the frequency specified.
+
+
+   .. py:method:: plot(show: bool = True, save_to: str = None)
+
+      Plots the last generated samples or a 1-minute example of the noise relative amplitude.
+      @param show: True if plot is to be immediately displayed; False otherwise.
+      @param save_to: A path to save the plot as an image file; If none is provided, it is not saved.
+
+
+

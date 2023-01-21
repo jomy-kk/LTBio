@@ -1,0 +1,51 @@
+
+:py:mod:`ltbio.decision.Decision`
+=================================
+
+.. py:module:: ltbio.decision.Decision
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Decision <ltbio.decision.Decision.Decision>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Decision(decision_function, name: str)
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.decision.Decision.Decision
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:method:: evaluate(object)
+      :abstractmethod:
+
+
+

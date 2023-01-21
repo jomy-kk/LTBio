@@ -1,0 +1,30 @@
+ltbio.ml package
+================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   ltbio.ml.datasets
+   ltbio.ml.supervised
+
+Submodules
+----------
+
+ltbio.ml.metrics module
+-----------------------
+
+.. automodule:: ltbio.ml.metrics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.ml
+   :members:
+   :undoc-members:
+   :show-inheritance:

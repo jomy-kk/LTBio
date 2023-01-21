@@ -1,0 +1,31 @@
+ltbio.biosignals package
+========================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   ltbio.biosignals.modalities
+   ltbio.biosignals.sources
+   ltbio.biosignals.timeseries
+
+Submodules
+----------
+
+ltbio.biosignals.statistics module
+----------------------------------
+
+.. automodule:: ltbio.biosignals.statistics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.biosignals
+   :members:
+   :undoc-members:
+   :show-inheritance:

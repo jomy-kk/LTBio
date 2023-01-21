@@ -1,0 +1,6 @@
+<map id="inheritance42dd49f0fe" name="inheritance42dd49f0fe">
+<area shape="rect" id="node1" title="Helper class that provides a standard way to create an ABC using" alt="" coords="5,31,77,56"/>
+<area shape="rect" id="node2" href="#ltbio.ml.metrics.Metric" target="_top" title="Metric" alt="" coords="125,5,197,31"/>
+<area shape="rect" id="node4" href="#ltbio.ml.metrics.ValueMetric" target="_top" title="ValueMetric" alt="" coords="245,31,336,56"/>
+<area shape="rect" id="node3" href="#ltbio.ml.metrics.SNRI" target="_top" title="Signal&#45;to&#45;noise ratio improvement." alt="" coords="384,31,456,56"/>
+</map>

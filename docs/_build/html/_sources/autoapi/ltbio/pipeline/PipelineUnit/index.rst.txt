@@ -1,0 +1,189 @@
+
+:py:mod:`ltbio.pipeline.PipelineUnit`
+=====================================
+
+.. py:module:: ltbio.pipeline.PipelineUnit
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`PipelineUnit <ltbio.pipeline.PipelineUnit.PipelineUnit>`
+     - Pipeline Units are the building blocks of Pipelines.
+   * - :py:obj:`SinglePipelineUnit <ltbio.pipeline.PipelineUnit.SinglePipelineUnit>`
+     - A Single Pipeline Unit is any agent that can act (use, process or make changes) to a collection (usually of Timeseries).
+   * - :py:obj:`PipelineUnitsUnion <ltbio.pipeline.PipelineUnit.PipelineUnitsUnion>`
+     - A Union is a collection of single units where the Pipeline branches to each of them.
+   * - :py:obj:`ApplyTogether <ltbio.pipeline.PipelineUnit.ApplyTogether>`
+     - An ApplyTogether is a collection of single units, to which each will be applied to all Timeseries at once.
+   * - :py:obj:`ApplySeparately <ltbio.pipeline.PipelineUnit.ApplySeparately>`
+     - An ApplySeparately is a collection of single units, to which each will be applied to one Timeseries at a time.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: PipelineUnit(name: str)
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.pipeline.PipelineUnit.PipelineUnit
+      :parts: 1
+
+   Pipeline Units are the building blocks of Pipelines.
+   Following the Composite design pattern, a PipelineUnit is the abstract 'Component', so that Pipeline can deal with
+   SingleUnit and Union in the same way.
+
+   Subclasses
+   ------------
+   - SingleUnit: A single pipeline unit, that actually acts on Timeseries. It's the 'Leaf' in the design pattern.
+   - Union: A collection of single units where the Pipeline branches to each of them. It's the 'Composite' in the
+   design pattern.
+
+   Abstract Method '_apply'
+   ------------
+   Acts as the 'operation' method in the design pattern, and it's implemented in each subclass.
+   It receives a Packet with the necessary inputs to apply the unit and returns a Packet with the relevant outputs.
+
+
+.. py:class:: SinglePipelineUnit(name: str = None)
+
+   Bases: :py:obj:`PipelineUnit`, :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.pipeline.PipelineUnit.SinglePipelineUnit
+      :parts: 1
+
+   A Single Pipeline Unit is any agent that can act (use, process or make changes) to a collection (usually of Timeseries).
+   Following the Command design pattern, a SingleUnit is the abstract 'Command', so that Pipeline can execute various
+   kinds of processing by calling the 'apply' method of each concrete unit.
+
+   Subclasses
+   ------------
+   E.g. Filter, Segmenter, FeatureExtractor, FeatureSelector, SupervisingTrainer, DecisionMaker
+   Any subclass that implements 'apply'.
+
+   Abstract Method 'apply'
+   ------------
+   Every subclass must define 'apply' and implement a concrete behaviour.
+   To map the parameters' names of 'apply' to the labels inside any arriving Packet, PIPELINE_INPUT_LABELS should be
+   defined. To map the outputs to the labels of the resulting Packet, PIPELINE_OUTPUT_LABELS should be defined.
+
+   Labels
+   ------------
+   PIPELINE_INPUT_LABELS
+   Maps every label of a needed input inside a Packet to the name of the corresponding 'apply' parameter.
+   PIPELINE_OUTPUT_LABELS
+   Maps every output name of 'apply' to a label to be saved inside a Packet.
+
+   .. py:attribute:: PIPELINE_INPUT_LABELS
+      :type: Dict[str, str]
+
+      
+
+   .. py:attribute:: PIPELINE_OUTPUT_LABELS
+      :type: Dict[str, str]
+
+      
+
+   .. py:attribute:: ART_PATH
+      :value: 'resources/pipeline_media/nd.png'
+
+      
+
+   .. py:method:: apply(**kwargs)
+      :abstractmethod:
+
+
+
+.. py:class:: PipelineUnitsUnion(units: SinglePipelineUnit | Collection[SinglePipelineUnit], name: str = None)
+
+   Bases: :py:obj:`PipelineUnit`, :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.pipeline.PipelineUnit.PipelineUnitsUnion
+      :parts: 1
+
+   A Union is a collection of single units where the Pipeline branches to each of them.
+   Following the Template Method design pattern, a Union is the abstract class, where '_apply' is the 'template' method.
+
+   Subclasses
+   ------------
+   - ApplyTogether: Runs all Timeseries together in a unique structure over each SingleUnit.
+   - ApplySeparately: Runs each Timeseries separately over each SingleUnit.
+
+   Template Method '_apply'
+   ------------
+   1. Unpacks, 2. Delegates and 3. Packs.
+   Unpacking and packing is similar and independent of how application is delegated.
+   So, Step 2, '__delegate' should be defined in each subclass.
+
+   Abstract Method '__delegate'
+   ------------
+   This method should handle how each SingleUnit is applied to the Timeseries (when there are many) -- if together or
+   separately.
+
+   Labels
+   ------------
+   PIPELINE_INPUT_LABELS
+   Maps every label of a needed input inside a Packet to the parameter names of the corresponding 'apply' methods.
+   PIPELINE_OUTPUT_LABELS
+   Maps every output name of the 'apply' methods to a label to be saved inside a Packet.
+
+   .. py:property:: current_unit
+
+
+   .. py:property:: all_input_parameters
+      :type: Tuple[inspect.Parameter]
+
+
+   .. py:attribute:: PIPELINE_INPUT_LABELS
+      :type: Dict[str, str]
+
+      
+
+   .. py:attribute:: PIPELINE_OUTPUT_LABELS
+      :type: Dict[str, str]
+
+      
+
+
+.. py:class:: ApplyTogether(units: SinglePipelineUnit | Collection[SinglePipelineUnit], name: str = None)
+
+   Bases: :py:obj:`PipelineUnitsUnion`
+
+   .. autoapi-inheritance-diagram:: ltbio.pipeline.PipelineUnit.ApplyTogether
+      :parts: 1
+
+   An ApplyTogether is a collection of single units, to which each will be applied to all Timeseries at once.
+   Following the Template Method design pattern, this is a concrete class, where '__delegate' is implemented.
+
+
+.. py:class:: ApplySeparately(units: SinglePipelineUnit | Collection[SinglePipelineUnit], name: str = None)
+
+   Bases: :py:obj:`PipelineUnitsUnion`
+
+   .. autoapi-inheritance-diagram:: ltbio.pipeline.PipelineUnit.ApplySeparately
+      :parts: 1
+
+   An ApplySeparately is a collection of single units, to which each will be applied to one Timeseries at a time.
+   Following the Template Method design pattern, this is a concrete class, where '__delegate' is implemented.
+
+

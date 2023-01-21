@@ -1,0 +1,82 @@
+
+:py:mod:`ltbio.ml.supervised.SupervisingTrainer`
+================================================
+
+.. py:module:: ltbio.ml.supervised.SupervisingTrainer
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`SupervisingTrainer <ltbio.ml.supervised.SupervisingTrainer.SupervisingTrainer>`
+     - A Single Pipeline Unit is any agent that can act (use, process or make changes) to a collection (usually of Timeseries).
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: SupervisingTrainer(model: ltbio.ml.supervised.models.SupervisedModel.SupervisedModel, train_conditions: Collection[ltbio.ml.supervised.SupervisedTrainConditions.SupervisedTrainConditions], evaluation_metrics: Collection = None, name: str = None, save_report_to: str = None)
+
+   Bases: :py:obj:`ltbio.pipeline.PipelineUnit.SinglePipelineUnit`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.supervised.SupervisingTrainer.SupervisingTrainer
+      :parts: 1
+
+   A Single Pipeline Unit is any agent that can act (use, process or make changes) to a collection (usually of Timeseries).
+   Following the Command design pattern, a SingleUnit is the abstract 'Command', so that Pipeline can execute various
+   kinds of processing by calling the 'apply' method of each concrete unit.
+
+   Subclasses
+   ------------
+   E.g. Filter, Segmenter, FeatureExtractor, FeatureSelector, SupervisingTrainer, DecisionMaker
+   Any subclass that implements 'apply'.
+
+   Abstract Method 'apply'
+   ------------
+   Every subclass must define 'apply' and implement a concrete behaviour.
+   To map the parameters' names of 'apply' to the labels inside any arriving Packet, PIPELINE_INPUT_LABELS should be
+   defined. To map the outputs to the labels of the resulting Packet, PIPELINE_OUTPUT_LABELS should be defined.
+
+   Labels
+   ------------
+   PIPELINE_INPUT_LABELS
+   Maps every label of a needed input inside a Packet to the name of the corresponding 'apply' parameter.
+   PIPELINE_OUTPUT_LABELS
+   Maps every output name of 'apply' to a label to be saved inside a Packet.
+
+   .. py:attribute:: PIPELINE_INPUT_LABELS
+
+      
+
+   .. py:attribute:: PIPELINE_OUTPUT_LABELS
+
+      
+
+   .. py:attribute:: ART_PATH
+      :value: 'resources/pipeline_media/ml.png'
+
+      
+
+   .. py:method:: apply(dataset: ltbio.ml.datasets.BiosignalDataset.BiosignalDataset, test_dataset: ltbio.ml.datasets.BiosignalDataset.BiosignalDataset = None)
+
+
+

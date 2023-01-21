@@ -1,0 +1,319 @@
+
+:py:mod:`ltbio.biosignals.timeseries.Unit`
+==========================================
+
+.. py:module:: ltbio.biosignals.timeseries.Unit
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Multiplier <ltbio.biosignals.timeseries.Unit.Multiplier>`
+     - Common multipliers used when describing orders of magnitude.
+   * - :py:obj:`Unit <ltbio.biosignals.timeseries.Unit.Unit>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`Unitless <ltbio.biosignals.timeseries.Unit.Unitless>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`G <ltbio.biosignals.timeseries.Unit.G>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`Volt <ltbio.biosignals.timeseries.Unit.Volt>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`Siemens <ltbio.biosignals.timeseries.Unit.Siemens>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`DegreeCelsius <ltbio.biosignals.timeseries.Unit.DegreeCelsius>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`BeatsPerMinute <ltbio.biosignals.timeseries.Unit.BeatsPerMinute>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`Decibels <ltbio.biosignals.timeseries.Unit.Decibels>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`Grams <ltbio.biosignals.timeseries.Unit.Grams>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`Second <ltbio.biosignals.timeseries.Unit.Second>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Multiplier
+
+   Bases: :py:obj:`enum.Enum`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.timeseries.Unit.Multiplier
+      :parts: 1
+
+   Common multipliers used when describing orders of magnitude.
+
+   .. py:attribute:: m
+      :value: 0.001
+
+      
+
+   .. py:attribute:: u
+      :value: 1e-06
+
+      
+
+   .. py:attribute:: n
+      :value: 1e-09
+
+      
+
+   .. py:attribute:: k
+      :value: 1000.0
+
+      
+
+   .. py:attribute:: M
+      :value: 1000000.0
+
+      
+
+   .. py:attribute:: G
+      :value: 1000000000.0
+
+      
+
+
+.. py:class:: Unit(multiplier: Multiplier)
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.timeseries.Unit.Unit
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: multiplier
+      :type: Multiplier
+
+
+   .. py:property:: prefix
+      :type: str
+
+
+   .. py:property:: short
+      :type: str
+
+
+   .. py:attribute:: SHORT
+      :type: str
+
+      
+
+   .. py:method:: convert_to(unit: type) -> Callable[[numpy.array], numpy.array]
+      :abstractmethod:
+
+      Subclasses should return a function that receives an array of samples in the 'self' unit and return a converted array in the unit specified.
+
+
+
+.. py:class:: Unitless
+
+   Bases: :py:obj:`Unit`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.timeseries.Unit.Unitless
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:attribute:: SHORT
+      :value: 'n.d.'
+
+      
+
+   .. py:method:: convert_to(unit)
+
+      Subclasses should return a function that receives an array of samples in the 'self' unit and return a converted array in the unit specified.
+
+
+
+.. py:class:: G(multiplier=Multiplier._)
+
+   Bases: :py:obj:`Unit`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.timeseries.Unit.G
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:attribute:: SHORT
+      :value: 'G'
+
+      
+
+   .. py:method:: convert_to(unit)
+
+      Subclasses should return a function that receives an array of samples in the 'self' unit and return a converted array in the unit specified.
+
+
+
+.. py:class:: Volt(multiplier=Multiplier.m)
+
+   Bases: :py:obj:`Unit`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.timeseries.Unit.Volt
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:attribute:: SHORT
+      :value: 'V'
+
+      
+
+   .. py:method:: convert_to(unit)
+
+      Subclasses should return a function that receives an array of samples in the 'self' unit and return a converted array in the unit specified.
+
+
+
+.. py:class:: Siemens(multiplier=Multiplier.u)
+
+   Bases: :py:obj:`Unit`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.timeseries.Unit.Siemens
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:attribute:: SHORT
+      :value: 'S'
+
+      
+
+   .. py:method:: convert_to(unit)
+
+      Subclasses should return a function that receives an array of samples in the 'self' unit and return a converted array in the unit specified.
+
+
+
+.. py:class:: DegreeCelsius(multiplier=Multiplier._)
+
+   Bases: :py:obj:`Unit`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.timeseries.Unit.DegreeCelsius
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:attribute:: SHORT
+      :value: 'ºC'
+
+      
+
+   .. py:method:: convert_to(unit)
+
+      Subclasses should return a function that receives an array of samples in the 'self' unit and return a converted array in the unit specified.
+
+
+
+.. py:class:: BeatsPerMinute(multiplier=Multiplier._)
+
+   Bases: :py:obj:`Unit`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.timeseries.Unit.BeatsPerMinute
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:attribute:: SHORT
+      :value: 'bpm'
+
+      
+
+   .. py:method:: convert_to(unit)
+
+      Subclasses should return a function that receives an array of samples in the 'self' unit and return a converted array in the unit specified.
+
+
+
+.. py:class:: Decibels(multiplier=Multiplier._)
+
+   Bases: :py:obj:`Unit`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.timeseries.Unit.Decibels
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:attribute:: SHORT
+      :value: 'dB'
+
+      
+
+   .. py:method:: convert_to(unit)
+
+      Subclasses should return a function that receives an array of samples in the 'self' unit and return a converted array in the unit specified.
+
+
+
+.. py:class:: Grams(multiplier=Multiplier._)
+
+   Bases: :py:obj:`Unit`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.timeseries.Unit.Grams
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:attribute:: SHORT
+      :value: 'g'
+
+      
+
+   .. py:method:: convert_to(unit)
+
+      Subclasses should return a function that receives an array of samples in the 'self' unit and return a converted array in the unit specified.
+
+
+
+.. py:class:: Second(multiplier=Multiplier._)
+
+   Bases: :py:obj:`Unit`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.timeseries.Unit.Second
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:attribute:: SHORT
+      :value: 's'
+
+      
+
+   .. py:method:: convert_to(unit)
+
+      Subclasses should return a function that receives an array of samples in the 'self' unit and return a converted array in the unit specified.
+
+
+

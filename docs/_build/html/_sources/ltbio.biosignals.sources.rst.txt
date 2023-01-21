@@ -1,0 +1,85 @@
+ltbio.biosignals.sources package
+================================
+
+Submodules
+----------
+
+ltbio.biosignals.sources.BiosignalSource module
+-----------------------------------------------
+
+.. automodule:: ltbio.biosignals.sources.BiosignalSource
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.sources.Bitalino module
+----------------------------------------
+
+.. automodule:: ltbio.biosignals.sources.Bitalino
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.sources.E4 module
+----------------------------------
+
+.. automodule:: ltbio.biosignals.sources.E4
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.sources.HEM module
+-----------------------------------
+
+.. automodule:: ltbio.biosignals.sources.HEM
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.sources.HSM module
+-----------------------------------
+
+.. automodule:: ltbio.biosignals.sources.HSM
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.sources.MITDB module
+-------------------------------------
+
+.. automodule:: ltbio.biosignals.sources.MITDB
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.sources.Multisource module
+-------------------------------------------
+
+.. automodule:: ltbio.biosignals.sources.Multisource
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.sources.Seer module
+------------------------------------
+
+.. automodule:: ltbio.biosignals.sources.Seer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.biosignals.sources.Sense module
+-------------------------------------
+
+.. automodule:: ltbio.biosignals.sources.Sense
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.biosignals.sources
+   :members:
+   :undoc-members:
+   :show-inheritance:

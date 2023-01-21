@@ -1,0 +1,29 @@
+ltbio.processing.noises package
+===============================
+
+Submodules
+----------
+
+ltbio.processing.noises.GaussianNoise module
+--------------------------------------------
+
+.. automodule:: ltbio.processing.noises.GaussianNoise
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.processing.noises.Noise module
+------------------------------------
+
+.. automodule:: ltbio.processing.noises.Noise
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.processing.noises
+   :members:
+   :undoc-members:
+   :show-inheritance:

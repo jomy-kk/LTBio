@@ -1,0 +1,50 @@
+
+:py:mod:`ltbio.decision.BinaryDecision`
+=======================================
+
+.. py:module:: ltbio.decision.BinaryDecision
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`BinaryDecision <ltbio.decision.BinaryDecision.BinaryDecision>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: BinaryDecision(decision_function: Callable[[ltbio.biosignals.Timeseries], bool], name=None)
+
+   Bases: :py:obj:`ltbio.decision.Decision.Decision`
+
+   .. autoapi-inheritance-diagram:: ltbio.decision.BinaryDecision.BinaryDecision
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:method:: evaluate(object: ltbio.biosignals.Timeseries) -> bool
+
+
+

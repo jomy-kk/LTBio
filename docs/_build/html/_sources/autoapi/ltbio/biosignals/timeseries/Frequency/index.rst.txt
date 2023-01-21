@@ -1,0 +1,46 @@
+
+:py:mod:`ltbio.biosignals.timeseries.Frequency`
+===============================================
+
+.. py:module:: ltbio.biosignals.timeseries.Frequency
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Frequency <ltbio.biosignals.timeseries.Frequency.Frequency>`
+     - Convert a string or number to a floating point number, if possible.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Frequency(value: float)
+
+   Bases: :py:obj:`float`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.timeseries.Frequency.Frequency
+      :parts: 1
+
+   Convert a string or number to a floating point number, if possible.
+
+

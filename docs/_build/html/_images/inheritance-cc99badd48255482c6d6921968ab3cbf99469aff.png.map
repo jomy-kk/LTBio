@@ -1,0 +1,5 @@
+<map id="inheritance5b9e39da64" name="inheritance5b9e39da64">
+<area shape="rect" id="node1" title="Helper class that provides a standard way to create an ABC using" alt="" coords="5,5,77,31"/>
+<area shape="rect" id="node2" href="#ltbio.ml.datasets.augmentation.DatasetAugmentationTechnique" target="_top" title="DatasetAugmentationTechnique" alt="" coords="125,5,332,31"/>
+<area shape="rect" id="node3" href="#ltbio.ml.datasets.augmentation.Sine" target="_top" title="Adds a sine curve to the signal with random frequency and amplitude `magnitude`." alt="" coords="380,5,452,31"/>
+</map>

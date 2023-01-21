@@ -1,0 +1,47 @@
+
+:py:mod:`ltbio.biosignals.sources.MITDB`
+========================================
+
+.. py:module:: ltbio.biosignals.sources.MITDB
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`MITDB <ltbio.biosignals.sources.MITDB.MITDB>`
+     - This class represents the source of MIT-BIH Arrhythmia Database and includes methods to read and write
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: MITDB
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.MITDB.MITDB
+      :parts: 1
+
+   This class represents the source of MIT-BIH Arrhythmia Database and includes methods to read and write
+   biosignal files provided by them. Usually they are in .dat format.
+
+

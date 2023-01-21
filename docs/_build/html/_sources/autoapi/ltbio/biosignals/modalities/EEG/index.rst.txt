@@ -1,0 +1,59 @@
+
+:py:mod:`ltbio.biosignals.modalities.EEG`
+=========================================
+
+.. py:module:: ltbio.biosignals.modalities.EEG
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`EEG <ltbio.biosignals.modalities.EEG.EEG>`
+     - A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: EEG(timeseries, source=None, patient=None, acquisition_location=None, name=None)
+
+   Bases: :py:obj:`ltbio.biosignals.modalities.Biosignal.Biosignal`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.modalities.EEG.EEG
+      :parts: 1
+
+   A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   It may be associated with a source, a patient, and a body location. It can also have a name.
+   It has an initial and final datetime. Its length is its number of channels.
+   It can be resampled, filtered, and concatenated to other Biosignals.
+   Amplitude and spectrum plots can be displayed and saved.
+
+   .. py:attribute:: DEFAULT_UNIT
+
+      
+
+   .. py:method:: plot_summary(show: bool = True, save_to: str = None)
+
+      Plots a summary of relevant aspects of common analysis of the Biosignal.
+
+
+

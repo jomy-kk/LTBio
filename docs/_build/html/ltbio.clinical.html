@@ -1,0 +1,1108 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
+
+    <!-- Generated with Sphinx 5.0.2 and Furo 2022.12.07 -->
+        <title>ltbio.clinical package - LTBio 1.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-announcement-background: #F2F2F7;
+  --color-announcement-text: grey;
+  --color-brand-primary: #0089BF;
+  --font-stack: Lexend, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: SFMono-Regular, Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">LTBio 1.0.1 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/colour.png" alt="Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="learn.html">Learn the Basics</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="biosignal.html">How to instantiate a Biosignal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="biosignal.html#getters-and-setters">Getters and Setters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="biosignal.html#print">Print</a></li>
+<li class="toctree-l2"><a class="reference internal" href="biosignal.html#indexing">Indexing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="biosignal.html#operations">Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="biosignal.html#plotting">Plotting</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="autoapi/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="autoapi/ltbio/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/biosignals/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/ACC/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.ACC</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/Biosignal/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/ECG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.ECG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/EDA/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EDA</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/EEG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EEG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/EMG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EMG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/HR/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.HR</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/MultimodalBiosignal/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.MultimodalBiosignal</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/PPG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.PPG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/RESP/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.RESP</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/TEMP/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.TEMP</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/BiosignalSource/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.BiosignalSource</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/Bitalino/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Bitalino</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/E4/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.E4</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/HEM/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.HEM</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/HSM/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.HSM</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/MITDB/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.MITDB</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/Multisource/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Multisource</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/Seer/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Seer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/Sense/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Sense</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Event/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Event</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Frequency/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Frequency</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Timeseries</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Unit/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Unit</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/biosignals/statistics/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.statistics</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/clinical/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/clinical/conditions/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/clinical/conditions/COVID19/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions.COVID19</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/clinical/conditions/Epilepsy/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions.Epilepsy</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/clinical/conditions/MedicalCondition/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions.MedicalCondition</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/clinical/medications/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.medications</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/clinical/medications/Medication/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.medications.Medication</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/clinical/procedures/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.procedures</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/clinical/procedures/CarpalTunnelRelease/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.procedures.CarpalTunnelRelease</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/clinical/procedures/SurgicalProcedure/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.procedures.SurgicalProcedure</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/clinical/BodyLocation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.BodyLocation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/clinical/Patient/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.Patient</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/clinical/Semiology/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.Semiology</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/decision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/decision/BinaryDecision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.BinaryDecision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/decision/Decision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.Decision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/decision/DecisionMaker/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.DecisionMaker</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/decision/NAryDecision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.NAryDecision</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/features/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/features/FeatureExtractor/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.FeatureExtractor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/features/FeatureSelector/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.FeatureSelector</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/features/Features/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.Features</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/features/SegmentSelector/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.SegmentSelector</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/ml/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/ml/datasets/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/datasets/BiosignalDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.BiosignalDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/datasets/EventDetectionDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.EventDetectionDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/datasets/SegmentToSegmentDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.SegmentToSegmentDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/datasets/ValueToValueDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.ValueToValueDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/datasets/augmentation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.augmentation</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/ml/supervised/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="autoapi/ltbio/ml/supervised/models/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="autoapi/ltbio/ml/supervised/models/SkLearnModel/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models.SkLearnModel</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="autoapi/ltbio/ml/supervised/models/SupervisedModel/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models.SupervisedModel</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="autoapi/ltbio/ml/supervised/models/TorchModel/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models.TorchModel</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/supervised/SupervisedTrainConditions/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.SupervisedTrainConditions</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/supervised/SupervisingTrainer/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.SupervisingTrainer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/supervised/SupervisingTrainerReporter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.SupervisingTrainerReporter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/supervised/results/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.results</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/ml/metrics/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.metrics</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/pipeline/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/pipeline/GoTo/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.GoTo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/pipeline/Input/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.Input</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/pipeline/Packet/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.Packet</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/pipeline/Pipeline/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.Pipeline</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/pipeline/PipelineUnit/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.PipelineUnit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/pipeline/reports/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.reports</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/processing/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/processing/filters/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/filters/Filter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.Filter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/filters/FrequencyDomainFilter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.FrequencyDomainFilter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/filters/TimeDomainFilter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.TimeDomainFilter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/processing/formaters/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.formaters</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/formaters/Normalizer/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.formaters.Normalizer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/formaters/Segmenter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.formaters.Segmenter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/processing/noises/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.noises</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/noises/GaussianNoise/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.noises.GaussianNoise</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/noises/Noise/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.noises.Noise</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="ltbio-clinical-package">
+<h1>ltbio.clinical package<a class="headerlink" href="#ltbio-clinical-package" title="Permalink to this heading">#</a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ltbio.clinical.conditions.html">ltbio.clinical.conditions package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.clinical.conditions.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.clinical.conditions.html#module-ltbio.clinical.conditions.COVID19">ltbio.clinical.conditions.COVID19 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.clinical.conditions.html#module-ltbio.clinical.conditions.Epilepsy">ltbio.clinical.conditions.Epilepsy module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.clinical.conditions.html#module-ltbio.clinical.conditions.MedicalCondition">ltbio.clinical.conditions.MedicalCondition module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.clinical.conditions.html#module-ltbio.clinical.conditions">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.COVID19.COVID19">COVID19</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.Epilepsy">Epilepsy</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.Epilepsy.add_seizure">add_seizure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.Epilepsy.n_seizures">n_seizures</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.Epilepsy.seizures">seizures</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.Seizure">Seizure</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.Seizure.awake">awake</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.Seizure.awareness">awareness</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.Seizure.clinical_onset">clinical_onset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.Seizure.description">description</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.Seizure.onset_location">onset_location</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.Seizure.onset_type">onset_type</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.Seizure.semiologies">semiologies</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.SeizureOnset">SeizureOnset</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.SeizureOnset.F">F</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.SeizureOnset.FtoB">FtoB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.SeizureOnset.G">G</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.Epilepsy.SeizureOnset.UNK">UNK</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.MedicalCondition.MedicalCondition">MedicalCondition</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.conditions.html#ltbio.clinical.conditions.MedicalCondition.MedicalCondition.years_since_diagnosis">years_since_diagnosis</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ltbio.clinical.medications.html">ltbio.clinical.medications package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.clinical.medications.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.clinical.medications.html#module-ltbio.clinical.medications.Medication">ltbio.clinical.medications.Medication module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.clinical.medications.html#module-ltbio.clinical.medications">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.Medication.Medication">Medication</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.Medication.Medication.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.CBZ">CBZ</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.CBZ.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.CNZ">CNZ</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.CNZ.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.Clobazam">Clobazam</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.Clobazam.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.DZP">DZP</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.DZP.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.ESL">ESL</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.ESL.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.LCS">LCS</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.LCS.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.LEV">LEV</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.LEV.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.LTG">LTG</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.LTG.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.OXC">OXC</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.OXC.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.PER">PER</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.PER.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.PHT">PHT</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.PHT.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.TPM">TPM</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.TPM.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.VPA">VPA</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.VPA.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.ZNS">ZNS</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.medications.html#ltbio.clinical.medications.ZNS.name">name</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ltbio.clinical.procedures.html">ltbio.clinical.procedures package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.clinical.procedures.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.clinical.procedures.html#module-ltbio.clinical.procedures.CarpalTunnelRelease">ltbio.clinical.procedures.CarpalTunnelRelease module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.clinical.procedures.html#module-ltbio.clinical.procedures.SurgicalProcedure">ltbio.clinical.procedures.SurgicalProcedure module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ltbio.clinical.procedures.html#module-ltbio.clinical.procedures">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.procedures.html#ltbio.clinical.procedures.CarpalTunnelRelease.CarpalTunnelRelease">CarpalTunnelRelease</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.procedures.html#ltbio.clinical.procedures.CarpalTunnelRelease.CarpalTunnelRelease.name">name</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ltbio.clinical.procedures.html#ltbio.clinical.procedures.SurgicalProcedure.SurgicalProcedure">SurgicalProcedure</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ltbio.clinical.procedures.html#ltbio.clinical.procedures.SurgicalProcedure.SurgicalProcedure.name">name</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">#</a></h2>
+</section>
+<section id="module-ltbio.clinical.BodyLocation">
+<span id="ltbio-clinical-bodylocation-module"></span><h2>ltbio.clinical.BodyLocation module<a class="headerlink" href="#module-ltbio.clinical.BodyLocation" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.clinical.BodyLocation.</span></span><span class="sig-name descname"><span class="pre">BodyLocation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.A1">
+<span class="sig-name descname"><span class="pre">A1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Mastoid</span> <span class="pre">1'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.A1" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.A2">
+<span class="sig-name descname"><span class="pre">A2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Mastoid</span> <span class="pre">2'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.A2" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.ABDOMEN">
+<span class="sig-name descname"><span class="pre">ABDOMEN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Abdomen'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.ABDOMEN" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.ARM_L">
+<span class="sig-name descname"><span class="pre">ARM_L</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Left</span> <span class="pre">Arm'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.ARM_L" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.ARM_R">
+<span class="sig-name descname"><span class="pre">ARM_R</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Right</span> <span class="pre">Arm'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.ARM_R" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.BICEP_L">
+<span class="sig-name descname"><span class="pre">BICEP_L</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Left</span> <span class="pre">Bicep'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.BICEP_L" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.BICEP_R">
+<span class="sig-name descname"><span class="pre">BICEP_R</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Right</span> <span class="pre">Bicep'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.BICEP_R" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.C3">
+<span class="sig-name descname"><span class="pre">C3</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Central</span> <span class="pre">3'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.C3" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.C4">
+<span class="sig-name descname"><span class="pre">C4</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Central</span> <span class="pre">4'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.C4" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.CHEST">
+<span class="sig-name descname"><span class="pre">CHEST</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Chest'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.CHEST" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.CZ">
+<span class="sig-name descname"><span class="pre">CZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Central</span> <span class="pre">Z'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.CZ" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.F3">
+<span class="sig-name descname"><span class="pre">F3</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Frontal</span> <span class="pre">3'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.F3" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.F4">
+<span class="sig-name descname"><span class="pre">F4</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Frontal</span> <span class="pre">4'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.F4" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.F7">
+<span class="sig-name descname"><span class="pre">F7</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Frontal</span> <span class="pre">7'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.F7" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.F8">
+<span class="sig-name descname"><span class="pre">F8</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Frontal</span> <span class="pre">8'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.F8" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.FOREARM_L">
+<span class="sig-name descname"><span class="pre">FOREARM_L</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Left</span> <span class="pre">Forearm'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.FOREARM_L" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.FOREARM_R">
+<span class="sig-name descname"><span class="pre">FOREARM_R</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Right</span> <span class="pre">Forearm'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.FOREARM_R" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.FP1">
+<span class="sig-name descname"><span class="pre">FP1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Fronto-parietal</span> <span class="pre">1'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.FP1" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.FP2">
+<span class="sig-name descname"><span class="pre">FP2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Fronto-parietal</span> <span class="pre">2'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.FP2" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.FRONTAL_L">
+<span class="sig-name descname"><span class="pre">FRONTAL_L</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Left</span> <span class="pre">Frontal</span> <span class="pre">lobe'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.FRONTAL_L" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.FRONTAL_R">
+<span class="sig-name descname"><span class="pre">FRONTAL_R</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Right</span> <span class="pre">Frontal</span> <span class="pre">lobe'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.FRONTAL_R" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.FT_L">
+<span class="sig-name descname"><span class="pre">FT_L</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Left</span> <span class="pre">Fronto-Temporal</span> <span class="pre">lobe'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.FT_L" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.FT_R">
+<span class="sig-name descname"><span class="pre">FT_R</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Right</span> <span class="pre">Fronto-Temporal</span> <span class="pre">lobe'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.FT_R" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.FZ">
+<span class="sig-name descname"><span class="pre">FZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Frontal</span> <span class="pre">Z'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.FZ" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.INDEX_L">
+<span class="sig-name descname"><span class="pre">INDEX_L</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Left</span> <span class="pre">index</span> <span class="pre">finger'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.INDEX_L" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.INDEX_R">
+<span class="sig-name descname"><span class="pre">INDEX_R</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Right</span> <span class="pre">index</span> <span class="pre">finger'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.INDEX_R" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.LA">
+<span class="sig-name descname"><span class="pre">LA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Left</span> <span class="pre">arm</span> <span class="pre">(LA)</span> <span class="pre">lead'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.LA" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.LI">
+<span class="sig-name descname"><span class="pre">LI</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Chest</span> <span class="pre">Lead</span> <span class="pre">I'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.LI" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.LII">
+<span class="sig-name descname"><span class="pre">LII</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Chest</span> <span class="pre">Lead</span> <span class="pre">II'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.LII" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.LIII">
+<span class="sig-name descname"><span class="pre">LIII</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Chest</span> <span class="pre">Lead</span> <span class="pre">III'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.LIII" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.LL">
+<span class="sig-name descname"><span class="pre">LL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Left</span> <span class="pre">leg</span> <span class="pre">(LL)</span> <span class="pre">lead'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.LL" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.MLII">
+<span class="sig-name descname"><span class="pre">MLII</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Modified</span> <span class="pre">Limb</span> <span class="pre">Lead</span> <span class="pre">II'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.MLII" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.O1">
+<span class="sig-name descname"><span class="pre">O1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Occipital</span> <span class="pre">1'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.O1" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.O2">
+<span class="sig-name descname"><span class="pre">O2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Occipital</span> <span class="pre">2'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.O2" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.P3">
+<span class="sig-name descname"><span class="pre">P3</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Parietal</span> <span class="pre">3'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.P3" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.P4">
+<span class="sig-name descname"><span class="pre">P4</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Parietal</span> <span class="pre">4'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.P4" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.PZ">
+<span class="sig-name descname"><span class="pre">PZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Parietal</span> <span class="pre">Z'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.PZ" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.RA">
+<span class="sig-name descname"><span class="pre">RA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Right</span> <span class="pre">arm</span> <span class="pre">(RA)</span> <span class="pre">lead'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.RA" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.RL">
+<span class="sig-name descname"><span class="pre">RL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Right</span> <span class="pre">leg</span> <span class="pre">(RL)</span> <span class="pre">lead'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.RL" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.SCALP">
+<span class="sig-name descname"><span class="pre">SCALP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Scalp'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.SCALP" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.T3">
+<span class="sig-name descname"><span class="pre">T3</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Temporal</span> <span class="pre">3'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.T3" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.T4">
+<span class="sig-name descname"><span class="pre">T4</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Temporal</span> <span class="pre">4'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.T4" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.T5">
+<span class="sig-name descname"><span class="pre">T5</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Temporal</span> <span class="pre">5'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.T5" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.T6">
+<span class="sig-name descname"><span class="pre">T6</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Temporal</span> <span class="pre">6'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.T6" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.TEMPORAL_BL">
+<span class="sig-name descname"><span class="pre">TEMPORAL_BL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Temporal</span> <span class="pre">lobe</span> <span class="pre">(bilateral)'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.TEMPORAL_BL" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.TEMPORAL_L">
+<span class="sig-name descname"><span class="pre">TEMPORAL_L</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Left</span> <span class="pre">Temporal</span> <span class="pre">lobe'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.TEMPORAL_L" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.TEMPORAL_R">
+<span class="sig-name descname"><span class="pre">TEMPORAL_R</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Right</span> <span class="pre">Temporal</span> <span class="pre">lobe'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.TEMPORAL_R" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.TP_L">
+<span class="sig-name descname"><span class="pre">TP_L</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Left</span> <span class="pre">Temporo-Parietal</span> <span class="pre">lobe'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.TP_L" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.TP_R">
+<span class="sig-name descname"><span class="pre">TP_R</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Right</span> <span class="pre">Temporo-Parietal</span> <span class="pre">lobe'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.TP_R" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.UPPERARM_L">
+<span class="sig-name descname"><span class="pre">UPPERARM_L</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Left</span> <span class="pre">Upper</span> <span class="pre">Arm'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.UPPERARM_L" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.UPPERARM_R">
+<span class="sig-name descname"><span class="pre">UPPERARM_R</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Right</span> <span class="pre">Upper</span> <span class="pre">Arm'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.UPPERARM_R" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.V1">
+<span class="sig-name descname"><span class="pre">V1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'V1</span> <span class="pre">chest</span> <span class="pre">lead'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.V1" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.V2">
+<span class="sig-name descname"><span class="pre">V2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'V2</span> <span class="pre">chest</span> <span class="pre">lead'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.V2" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.V3">
+<span class="sig-name descname"><span class="pre">V3</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'V3</span> <span class="pre">chest</span> <span class="pre">lead'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.V3" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.V4">
+<span class="sig-name descname"><span class="pre">V4</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'V4</span> <span class="pre">chest</span> <span class="pre">lead'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.V4" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.V5">
+<span class="sig-name descname"><span class="pre">V5</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'V5</span> <span class="pre">chest</span> <span class="pre">lead'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.V5" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.V6">
+<span class="sig-name descname"><span class="pre">V6</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'V6</span> <span class="pre">chest</span> <span class="pre">lead'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.V6" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.WRIST_L">
+<span class="sig-name descname"><span class="pre">WRIST_L</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Left</span> <span class="pre">Wrist'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.WRIST_L" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.BodyLocation.BodyLocation.WRIST_R">
+<span class="sig-name descname"><span class="pre">WRIST_R</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Right</span> <span class="pre">Wrist'</span></em><a class="headerlink" href="#ltbio.clinical.BodyLocation.BodyLocation.WRIST_R" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ltbio.clinical.Patient">
+<span id="ltbio-clinical-patient-module"></span><h2>ltbio.clinical.Patient module<a class="headerlink" href="#module-ltbio.clinical.Patient" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.clinical.Patient.Patient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.clinical.Patient.</span></span><span class="sig-name descname"><span class="pre">Patient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">age</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sex</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/clinical/Patient/index.html#ltbio.clinical.Patient.Sex" title="ltbio.clinical.Patient.Sex"><span class="pre">Sex</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Sex._</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="autoapi/ltbio/clinical/conditions/MedicalCondition/index.html#ltbio.clinical.conditions.MedicalCondition.MedicalCondition" title="ltbio.clinical.conditions.MedicalCondition.MedicalCondition"><span class="pre">MedicalCondition</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">medications</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="autoapi/ltbio/clinical/medications/Medication/index.html#ltbio.clinical.medications.Medication.Medication" title="ltbio.clinical.medications.Medication.Medication"><span class="pre">Medication</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">procedures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="autoapi/ltbio/clinical/procedures/SurgicalProcedure/index.html#ltbio.clinical.procedures.SurgicalProcedure.SurgicalProcedure" title="ltbio.clinical.procedures.SurgicalProcedure.SurgicalProcedure"><span class="pre">SurgicalProcedure</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.clinical.Patient.Patient" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.clinical.Patient.Patient.add_note">
+<span class="sig-name descname"><span class="pre">add_note</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.clinical.Patient.Patient.add_note" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ltbio.clinical.Patient.Patient.code">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">code</span></span><a class="headerlink" href="#ltbio.clinical.Patient.Patient.code" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ltbio.clinical.Patient.Patient.conditions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">conditions</span></span><a class="headerlink" href="#ltbio.clinical.Patient.Patient.conditions" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.clinical.Patient.Patient.get_protected_info">
+<span class="sig-name descname"><span class="pre">get_protected_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.clinical.Patient.Patient.get_protected_info" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns a dictionary of the private/sensible information: Name, Age, Medications, and Surgical Procedures.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ltbio.clinical.Patient.Patient.notes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">notes</span></span><a class="headerlink" href="#ltbio.clinical.Patient.Patient.notes" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.clinical.Patient.Sex">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.clinical.Patient.</span></span><span class="sig-name descname"><span class="pre">Sex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.clinical.Patient.Sex" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Biological sex of human beings.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Patient.Sex.F">
+<span class="sig-name descname"><span class="pre">F</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Female'</span></em><a class="headerlink" href="#ltbio.clinical.Patient.Sex.F" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Patient.Sex.M">
+<span class="sig-name descname"><span class="pre">M</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Male'</span></em><a class="headerlink" href="#ltbio.clinical.Patient.Sex.M" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ltbio.clinical.Semiology">
+<span id="ltbio-clinical-semiology-module"></span><h2>ltbio.clinical.Semiology module<a class="headerlink" href="#module-ltbio.clinical.Semiology" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.clinical.Semiology.</span></span><span class="sig-name descname"><span class="pre">Semiology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.ABSENCE">
+<span class="sig-name descname"><span class="pre">ABSENCE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Absence'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.ABSENCE" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.ATONIC">
+<span class="sig-name descname"><span class="pre">ATONIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Atonic'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.ATONIC" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.AURA">
+<span class="sig-name descname"><span class="pre">AURA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Pre-ical</span> <span class="pre">Aura'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.AURA" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.AUTOMATISMS">
+<span class="sig-name descname"><span class="pre">AUTOMATISMS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Automatisms'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.AUTOMATISMS" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.AUTONOMIC">
+<span class="sig-name descname"><span class="pre">AUTONOMIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Autonomic'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.AUTONOMIC" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.BARREST">
+<span class="sig-name descname"><span class="pre">BARREST</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Behaviour</span> <span class="pre">arrest'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.BARREST" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.CLONIC">
+<span class="sig-name descname"><span class="pre">CLONIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Clonic'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.CLONIC" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.COGNITIVE">
+<span class="sig-name descname"><span class="pre">COGNITIVE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Cognitive'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.COGNITIVE" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.EMOTIONAL">
+<span class="sig-name descname"><span class="pre">EMOTIONAL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Emotional'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.EMOTIONAL" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.ESPASMS">
+<span class="sig-name descname"><span class="pre">ESPASMS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Epileptic</span> <span class="pre">Spasms'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.ESPASMS" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.HK">
+<span class="sig-name descname"><span class="pre">HK</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Hyperkinetic'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.HK" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.MOTOR">
+<span class="sig-name descname"><span class="pre">MOTOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Non-specific</span> <span class="pre">Motor'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.MOTOR" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.MYOCLONIC">
+<span class="sig-name descname"><span class="pre">MYOCLONIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Myoclonic'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.MYOCLONIC" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.NONMOTOR">
+<span class="sig-name descname"><span class="pre">NONMOTOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Non-specific</span> <span class="pre">Non-motor'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.NONMOTOR" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.SENSORY">
+<span class="sig-name descname"><span class="pre">SENSORY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Sensory'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.SENSORY" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.SUBCLINICAL">
+<span class="sig-name descname"><span class="pre">SUBCLINICAL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Sub-clinical</span> <span class="pre">/</span> <span class="pre">Infra-clinical'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.SUBCLINICAL" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.TC">
+<span class="sig-name descname"><span class="pre">TC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Tonic-Clonic'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.TC" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.clinical.Semiology.Semiology.TONIC">
+<span class="sig-name descname"><span class="pre">TONIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Tonic'</span></em><a class="headerlink" href="#ltbio.clinical.Semiology.Semiology.TONIC" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ltbio.clinical">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ltbio.clinical" title="Permalink to this heading">#</a></h2>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, ScientISST
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/jomy-kk/IT-LongTermBiosignals" aria-label="GitHub">
+                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                    </svg>
+                </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">ltbio.clinical package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ltbio.clinical.BodyLocation">ltbio.clinical.BodyLocation module</a></li>
+<li><a class="reference internal" href="#module-ltbio.clinical.Patient">ltbio.clinical.Patient module</a></li>
+<li><a class="reference internal" href="#module-ltbio.clinical.Semiology">ltbio.clinical.Semiology module</a></li>
+<li><a class="reference internal" href="#module-ltbio.clinical">Module contents</a><ul>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation">BodyLocation</a><ul>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.A1">A1</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.A2">A2</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.ABDOMEN">ABDOMEN</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.ARM_L">ARM_L</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.ARM_R">ARM_R</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.BICEP_L">BICEP_L</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.BICEP_R">BICEP_R</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.C3">C3</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.C4">C4</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.CHEST">CHEST</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.CZ">CZ</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.F3">F3</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.F4">F4</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.F7">F7</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.F8">F8</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.FOREARM_L">FOREARM_L</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.FOREARM_R">FOREARM_R</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.FP1">FP1</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.FP2">FP2</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.FRONTAL_L">FRONTAL_L</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.FRONTAL_R">FRONTAL_R</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.FT_L">FT_L</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.FT_R">FT_R</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.FZ">FZ</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.INDEX_L">INDEX_L</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.INDEX_R">INDEX_R</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.LA">LA</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.LI">LI</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.LII">LII</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.LIII">LIII</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.LL">LL</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.MLII">MLII</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.O1">O1</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.O2">O2</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.P3">P3</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.P4">P4</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.PZ">PZ</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.RA">RA</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.RL">RL</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.SCALP">SCALP</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.T3">T3</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.T4">T4</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.T5">T5</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.T6">T6</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.TEMPORAL_BL">TEMPORAL_BL</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.TEMPORAL_L">TEMPORAL_L</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.TEMPORAL_R">TEMPORAL_R</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.TP_L">TP_L</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.TP_R">TP_R</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.UPPERARM_L">UPPERARM_L</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.UPPERARM_R">UPPERARM_R</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.V1">V1</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.V2">V2</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.V3">V3</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.V4">V4</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.V5">V5</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.V6">V6</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.WRIST_L">WRIST_L</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.BodyLocation.BodyLocation.WRIST_R">WRIST_R</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.clinical.Patient.Patient">Patient</a><ul>
+<li><a class="reference internal" href="#ltbio.clinical.Patient.Patient.add_note">add_note</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Patient.Patient.code">code</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Patient.Patient.conditions">conditions</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Patient.Patient.get_protected_info">get_protected_info</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Patient.Patient.notes">notes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.clinical.Patient.Sex">Sex</a><ul>
+<li><a class="reference internal" href="#ltbio.clinical.Patient.Sex.F">F</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Patient.Sex.M">M</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology">Semiology</a><ul>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.ABSENCE">ABSENCE</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.ATONIC">ATONIC</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.AURA">AURA</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.AUTOMATISMS">AUTOMATISMS</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.AUTONOMIC">AUTONOMIC</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.BARREST">BARREST</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.CLONIC">CLONIC</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.COGNITIVE">COGNITIVE</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.EMOTIONAL">EMOTIONAL</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.ESPASMS">ESPASMS</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.HK">HK</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.MOTOR">MOTOR</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.MYOCLONIC">MYOCLONIC</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.NONMOTOR">NONMOTOR</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.SENSORY">SENSORY</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.SUBCLINICAL">SUBCLINICAL</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.TC">TC</a></li>
+<li><a class="reference internal" href="#ltbio.clinical.Semiology.Semiology.TONIC">TONIC</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    </body>
+</html>

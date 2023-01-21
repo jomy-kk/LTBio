@@ -1,0 +1,156 @@
+
+:py:mod:`ltbio.processing.filters.FrequencyDomainFilter`
+========================================================
+
+.. py:module:: ltbio.processing.filters.FrequencyDomainFilter
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`FrequencyResponse <ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse>`
+     - str(object='') -> str
+   * - :py:obj:`BandType <ltbio.processing.filters.FrequencyDomainFilter.BandType>`
+     - str(object='') -> str
+   * - :py:obj:`FrequencyDomainFilter <ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter>`
+     - Describes the design of a digital frequency-domain filter and holds the ability to apply that filter to any array of samples.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: FrequencyResponse
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+   .. autoapi-inheritance-diagram:: ltbio.processing.filters.FrequencyDomainFilter.FrequencyResponse
+      :parts: 1
+
+   str(object='') -> str
+   str(bytes_or_buffer[, encoding[, errors]]) -> str
+
+   Create a new string object from the given object. If encoding or
+   errors is specified, then the object must expose a data buffer
+   that will be decoded using the given encoding and error handler.
+   Otherwise, returns the result of object.__str__() (if defined)
+   or repr(object).
+   encoding defaults to sys.getdefaultencoding().
+   errors defaults to 'strict'.
+
+   .. py:attribute:: FIR
+      :value: 'Finite Impulse Response (FIR)'
+
+      
+
+   .. py:attribute:: BUTTER
+      :value: 'IIR Butterworth'
+
+      
+
+   .. py:attribute:: CHEBY1
+      :value: 'IIR Chebyshev 1'
+
+      
+
+   .. py:attribute:: CHEBY2
+      :value: 'IIR Chebyshev 2'
+
+      
+
+   .. py:attribute:: ELLIP
+      :value: 'IIR Elliptic'
+
+      
+
+   .. py:attribute:: BESSEL
+      :value: 'IIR Bessel'
+
+      
+
+
+.. py:class:: BandType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+   .. autoapi-inheritance-diagram:: ltbio.processing.filters.FrequencyDomainFilter.BandType
+      :parts: 1
+
+   str(object='') -> str
+   str(bytes_or_buffer[, encoding[, errors]]) -> str
+
+   Create a new string object from the given object. If encoding or
+   errors is specified, then the object must expose a data buffer
+   that will be decoded using the given encoding and error handler.
+   Otherwise, returns the result of object.__str__() (if defined)
+   or repr(object).
+   encoding defaults to sys.getdefaultencoding().
+   errors defaults to 'strict'.
+
+   .. py:attribute:: LOWPASS
+      :value: 'Low-pass'
+
+      
+
+   .. py:attribute:: HIGHPASS
+      :value: 'High-pass'
+
+      
+
+   .. py:attribute:: BANDPASS
+      :value: 'Band-pass'
+
+      
+
+   .. py:attribute:: BANDSTOP
+      :value: 'Band-stop'
+
+      
+
+
+.. py:class:: FrequencyDomainFilter(fresponse: FrequencyResponse, band_type: BandType, cutoff: float | Tuple[float, float], order: int, name: str = None, **options)
+
+   Bases: :py:obj:`ltbio.processing.filters.Filter.Filter`
+
+   .. autoapi-inheritance-diagram:: ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter
+      :parts: 1
+
+   Describes the design of a digital frequency-domain filter and holds the ability to apply that filter to any array of samples.
+   It acts as a concrete visitor in the Visitor Design Pattern.
+
+   To instantiate, give:
+       - fresponse: The frequency response of the filter. Choose one from FrequencyResponse enumeration.
+       - band_type: Choose whether it should low, high, or band pass or reject a band of the samples' spectrum. Choose one from BandType enumeration.
+       - order: The order of the filter (in int).
+       - cutoff: The cutoff frequency at 3 dB (for lowpass and highpass) or a tuple of two cutoffs (for bandpass or bandstop) (in Hertz, float).
+
+   .. py:property:: last_numerator_coefficients
+      :type: numpy.array
+
+
+   .. py:property:: last_denominator_coefficients
+      :type: numpy.array
+
+
+   .. py:method:: plot_bode(show: bool = True, save_to: str = None)
+
+
+

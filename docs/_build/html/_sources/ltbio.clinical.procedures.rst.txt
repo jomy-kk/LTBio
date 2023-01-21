@@ -1,0 +1,29 @@
+ltbio.clinical.procedures package
+=================================
+
+Submodules
+----------
+
+ltbio.clinical.procedures.CarpalTunnelRelease module
+----------------------------------------------------
+
+.. automodule:: ltbio.clinical.procedures.CarpalTunnelRelease
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.clinical.procedures.SurgicalProcedure module
+--------------------------------------------------
+
+.. automodule:: ltbio.clinical.procedures.SurgicalProcedure
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.clinical.procedures
+   :members:
+   :undoc-members:
+   :show-inheritance:

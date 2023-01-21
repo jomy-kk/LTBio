@@ -1,0 +1,7 @@
+<map id="inheritance62f6e418c3" name="inheritance62f6e418c3">
+<area shape="rect" id="node1" title="Helper class that provides a standard way to create an ABC using" alt="" coords="5,31,77,56"/>
+<area shape="rect" id="node2" href="Filter/index.html#ltbio.processing.filters.Filter.Filter" target="_top" title="It acts as the Visitor class in the Visitor Design Pattern." alt="" coords="441,5,513,31"/>
+<area shape="rect" id="node3" href="../../pipeline/PipelineUnit/index.html#ltbio.pipeline.PipelineUnit.SinglePipelineUnit" target="_top" title="A Single Pipeline Unit is any agent that can act (use, process or make changes) to a collection (usually of Timeseries)." alt="" coords="265,31,393,56"/>
+<area shape="rect" id="node5" href="../../pipeline/PipelineUnit/index.html#ltbio.pipeline.PipelineUnit.PipelineUnit" target="_top" title="Pipeline Units are the building blocks of Pipelines." alt="" coords="125,81,217,107"/>
+<area shape="rect" id="node4" href="FrequencyDomainFilter/index.html#ltbio.processing.filters.FrequencyDomainFilter.FrequencyDomainFilter" target="_top" title="Describes the design of a digital frequency&#45;domain filter and holds the ability to apply that filter to any array of samples." alt="" coords="561,5,719,31"/>
+</map>

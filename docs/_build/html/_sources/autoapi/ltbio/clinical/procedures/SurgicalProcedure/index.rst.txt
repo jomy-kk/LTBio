@@ -1,0 +1,53 @@
+
+:py:mod:`ltbio.clinical.procedures.SurgicalProcedure`
+=====================================================
+
+.. py:module:: ltbio.clinical.procedures.SurgicalProcedure
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`SurgicalProcedure <ltbio.clinical.procedures.SurgicalProcedure.SurgicalProcedure>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: SurgicalProcedure(date: datetime.datetime = None, outcome: bool = None)
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.procedures.SurgicalProcedure.SurgicalProcedure
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+      :abstractmethod:
+
+      Get the name of the condition. This getter should be overwritten in every subclass.
+
+
+

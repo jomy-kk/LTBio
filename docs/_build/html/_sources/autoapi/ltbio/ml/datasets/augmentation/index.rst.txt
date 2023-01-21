@@ -1,0 +1,142 @@
+
+:py:mod:`ltbio.ml.datasets.augmentation`
+========================================
+
+.. py:module:: ltbio.ml.datasets.augmentation
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`DatasetAugmentationTechnique <ltbio.ml.datasets.augmentation.DatasetAugmentationTechnique>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`Scale <ltbio.ml.datasets.augmentation.Scale>`
+     - Multiplies the signal by a random value between `minimum_magnitude` and 1.
+   * - :py:obj:`Flip <ltbio.ml.datasets.augmentation.Flip>`
+     - Inverts the signal (* -1) with probability `probability`.
+   * - :py:obj:`Drop <ltbio.ml.datasets.augmentation.Drop>`
+     - Randomly makes missing samples (* 0) with probability `probability`.
+   * - :py:obj:`Shift <ltbio.ml.datasets.augmentation.Shift>`
+     - Temporally shifts the signal by `displacement` * number of samples.
+   * - :py:obj:`Sine <ltbio.ml.datasets.augmentation.Sine>`
+     - Adds a sine curve to the signal with random frequency and amplitude `magnitude`.
+   * - :py:obj:`SquarePulse <ltbio.ml.datasets.augmentation.SquarePulse>`
+     - Adds square pulses to the signal with random frequency and amplitude `magnitude`.
+   * - :py:obj:`Randomness <ltbio.ml.datasets.augmentation.Randomness>`
+     - Adds gaussian noise to the signal with amplitude `magnitude`.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: DatasetAugmentationTechnique(parameter)
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.augmentation.DatasetAugmentationTechnique
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+
+.. py:class:: Scale(magnitude)
+
+   Bases: :py:obj:`DatasetAugmentationTechnique`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.augmentation.Scale
+      :parts: 1
+
+   Multiplies the signal by a random value between `minimum_magnitude` and 1.
+   Common values for `minimum_magnitude` are between [0.25, 1[.
+
+
+.. py:class:: Flip(probability)
+
+   Bases: :py:obj:`DatasetAugmentationTechnique`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.augmentation.Flip
+      :parts: 1
+
+   Inverts the signal (* -1) with probability `probability`.
+   Values for `probability` must be between [0, 1].
+
+
+.. py:class:: Drop(probability)
+
+   Bases: :py:obj:`DatasetAugmentationTechnique`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.augmentation.Drop
+      :parts: 1
+
+   Randomly makes missing samples (* 0) with probability `probability`.
+   Common values for `probability` are between [0, 0.4].
+   Values for `probability` must be between [0, 1].
+
+
+.. py:class:: Shift(displacement)
+
+   Bases: :py:obj:`DatasetAugmentationTechnique`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.augmentation.Shift
+      :parts: 1
+
+   Temporally shifts the signal by `displacement` * number of samples.
+   Direction (left or right) is chosen with equal probability.
+   Values for `displacement` must be between [0, 1].
+
+
+.. py:class:: Sine(magnitude)
+
+   Bases: :py:obj:`DatasetAugmentationTechnique`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.augmentation.Sine
+      :parts: 1
+
+   Adds a sine curve to the signal with random frequency and amplitude `magnitude`.
+   Frequency is random between [0.001, 0.02].
+   Common values for `magnitude` are between [0, 1].
+
+
+.. py:class:: SquarePulse(magnitude)
+
+   Bases: :py:obj:`DatasetAugmentationTechnique`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.augmentation.SquarePulse
+      :parts: 1
+
+   Adds square pulses to the signal with random frequency and amplitude `magnitude`.
+   Frequency is random between [0.001, 0.1].
+   Common values for `magnitude` are between [0, 0.02].
+
+
+.. py:class:: Randomness(magnitude)
+
+   Bases: :py:obj:`DatasetAugmentationTechnique`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.augmentation.Randomness
+      :parts: 1
+
+   Adds gaussian noise to the signal with amplitude `magnitude`.
+   Common values for `magnitude` are between [0, 0.02].
+
+

@@ -1,0 +1,37 @@
+ltbio.processing.filters package
+================================
+
+Submodules
+----------
+
+ltbio.processing.filters.Filter module
+--------------------------------------
+
+.. automodule:: ltbio.processing.filters.Filter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.processing.filters.FrequencyDomainFilter module
+-----------------------------------------------------
+
+.. automodule:: ltbio.processing.filters.FrequencyDomainFilter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.processing.filters.TimeDomainFilter module
+------------------------------------------------
+
+.. automodule:: ltbio.processing.filters.TimeDomainFilter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.processing.filters
+   :members:
+   :undoc-members:
+   :show-inheritance:

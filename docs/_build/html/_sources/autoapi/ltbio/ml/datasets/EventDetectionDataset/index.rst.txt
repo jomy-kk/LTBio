@@ -1,0 +1,59 @@
+
+:py:mod:`ltbio.ml.datasets.EventDetectionDataset`
+=================================================
+
+.. py:module:: ltbio.ml.datasets.EventDetectionDataset
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`EventDetectionDataset <ltbio.ml.datasets.EventDetectionDataset.EventDetectionDataset>`
+     - An abstract class representing a dataset of Biosignals.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: EventDetectionDataset(*objects: ltbio.biosignals.modalities.Biosignal.Biosignal, event_names: str | tuple[str], paddings: tuple[timedelta | int | None] = (None, None), ignore_margins: tuple[timedelta | int | None] = (None, None), name: str = None)
+
+   Bases: :py:obj:`ltbio.ml.datasets.BiosignalDataset.BiosignalDataset`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.EventDetectionDataset.EventDetectionDataset
+      :parts: 1
+
+   An abstract class representing a dataset of Biosignals.
+   All subclasses should store the ordered list of objects and targets, respectively, in `__objects` and `__targets`.
+   Also, subclasses have to overwrite `__getitem__`, supporting fetching an example for a given key. An example is a
+   pair (object, target).
+
+   .. py:property:: class_weights
+      :type: tuple[float, float]
+
+
+   .. py:method:: draw_timeline(precision: float)
+
+
+   .. py:method:: balance_with_augmentation(*techniques: ltbio.ml.datasets.augmentation.DatasetAugmentationTechnique)
+
+
+

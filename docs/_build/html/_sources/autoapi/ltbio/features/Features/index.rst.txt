@@ -1,0 +1,175 @@
+
+:py:mod:`ltbio.features.Features`
+=================================
+
+.. py:module:: ltbio.features.Features
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Features <ltbio.features.Features.Features>`
+     - Class that stores extracted features of a Timeseries.
+   * - :py:obj:`TimeFeatures <ltbio.features.Features.TimeFeatures>`
+     - Class with implementation of extraction of of several time features.
+   * - :py:obj:`HRVFeatures <ltbio.features.Features.HRVFeatures>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Features(original_timeseries: ltbio.biosignals.Timeseries = None)
+
+   Class that stores extracted features of a Timeseries.
+
+   .. py:property:: original_timeseries
+      :type: ltbio.biosignals.Timeseries
+
+
+   .. py:method:: to_dict()
+
+
+
+.. py:class:: TimeFeatures
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.features.Features.TimeFeatures
+      :parts: 1
+
+   Class with implementation of extraction of of several time features.
+
+   .. py:method:: mean(segment: numpy.ndarray) -> float
+      :staticmethod:
+
+
+   .. py:method:: variance(segment: numpy.ndarray) -> float
+      :staticmethod:
+
+
+   .. py:method:: deviation(segment: numpy.ndarray) -> float
+      :staticmethod:
+
+
+
+.. py:class:: HRVFeatures
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.features.Features.HRVFeatures
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:method:: nn50(nni: ltbio.biosignals.Timeseries) -> float
+      :staticmethod:
+
+
+   .. py:method:: pnn50(nni: ltbio.biosignals.Timeseries) -> float
+      :staticmethod:
+
+
+   .. py:method:: sdnn(nni: ltbio.biosignals.Timeseries) -> float
+      :staticmethod:
+
+
+   .. py:method:: rmssd(nni: ltbio.biosignals.Timeseries) -> float
+      :staticmethod:
+
+
+   .. py:method:: mean(nni: ltbio.biosignals.Timeseries) -> float
+      :staticmethod:
+
+
+   .. py:method:: var(nni: ltbio.biosignals.Timeseries) -> float
+      :staticmethod:
+
+
+   .. py:method:: hr(nni: ltbio.biosignals.Timeseries) -> float
+      :staticmethod:
+
+
+   .. py:method:: max_hr(nni: ltbio.biosignals.Timeseries) -> float
+      :staticmethod:
+
+
+   .. py:method:: lf(nni: ltbio.biosignals.Timeseries) -> float
+      :staticmethod:
+
+
+   .. py:method:: hf(nni: ltbio.biosignals.Timeseries) -> float
+      :staticmethod:
+
+
+   .. py:method:: lf_hf(nni: ltbio.biosignals.Timeseries) -> float
+      :staticmethod:
+
+
+   .. py:method:: hf_lf(nni: ltbio.biosignals.Timeseries) -> float
+      :staticmethod:
+
+
+   .. py:method:: sd1(nni: numpy.ndarray) -> float
+      :staticmethod:
+
+
+   .. py:method:: sd2(nni: numpy.ndarray) -> float
+      :staticmethod:
+
+
+   .. py:method:: csi(nni: numpy.ndarray) -> float
+      :staticmethod:
+
+
+   .. py:method:: csv(nni: numpy.ndarray) -> float
+      :staticmethod:
+
+
+   .. py:method:: s(nni: numpy.ndarray) -> float
+      :staticmethod:
+
+
+   .. py:method:: rec(nni: numpy.ndarray) -> float
+      :staticmethod:
+
+
+   .. py:method:: det(nni: numpy.ndarray) -> float
+      :staticmethod:
+
+
+   .. py:method:: lmax(nni: numpy.ndarray) -> float
+      :staticmethod:
+
+
+   .. py:method:: sampen(nni: numpy.ndarray)
+      :staticmethod:
+
+
+   .. py:method:: get_sampen_backup()
+
+
+   .. py:method:: get_cosen()
+
+
+

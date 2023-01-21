@@ -1,0 +1,78 @@
+
+:py:mod:`ltbio.clinical.Patient`
+================================
+
+.. py:module:: ltbio.clinical.Patient
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Sex <ltbio.clinical.Patient.Sex>`
+     - Biological sex of human beings.
+   * - :py:obj:`Patient <ltbio.clinical.Patient.Patient>`
+     - \-
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Sex
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.Patient.Sex
+      :parts: 1
+
+   Biological sex of human beings.
+
+   .. py:attribute:: M
+      :value: 'Male'
+
+      
+
+   .. py:attribute:: F
+      :value: 'Female'
+
+      
+
+
+.. py:class:: Patient(code, name: str = None, age: int = None, sex: Sex = Sex._, conditions: Tuple[ltbio.clinical.conditions.MedicalCondition.MedicalCondition] = (), medications: Tuple[ltbio.clinical.medications.Medication.Medication] = (), procedures: Tuple[ltbio.clinical.procedures.SurgicalProcedure.SurgicalProcedure] = ())
+
+   .. py:property:: code
+
+
+   .. py:property:: conditions
+
+
+   .. py:property:: notes
+
+
+   .. py:method:: add_note(description: str)
+
+
+   .. py:method:: get_protected_info()
+
+      Returns a dictionary of the private/sensible information: Name, Age, Medications, and Surgical Procedures.
+
+
+

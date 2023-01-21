@@ -1,0 +1,53 @@
+ltbio.ml.supervised package
+===========================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   ltbio.ml.supervised.models
+
+Submodules
+----------
+
+ltbio.ml.supervised.SupervisedTrainConditions module
+----------------------------------------------------
+
+.. automodule:: ltbio.ml.supervised.SupervisedTrainConditions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.ml.supervised.SupervisingTrainer module
+---------------------------------------------
+
+.. automodule:: ltbio.ml.supervised.SupervisingTrainer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.ml.supervised.SupervisingTrainerReporter module
+-----------------------------------------------------
+
+.. automodule:: ltbio.ml.supervised.SupervisingTrainerReporter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.ml.supervised.results module
+----------------------------------
+
+.. automodule:: ltbio.ml.supervised.results
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.ml.supervised
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,253 @@
+
+:py:mod:`ltbio.ml.metrics`
+==========================
+
+.. py:module:: ltbio.ml.metrics
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Metric <ltbio.ml.metrics.Metric>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`ValueMetric <ltbio.ml.metrics.ValueMetric>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`PlotMetric <ltbio.ml.metrics.PlotMetric>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`Sensitivity <ltbio.ml.metrics.Sensitivity>`
+     - Sensitivity based on true and false positives and negatives.
+   * - :py:obj:`Specificity <ltbio.ml.metrics.Specificity>`
+     - Specificity based on true and false positives and negatives.
+   * - :py:obj:`Precision <ltbio.ml.metrics.Precision>`
+     - Precision based on true and false positives and negatives.
+   * - :py:obj:`Recall <ltbio.ml.metrics.Recall>`
+     - Recall based on true and false positives and negatives.
+   * - :py:obj:`Accuracy <ltbio.ml.metrics.Accuracy>`
+     - Accuracy based on true and false positives and negatives.
+   * - :py:obj:`F1 <ltbio.ml.metrics.F1>`
+     - F1-score based on true and false positives and negatives.
+   * - :py:obj:`MSE <ltbio.ml.metrics.MSE>`
+     - Mean Squared Error.
+   * - :py:obj:`MAE <ltbio.ml.metrics.MAE>`
+     - Mean Absolute Error.
+   * - :py:obj:`SNR <ltbio.ml.metrics.SNR>`
+     - Signal-to-noise ratio.
+   * - :py:obj:`SNRI <ltbio.ml.metrics.SNRI>`
+     - Signal-to-noise ratio improvement.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Metric
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.metrics.Metric
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: name
+      :type: str
+      :abstractmethod:
+
+
+
+.. py:class:: ValueMetric(value: float | int)
+
+   Bases: :py:obj:`Metric`, :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.metrics.ValueMetric
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: unit
+      :type: ltbio.biosignals.timeseries.Unit.Unit
+
+
+   .. py:method:: fromDatasetPredictions(dataset: ltbio.ml.datasets.BiosignalDataset.BiosignalDataset, predictions)
+      :classmethod:
+
+
+   .. py:method:: compute_value(dataset: ltbio.ml.datasets.BiosignalDataset.BiosignalDataset, predictions) -> float
+      :staticmethod:
+      :abstractmethod:
+
+
+
+.. py:class:: PlotMetric(x, y)
+
+   Bases: :py:obj:`Metric`, :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.metrics.PlotMetric
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+
+.. py:class:: Sensitivity(value)
+
+   Bases: :py:obj:`ValueMetric`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.metrics.Sensitivity
+      :parts: 1
+
+   Sensitivity based on true and false positives and negatives.
+
+   .. py:property:: name
+
+
+
+.. py:class:: Specificity(value)
+
+   Bases: :py:obj:`ValueMetric`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.metrics.Specificity
+      :parts: 1
+
+   Specificity based on true and false positives and negatives.
+
+   .. py:property:: name
+
+
+
+.. py:class:: Precision(value)
+
+   Bases: :py:obj:`ValueMetric`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.metrics.Precision
+      :parts: 1
+
+   Precision based on true and false positives and negatives.
+
+   .. py:property:: name
+
+
+
+.. py:class:: Recall(value)
+
+   Bases: :py:obj:`ValueMetric`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.metrics.Recall
+      :parts: 1
+
+   Recall based on true and false positives and negatives.
+
+   .. py:property:: name
+
+
+
+.. py:class:: Accuracy(value)
+
+   Bases: :py:obj:`ValueMetric`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.metrics.Accuracy
+      :parts: 1
+
+   Accuracy based on true and false positives and negatives.
+
+   .. py:property:: name
+
+
+
+.. py:class:: F1(value)
+
+   Bases: :py:obj:`ValueMetric`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.metrics.F1
+      :parts: 1
+
+   F1-score based on true and false positives and negatives.
+
+   .. py:property:: name
+
+
+
+.. py:class:: MSE(value: float | int)
+
+   Bases: :py:obj:`ValueMetric`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.metrics.MSE
+      :parts: 1
+
+   Mean Squared Error.
+
+   .. py:property:: name
+
+
+   .. py:method:: compute_value(dataset, predictions)
+      :staticmethod:
+
+
+
+.. py:class:: MAE(value)
+
+   Bases: :py:obj:`ValueMetric`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.metrics.MAE
+      :parts: 1
+
+   Mean Absolute Error.
+
+   .. py:property:: name
+
+
+
+.. py:class:: SNR(value)
+
+   Bases: :py:obj:`ValueMetric`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.metrics.SNR
+      :parts: 1
+
+   Signal-to-noise ratio.
+
+   .. py:property:: name
+
+
+   .. py:property:: unit
+      :type: ltbio.biosignals.timeseries.Unit.Unit
+
+
+
+.. py:class:: SNRI(value)
+
+   Bases: :py:obj:`ValueMetric`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.metrics.SNRI
+      :parts: 1
+
+   Signal-to-noise ratio improvement.
+
+   .. py:property:: name
+
+
+   .. py:property:: unit
+      :type: ltbio.biosignals.timeseries.Unit.Unit
+
+
+

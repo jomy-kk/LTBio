@@ -1,0 +1,47 @@
+
+:py:mod:`ltbio.biosignals.sources.E4`
+=====================================
+
+.. py:module:: ltbio.biosignals.sources.E4
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`E4 <ltbio.biosignals.sources.E4.E4>`
+     - This class represents the source of Seer Epilepsy Database and includes methods to read and write
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: E4
+
+   Bases: :py:obj:`ltbio.biosignals.sources.BiosignalSource.BiosignalSource`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.sources.E4.E4
+      :parts: 1
+
+   This class represents the source of Seer Epilepsy Database and includes methods to read and write
+   biosignal files provided by them. Usually they are in .edf format.
+
+

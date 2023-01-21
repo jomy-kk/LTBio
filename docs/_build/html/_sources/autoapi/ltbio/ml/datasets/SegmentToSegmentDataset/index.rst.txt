@@ -1,0 +1,49 @@
+
+:py:mod:`ltbio.ml.datasets.SegmentToSegmentDataset`
+===================================================
+
+.. py:module:: ltbio.ml.datasets.SegmentToSegmentDataset
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`SegmentToSegmentDataset <ltbio.ml.datasets.SegmentToSegmentDataset.SegmentToSegmentDataset>`
+     - An abstract class representing a dataset of Biosignals.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: SegmentToSegmentDataset(object: Collection[ltbio.biosignals.modalities.Biosignal.Biosignal], target: Collection[ltbio.biosignals.modalities.Biosignal.Biosignal], name: str = None)           SegmentToSegmentDataset(object: Collection[ltbio.biosignals.timeseries.Timeseries.Timeseries], target: Collection[ltbio.biosignals.timeseries.Timeseries.Timeseries], name: str = None)
+
+   Bases: :py:obj:`ltbio.ml.datasets.BiosignalDataset.BiosignalDataset`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.datasets.SegmentToSegmentDataset.SegmentToSegmentDataset
+      :parts: 1
+
+   An abstract class representing a dataset of Biosignals.
+   All subclasses should store the ordered list of objects and targets, respectively, in `__objects` and `__targets`.
+   Also, subclasses have to overwrite `__getitem__`, supporting fetching an example for a given key. An example is a
+   pair (object, target).
+
+

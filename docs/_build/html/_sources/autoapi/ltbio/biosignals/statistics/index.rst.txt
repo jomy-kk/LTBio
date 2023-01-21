@@ -1,0 +1,49 @@
+
+:py:mod:`ltbio.biosignals.statistics`
+=====================================
+
+.. py:module:: ltbio.biosignals.statistics
+
+
+Overview
+---------------
+
+
+
+
+
+
+
+
+
+Functions
+~~~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`mse <ltbio.biosignals.statistics.mse>`\ (biosignal1, biosignal2, by_segment)
+     - \-
+   * - :py:obj:`nmse <ltbio.biosignals.statistics.nmse>`\ (biosignal1, biosignal2, by_segment, decibel)
+     - \-
+   * - :py:obj:`mean <ltbio.biosignals.statistics.mean>`\ (biosignal, by_segment)
+     - \-
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:function:: mse(biosignal1: ltbio.biosignals.modalities.Biosignal.Biosignal, biosignal2: ltbio.biosignals.modalities.Biosignal.Biosignal, by_segment: bool = False)
+
+
+.. py:function:: nmse(biosignal1: ltbio.biosignals.modalities.Biosignal.Biosignal, biosignal2: ltbio.biosignals.modalities.Biosignal.Biosignal, by_segment: bool = False, decibel: bool = False)
+
+
+.. py:function:: mean(biosignal: ltbio.biosignals.modalities.Biosignal.Biosignal, by_segment: bool = False)
+
+

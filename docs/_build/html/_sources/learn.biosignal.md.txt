@@ -1,0 +1,172 @@
+A Biosignal is a set of one or more channels measuring a biological variable. Each channel is represented by a <a href="[Class] Timeseries">Timeseries</a> object. See this structure illustrated below:
+
+![biosignal](https://user-images.githubusercontent.com/25588495/167432054-7ec77e72-1639-404e-bb74-235b3600bb27.png)
+
+A Biosignal also has some properties like the patient it belongs to, the body location where it was measured, and the source where it was acquired (instrument, hospital, ...).
+
+### How to instantiate a Biosignal
+
+Biosignal is an abstract class, meaning objects cannot be instantiated from it. You need to instantiate one of its **types**, corresponding to its acquisition modality. Types are:
+
+* 🫀 Electrocardiography (ECG) [[See Class](404)]
+* 🧠 Electroencephalography (EEG) [[See Class](404)]
+* 💪🏼 Electromyography (EMG) [[See Class](404)]
+* 🫁 Respiration (RESP) [[See Class](404)]
+* 💦 Electrodermal Activity (EDA) [[See Class](404)]
+* 🏃🏾‍♂️ Accelerometry (ACC) [[See Class](404)]
+
+These types, each codified in their own class, inherit the properties and general behavior from Biosignal. In the followinf examples, we will show you how to instantiate an ECG, but they are applicable to any other biosignal modality. You have three ways 🤯 of getting a Biosignal to work with!  
+
+#### Way 1: Instantiate a Biosignal from files 📁 
+
+Give the path where the files are located and specify the source (in <a href="[Class] BiosignalSource">BiosignalSource</a>) from where the files come from:
+```
+biosignal = ECG("path_to_files", HSM)
+```
+Here, <a href="[BiosignalSource] HSM">HSM</a> represents "Hospital de Santa Maria" 🏥, which is the source of where we acquired some of our biosignals! But you can choose from a variety of biosignal sources like other Portuguese hospitals, Bitalino devices, and ScientISST SENSE boards. If your biosignals don't come from one of these sources, you can even <a href="404">create your own source</a>! 😱
+
+#### Way 2: Instantiate a Biosignal from a Database [comming 🔜]
+
+Give the patient code, the source (in <a href="[Class] BiosignalSource">BiosignalSource</a>) from where the files were acquired from, and the interval of time (in tuple) you want to fetch from the database:
+```
+biosignal = ECG(patient_code=101, source=HSM, ('2022-01-01 16:00', '2022-01-01 17:30'))
+```
+
+> This feature will only be available in the future since the Research Database is still being developed.
+
+
+#### Way 3: Instantiate a Biosignal ad-hoc 0️⃣1️⃣
+
+Give a dictionary where the keys are the channel names and the values are the corresponding <a href="[Class] Timeseries">Timeseries</a> objects:
+```
+biosignal = ECG({"xx": timeseriesXX, "yy": timeseriesYY, ...})
+```
+
+
+#### Channels Names
+
+Each channel is represented as a Timeseries and needs to be labeled with a str or a standard <a href="[Enum] Body Location">BodyLocation</a>. Hence, for instance, ad-hoc you might do:
+
+```
+biosignal = ECG({BodyLocation.V1: timeseriesXX, BodyLocation.V2: timeseriesYY, ...})
+```
+
+Reading from files or fetching from the database you can also get channel names with standardised body locations.
+
+
+#### More Properties
+
+If you want your Biosignal objects really to be complete, and have all the associated information, you might consider specifying more properties:
+
+* 🤕 **Patient:** `biosignal = ECG(... , patient=x)` where `x` is an object <a href="[Class] Patient">Patient</a> where you can drop any information regarding the patient associated to the Biosignal. Beware that if reading from a file or fetching from the database might fill this property automatically.
+
+* 📍 **Location:** `biosignal = ECG(..., acquisition_location=x)` where `x` is a <a href="[Enum] Body Location">BodyLocation</a>, to remember where the sensors were placed.
+
+* 🏷️ **Name:** `biosignal = ECG(..., name=x)` where `x` might be a string you want to associate to the Biosignal.
+
+
+### Getters and Setters
+
+You can only reset the `name` after instantiation. But you can **get** any of the following properties:
+
+* `channel_names` returns a set with the channel labels (in Set[str] or Set[<a href="[Enum] Body Location">BodyLocation</a>])
+* `acquisition_location` returns the body location where the biosignal was acquired (in <a href="[Enum] Body Location">BodyLocation</a>)
+* `source` returns the source where the Biosignal was acquired: hospital, device, etc. (in <a href="[Class] BiosignalSource">BiosignalSource</a>)
+* `patient_code` returns the code of the patient whose the biosignal belongs (in int or str)
+* `patient_coditions` returns a set of the medical conditions the patient has (in Set[<a href="[Abstract] Medical Condition">MedicalCondition</a>])
+* `type` returns the biosignal modality (in any Biosignal subclass)
+
+> Due to privacy-by-design, no other patient information might be requested.
+
+To get the **number of channels**, use `len`. E.g.: `x = len(biosignal)`.
+
+### Print
+
+You can print a description of a Biosignal to know what is inside using `print(biosignal1)`. Something similar to this will propmt:
+
+```
+Name: My Biosignal I collected the other day
+Type: ECG
+Number of channels: 3
+Source: vEEG from Hospital de Santa Maria
+Patient: #53 (Epilepsy)
+Day: 09-01-2022
+Total recording hours: 5142 h
+```
+
+### Indexing
+
+#### Access One Channel
+
+`biosignal['xx']` returns a Biosignal only with the channel named `xx`.
+
+> Raises **Index Error** when the given channel does not exist.
+
+#### Access Multiple Channels
+
+`biosignal['xx', 'yy', ...]` returns a Biosignal with all the channels named `xx`, `yy`, ...
+
+> Raises **Index Error** if a given channel does not exist.
+
+#### Slices
+
+`biosignal['2022-01-01 12:00' : '2022-01-01 13:30']` returns a Biosignal with all the original channels trimmed from 12 AM to 1:30 PM.
+
+`biosignal[datetime(2022, 1, 1, 12) : datetime(2022, 1, 2, 13, 30)]` returns the same.
+
+> Raises **Index Error** when the interval given is out of boundaries.
+
+To directly get the <a href="[Class] Timeseries">Timeseries</a> of a channel `xx` from the timepoints `a` to `b`, do double indexing:
+
+```
+x = biosignal['xx'][a:b]
+```
+
+
+### Operations
+
+#### Concatenation
+
+`biosignal3 = biosignal1 + biosignal2` concatenates the beginning of all channels of `biosignal2` to the end of `biosignal1`, and stores it in `biosignal3`.
+
+`biosignal1 += biosignal2` concatenates the beginning of all channels of `biosignal2` to the end of `biosignal1`, and stores it in `biosignal1`.
+
+> Raises **Type Error** when the biosignals are from different modalities.
+
+> Raises **Arithmetic Error** when the biosignals have a different number of channels or different channel names.
+
+> Raises **Arithmetic Error** when the biosignals have associated patients with different codes.
+
+> Raises **Arithmetic Error** when the biosignals have different associated acquisition locations.
+
+> Raises **Arithmetic Error** when any channel of `biosignal2` comes before (in time) than any channel of `biosignal1`.
+
+
+#### Filtering
+
+The method `filter(Filter f)` applies a designed filter `f` to all channels of a biosignal. [See class [Filter](404)]
+
+
+### Plotting
+
+For details about plotting, see the rules of methods <a href="[Methods] plot_{}">plot_{}</a>.
+
+#### Amplitude plot 📉
+
+Use the method `plot` as you wish.
+
+_Example 1_ - Plot all channels: `biosignal.plot()`
+
+_Example 2_ - Plot only channels `xx` and `zz`: `biosignal['xx','zz'].plot()`
+
+_Example 3_ - Plot just a half an hour: `biosignal['2022-05-12 16:00','2022-05-12 16:30'].plot()`
+
+#### Spectrum plot 📈
+
+Use the method `plot_spectrum` as you wish.
+
+_Example 1_ - Plot all channels: `biosignal.plot_spectrum()`
+
+_Example 2_ - Plot only channels `xx` and `zz`: `biosignal['xx','zz'].plot_spectrum()`
+
+_Example 3_ - Plot just a half an hour: `biosignal['2022-05-12 16:00','2022-05-12 16:30'].plot_spectrum()`

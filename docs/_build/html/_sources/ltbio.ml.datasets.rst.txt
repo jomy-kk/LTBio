@@ -1,0 +1,53 @@
+ltbio.ml.datasets package
+=========================
+
+Submodules
+----------
+
+ltbio.ml.datasets.BiosignalDataset module
+-----------------------------------------
+
+.. automodule:: ltbio.ml.datasets.BiosignalDataset
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.ml.datasets.EventDetectionDataset module
+----------------------------------------------
+
+.. automodule:: ltbio.ml.datasets.EventDetectionDataset
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.ml.datasets.SegmentToSegmentDataset module
+------------------------------------------------
+
+.. automodule:: ltbio.ml.datasets.SegmentToSegmentDataset
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.ml.datasets.ValueToValueDataset module
+--------------------------------------------
+
+.. automodule:: ltbio.ml.datasets.ValueToValueDataset
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.ml.datasets.augmentation module
+-------------------------------------
+
+.. automodule:: ltbio.ml.datasets.augmentation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.ml.datasets
+   :members:
+   :undoc-members:
+   :show-inheritance:

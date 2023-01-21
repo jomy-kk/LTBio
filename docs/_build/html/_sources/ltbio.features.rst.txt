@@ -1,0 +1,45 @@
+ltbio.features package
+======================
+
+Submodules
+----------
+
+ltbio.features.FeatureExtractor module
+--------------------------------------
+
+.. automodule:: ltbio.features.FeatureExtractor
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.features.FeatureSelector module
+-------------------------------------
+
+.. automodule:: ltbio.features.FeatureSelector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.features.Features module
+------------------------------
+
+.. automodule:: ltbio.features.Features
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.features.SegmentSelector module
+-------------------------------------
+
+.. automodule:: ltbio.features.SegmentSelector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.features
+   :members:
+   :undoc-members:
+   :show-inheritance:

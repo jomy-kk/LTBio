@@ -1,0 +1,430 @@
+
+:py:mod:`ltbio.biosignals.modalities`
+=====================================
+
+.. py:module:: ltbio.biosignals.modalities
+
+
+Overview
+----------------
+
+
+Submodules
+~~~~~~~
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   ACC/index.rst
+   Biosignal/index.rst
+   ECG/index.rst
+   EDA/index.rst
+   EEG/index.rst
+   EMG/index.rst
+   HR/index.rst
+   MultimodalBiosignal/index.rst
+   PPG/index.rst
+   RESP/index.rst
+   TEMP/index.rst
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`ACC <ltbio.biosignals.modalities.ACC>`
+     - A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   * - :py:obj:`ECG <ltbio.biosignals.modalities.ECG>`
+     - A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   * - :py:obj:`EDA <ltbio.biosignals.modalities.EDA>`
+     - A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   * - :py:obj:`EEG <ltbio.biosignals.modalities.EEG>`
+     - A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   * - :py:obj:`EMG <ltbio.biosignals.modalities.EMG>`
+     - A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   * - :py:obj:`HR <ltbio.biosignals.modalities.HR>`
+     - A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   * - :py:obj:`PPG <ltbio.biosignals.modalities.PPG>`
+     - A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   * - :py:obj:`RESP <ltbio.biosignals.modalities.RESP>`
+     - A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   * - :py:obj:`TEMP <ltbio.biosignals.modalities.TEMP>`
+     - A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+
+
+
+
+
+
+
+
+
+Contents
+----------------
+
+.. py:class:: ACC(timeseries, source=None, patient=None, acquisition_location=None, name=None)
+
+   Bases: :py:obj:`ltbio.biosignals.modalities.Biosignal.Biosignal`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.modalities.ACC
+      :parts: 1
+
+   A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   It may be associated with a source, a patient, and a body location. It can also have a name.
+   It has an initial and final datetime. Its length is its number of channels.
+   It can be resampled, filtered, and concatenated to other Biosignals.
+   Amplitude and spectrum plots can be displayed and saved.
+
+   .. py:attribute:: DEFAULT_UNIT
+
+      
+
+   .. py:method:: plot_summary(show: bool = True, save_to: str = None)
+
+      Plots a summary of relevant aspects of common analysis of the Biosignal.
+
+
+
+.. py:class:: ECG(timeseries, source=None, patient=None, acquisition_location=None, name=None)
+
+   Bases: :py:obj:`ltbio.biosignals.modalities.Biosignal.Biosignal`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.modalities.ECG
+      :parts: 1
+
+   A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   It may be associated with a source, a patient, and a body location. It can also have a name.
+   It has an initial and final datetime. Its length is its number of channels.
+   It can be resampled, filtered, and concatenated to other Biosignals.
+   Amplitude and spectrum plots can be displayed and saved.
+
+   .. py:attribute:: DEFAULT_UNIT
+
+      
+
+   .. py:method:: plot_summary(show: bool = True, save_to: str = None)
+
+      Plots a summary of relevant aspects of common analysis of the Biosignal.
+
+
+   .. py:method:: plot_rpeaks(show: bool = True, save_to: str = None)
+
+
+   .. py:method:: r_timepoints(algorithm='hamilton', _by_segment=False) -> tuple
+
+      Finds the timepoints of the R peaks.
+
+      @param algoritm (optional): The algorithm used to compute the R peaks. Default: Hamilton segmenter.
+      @param _by_segment (optional): Return timepoints grouped by uninterrptuned segments.
+
+      @returns: The ordered sequence of timepoints of the R peaks.
+      @rtype: np.array
+
+      Note: Index one channel first.
+
+
+   .. py:method:: heartbeats(before=0.2, after=0.4)
+
+      Segment the signal by heartbeats.
+      Works like a Segmenter, except output Timeseries is not necessarily equally segmented.
+
+      Parameters
+      ----------
+      before : float, optional
+          Window size to include before the R peak (seconds).
+      after : int, optional
+          Window size to include after the R peak (seconds).
+
+      Returns
+      ----------
+      heartbeats : ECG
+          Biosignal segmented where each Segment is a heartbeat.
+
+      Note
+      ----------
+      If filtered, the raw samples are not recoverable by 'undo_filters'.
+
+
+   .. py:method:: hr(smooth_length: float = None)
+
+      Transform ECG signal to instantaneous heart rate.
+
+      Parameters
+      ----------
+      smooth_length : float, optional
+          Length of smoothing window. If not given, no smoothing is performed on the instantaneous heart rate.
+
+      Returns
+      -------
+      hr : HR
+          Pseudo-Biosignal where samples are the instantaneous heart rate at each timepoint.
+
+
+   .. py:method:: nni()
+
+      Transform ECG signal to an evenly-sampled R-R peak interval (RRI/NNI) signal.
+      Interpolation is used.
+      It is assumed the ECG only has one channel.
+
+      Returns
+      -------
+      nni : ECG
+          Pseudo-Biosignal where each sample is the interval of the R peak 'occured there' and the previous R peak.
+
+
+   .. py:method:: invert_if_necessary()
+
+      Investigates which ECG channels need to be inverted, and, the ones that do, get inverted just like method 'invert'.
+      Based on the median of the R-peaks amplitudes. Works preferably with leads I and II.
+
+      Parameters
+      ----------
+      None
+
+      Returns
+      -------
+      None
+
+
+   .. py:method:: skewness(by_segment: bool = False) -> dict[str:float | list[float]]
+
+      Computes the skweness of each channel.
+      If `by_segment` is True, a list of skweness values is returned for each contiguous uninterrupted segment,
+      otherwise the weighted average is returned. Weighted by duration of each segment.
+      :return: A dictionary of skewness value(s) for each channel.
+
+
+   .. py:method:: kurtosis(by_segment: bool = False)
+
+      Computes the kurtosis of each channel.
+      If `by_segment` is True, a list of kurtosis values is returned for each contiguous uninterrupted segment,
+      otherwise the weighted average is returned. Weighted by duration of each segment.
+
+      If kurtosis <= 5, it means there's a great amount of noise present.
+
+      :return: A dictionary of kurtosis value(s) for each channel.
+
+
+   .. py:method:: flatline_percentage(by_segment: bool = False)
+
+      Computes the % of flatline of each channel.
+      If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+      otherwise the weighted average is returned. Weighted by duration of each segment.
+
+      :return: A dictionary of % of flatline value(s) for each channel.
+
+
+   .. py:method:: basSQI(by_segment: bool = False)
+
+      Computes the ration between [0, 1] Hz and [0, 40] Hz frequency power bands.
+      If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+      otherwise the weighted average is returned. Weighted by duration of each segment.
+
+      Adequate to evaluate the presence of baseline drift.
+      Values between [0.95, 1] mean ECG shows optimal quality.
+
+      :return: A dictionary of the computed ratio for each channel.
+
+
+   .. py:method:: bsSQI(by_segment: bool = False)
+
+      Checks baseline wander in time domain.
+      If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+      otherwise the weighted average is returned. Weighted by duration of each segment.
+
+      Meant to evaluate the presence of baseline wander.
+      Ref: https://www.sciencedirect.com/science/article/pii/S0169260714003241?via%3Dihub#bib0040
+
+      :return: A dictionary of the computed ratio for each channel.
+
+
+   .. py:method:: pSQI(by_segment: bool = False)
+
+      Computes the ration between [5, 15] Hz and [5, 40] Hz frequency power bands.
+      If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+      otherwise the weighted average is returned. Weighted by duration of each segment.
+
+      Values between [0.5, 0.8] mean QRS complexes show high quality.
+
+      :return: A dictionary of the computed ratio for each channel.
+
+
+   .. py:method:: qSQI(by_segment: bool = False)
+
+      Evaluates agreement between two R detectors.
+      If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
+      otherwise the weighted average is returned. Weighted by duration of each segment.
+
+      Values > 90% mean optimal R-peak consensus.
+
+      :return: A dictionary of the computed qSQI for each channel.
+
+
+   .. py:method:: zhaoSQI(by_segment: bool = False)
+
+
+
+.. py:class:: EDA(timeseries, source=None, patient=None, acquisition_location=None, name=None)
+
+   Bases: :py:obj:`ltbio.biosignals.modalities.Biosignal.Biosignal`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.modalities.EDA
+      :parts: 1
+
+   A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   It may be associated with a source, a patient, and a body location. It can also have a name.
+   It has an initial and final datetime. Its length is its number of channels.
+   It can be resampled, filtered, and concatenated to other Biosignals.
+   Amplitude and spectrum plots can be displayed and saved.
+
+   .. py:attribute:: DEFAULT_UNIT
+
+      
+
+   .. py:method:: plot_summary(show: bool = True, save_to: str = None)
+
+      Plots a summary of relevant aspects of common analysis of the Biosignal.
+
+
+
+.. py:class:: EEG(timeseries, source=None, patient=None, acquisition_location=None, name=None)
+
+   Bases: :py:obj:`ltbio.biosignals.modalities.Biosignal.Biosignal`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.modalities.EEG
+      :parts: 1
+
+   A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   It may be associated with a source, a patient, and a body location. It can also have a name.
+   It has an initial and final datetime. Its length is its number of channels.
+   It can be resampled, filtered, and concatenated to other Biosignals.
+   Amplitude and spectrum plots can be displayed and saved.
+
+   .. py:attribute:: DEFAULT_UNIT
+
+      
+
+   .. py:method:: plot_summary(show: bool = True, save_to: str = None)
+
+      Plots a summary of relevant aspects of common analysis of the Biosignal.
+
+
+
+.. py:class:: EMG(timeseries, source=None, patient=None, acquisition_location=None, name=None)
+
+   Bases: :py:obj:`ltbio.biosignals.modalities.Biosignal.Biosignal`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.modalities.EMG
+      :parts: 1
+
+   A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   It may be associated with a source, a patient, and a body location. It can also have a name.
+   It has an initial and final datetime. Its length is its number of channels.
+   It can be resampled, filtered, and concatenated to other Biosignals.
+   Amplitude and spectrum plots can be displayed and saved.
+
+   .. py:attribute:: DEFAULT_UNIT
+
+      
+
+   .. py:method:: plot_summary(show: bool = True, save_to: str = None)
+
+      Plots a summary of relevant aspects of common analysis of the Biosignal.
+
+
+
+.. py:class:: HR(timeseries, source=None, patient=None, acquisition_location=None, name=None, original_signal: ECG | PPG = None)
+
+   Bases: :py:obj:`ltbio.biosignals.modalities.Biosignal.Biosignal`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.modalities.HR
+      :parts: 1
+
+   A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   It may be associated with a source, a patient, and a body location. It can also have a name.
+   It has an initial and final datetime. Its length is its number of channels.
+   It can be resampled, filtered, and concatenated to other Biosignals.
+   Amplitude and spectrum plots can be displayed and saved.
+
+   .. py:method:: plot_summary(show: bool = True, save_to: str = None)
+
+      Plots a summary of relevant aspects of common analysis of the Biosignal.
+
+
+
+.. py:class:: PPG(timeseries, source=None, patient=None, acquisition_location=None, name=None)
+
+   Bases: :py:obj:`ltbio.biosignals.modalities.Biosignal.Biosignal`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.modalities.PPG
+      :parts: 1
+
+   A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   It may be associated with a source, a patient, and a body location. It can also have a name.
+   It has an initial and final datetime. Its length is its number of channels.
+   It can be resampled, filtered, and concatenated to other Biosignals.
+   Amplitude and spectrum plots can be displayed and saved.
+
+   .. py:attribute:: DEFAULT_UNIT
+
+      
+
+   .. py:method:: plot_summary(show: bool = True, save_to: str = None)
+
+      Plots a summary of relevant aspects of common analysis of the Biosignal.
+
+
+
+.. py:class:: RESP(timeseries, source=None, patient=None, acquisition_location=None, name=None)
+
+   Bases: :py:obj:`ltbio.biosignals.modalities.Biosignal.Biosignal`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.modalities.RESP
+      :parts: 1
+
+   A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   It may be associated with a source, a patient, and a body location. It can also have a name.
+   It has an initial and final datetime. Its length is its number of channels.
+   It can be resampled, filtered, and concatenated to other Biosignals.
+   Amplitude and spectrum plots can be displayed and saved.
+
+   .. py:attribute:: DEFAULT_UNIT
+
+      
+
+   .. py:method:: plot_summary(show: bool = True, save_to: str = None)
+
+      Plots a summary of relevant aspects of common analysis of the Biosignal.
+
+
+
+.. py:class:: TEMP(timeseries, source=None, patient=None, acquisition_location=None, name=None)
+
+   Bases: :py:obj:`ltbio.biosignals.modalities.Biosignal.Biosignal`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.modalities.TEMP
+      :parts: 1
+
+   A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+   It may be associated with a source, a patient, and a body location. It can also have a name.
+   It has an initial and final datetime. Its length is its number of channels.
+   It can be resampled, filtered, and concatenated to other Biosignals.
+   Amplitude and spectrum plots can be displayed and saved.
+
+   .. py:attribute:: DEFAULT_UNIT
+
+      
+
+   .. py:method:: plot_summary(show: bool = True, save_to: str = None)
+
+      Plots a summary of relevant aspects of common analysis of the Biosignal.
+
+
+

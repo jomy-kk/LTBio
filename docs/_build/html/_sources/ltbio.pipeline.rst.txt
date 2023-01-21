@@ -1,0 +1,61 @@
+ltbio.pipeline package
+======================
+
+Submodules
+----------
+
+ltbio.pipeline.GoTo module
+--------------------------
+
+.. automodule:: ltbio.pipeline.GoTo
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.pipeline.Input module
+---------------------------
+
+.. automodule:: ltbio.pipeline.Input
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.pipeline.Packet module
+----------------------------
+
+.. automodule:: ltbio.pipeline.Packet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.pipeline.Pipeline module
+------------------------------
+
+.. automodule:: ltbio.pipeline.Pipeline
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.pipeline.PipelineUnit module
+----------------------------------
+
+.. automodule:: ltbio.pipeline.PipelineUnit
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ltbio.pipeline.reports module
+-----------------------------
+
+.. automodule:: ltbio.pipeline.reports
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.pipeline
+   :members:
+   :undoc-members:
+   :show-inheritance:

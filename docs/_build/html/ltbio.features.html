@@ -1,0 +1,733 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
+
+    <!-- Generated with Sphinx 5.0.2 and Furo 2022.12.07 -->
+        <title>ltbio.features package - LTBio 1.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-announcement-background: #F2F2F7;
+  --color-announcement-text: grey;
+  --color-brand-primary: #0089BF;
+  --font-stack: Lexend, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: SFMono-Regular, Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">LTBio 1.0.1 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/colour.png" alt="Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="learn.html">Learn the Basics</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="biosignal.html">How to instantiate a Biosignal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="biosignal.html#getters-and-setters">Getters and Setters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="biosignal.html#print">Print</a></li>
+<li class="toctree-l2"><a class="reference internal" href="biosignal.html#indexing">Indexing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="biosignal.html#operations">Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="biosignal.html#plotting">Plotting</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="autoapi/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="autoapi/ltbio/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/biosignals/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/ACC/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.ACC</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/Biosignal/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.Biosignal</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/ECG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.ECG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/EDA/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EDA</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/EEG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EEG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/EMG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.EMG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/HR/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.HR</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/MultimodalBiosignal/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.MultimodalBiosignal</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/PPG/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.PPG</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/RESP/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.RESP</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/modalities/TEMP/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.modalities.TEMP</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/BiosignalSource/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.BiosignalSource</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/Bitalino/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Bitalino</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/E4/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.E4</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/HEM/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.HEM</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/HSM/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.HSM</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/MITDB/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.MITDB</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/Multisource/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Multisource</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/Seer/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Seer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/sources/Sense/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.sources.Sense</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Event/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Event</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Frequency/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Frequency</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Timeseries</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Unit/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.timeseries.Unit</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/biosignals/statistics/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.biosignals.statistics</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/clinical/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/clinical/conditions/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/clinical/conditions/COVID19/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions.COVID19</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/clinical/conditions/Epilepsy/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions.Epilepsy</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/clinical/conditions/MedicalCondition/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.conditions.MedicalCondition</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/clinical/medications/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.medications</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/clinical/medications/Medication/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.medications.Medication</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/clinical/procedures/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.procedures</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/clinical/procedures/CarpalTunnelRelease/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.procedures.CarpalTunnelRelease</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/clinical/procedures/SurgicalProcedure/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.procedures.SurgicalProcedure</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/clinical/BodyLocation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.BodyLocation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/clinical/Patient/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.Patient</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/clinical/Semiology/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.clinical.Semiology</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/decision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/decision/BinaryDecision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.BinaryDecision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/decision/Decision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.Decision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/decision/DecisionMaker/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.DecisionMaker</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/decision/NAryDecision/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.decision.NAryDecision</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/features/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/features/FeatureExtractor/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.FeatureExtractor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/features/FeatureSelector/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.FeatureSelector</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/features/Features/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.Features</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/features/SegmentSelector/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.features.SegmentSelector</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/ml/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/ml/datasets/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/datasets/BiosignalDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.BiosignalDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/datasets/EventDetectionDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.EventDetectionDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/datasets/SegmentToSegmentDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.SegmentToSegmentDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/datasets/ValueToValueDataset/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.ValueToValueDataset</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/datasets/augmentation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.datasets.augmentation</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/ml/supervised/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="autoapi/ltbio/ml/supervised/models/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="autoapi/ltbio/ml/supervised/models/SkLearnModel/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models.SkLearnModel</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="autoapi/ltbio/ml/supervised/models/SupervisedModel/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models.SupervisedModel</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="autoapi/ltbio/ml/supervised/models/TorchModel/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.models.TorchModel</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/supervised/SupervisedTrainConditions/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.SupervisedTrainConditions</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/supervised/SupervisingTrainer/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.SupervisingTrainer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/supervised/SupervisingTrainerReporter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.SupervisingTrainerReporter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/ml/supervised/results/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.supervised.results</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/ml/metrics/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.ml.metrics</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/pipeline/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/pipeline/GoTo/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.GoTo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/pipeline/Input/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.Input</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/pipeline/Packet/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.Packet</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/pipeline/Pipeline/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.Pipeline</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/pipeline/PipelineUnit/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.PipelineUnit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/ltbio/pipeline/reports/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.pipeline.reports</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/ltbio/processing/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/processing/filters/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/filters/Filter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.Filter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/filters/FrequencyDomainFilter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.FrequencyDomainFilter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/filters/TimeDomainFilter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.filters.TimeDomainFilter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/processing/formaters/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.formaters</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/formaters/Normalizer/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.formaters.Normalizer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/formaters/Segmenter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.formaters.Segmenter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="autoapi/ltbio/processing/noises/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.noises</span></code></a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/noises/GaussianNoise/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.noises.GaussianNoise</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="autoapi/ltbio/processing/noises/Noise/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ltbio.processing.noises.Noise</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="ltbio-features-package">
+<h1>ltbio.features package<a class="headerlink" href="#ltbio-features-package" title="Permalink to this heading">#</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">#</a></h2>
+</section>
+<section id="module-ltbio.features.FeatureExtractor">
+<span id="ltbio-features-featureextractor-module"></span><h2>ltbio.features.FeatureExtractor module<a class="headerlink" href="#module-ltbio.features.FeatureExtractor" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.features.FeatureExtractor.FeatureExtractor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.features.FeatureExtractor.</span></span><span class="sig-name descname"><span class="pre">FeatureExtractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_functions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Collection</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.features.FeatureExtractor.FeatureExtractor" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="autoapi/ltbio/pipeline/PipelineUnit/index.html#ltbio.pipeline.PipelineUnit.SinglePipelineUnit" title="ltbio.pipeline.PipelineUnit.SinglePipelineUnit"><code class="xref py py-class docutils literal notranslate"><span class="pre">SinglePipelineUnit</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.features.FeatureExtractor.FeatureExtractor.ART_PATH">
+<span class="sig-name descname"><span class="pre">ART_PATH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'resources/pipeline_media/feature_extractor.png'</span></em><a class="headerlink" href="#ltbio.features.FeatureExtractor.FeatureExtractor.ART_PATH" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.features.FeatureExtractor.FeatureExtractor.PIPELINE_INPUT_LABELS">
+<span class="sig-name descname"><span class="pre">PIPELINE_INPUT_LABELS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'timeseries':</span> <span class="pre">'timeseries'}</span></em><a class="headerlink" href="#ltbio.features.FeatureExtractor.FeatureExtractor.PIPELINE_INPUT_LABELS" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.features.FeatureExtractor.FeatureExtractor.PIPELINE_OUTPUT_LABELS">
+<span class="sig-name descname"><span class="pre">PIPELINE_OUTPUT_LABELS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'features':</span> <span class="pre">'timeseries'}</span></em><a class="headerlink" href="#ltbio.features.FeatureExtractor.FeatureExtractor.PIPELINE_OUTPUT_LABELS" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.FeatureExtractor.FeatureExtractor.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ltbio.features.FeatureExtractor.FeatureExtractor.apply" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ltbio.features.FeatureSelector">
+<span id="ltbio-features-featureselector-module"></span><h2>ltbio.features.FeatureSelector module<a class="headerlink" href="#module-ltbio.features.FeatureSelector" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.features.FeatureSelector.FeatureSelector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.features.FeatureSelector.</span></span><span class="sig-name descname"><span class="pre">FeatureSelector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.features.FeatureSelector.FeatureSelector" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="autoapi/ltbio/pipeline/PipelineUnit/index.html#ltbio.pipeline.PipelineUnit.SinglePipelineUnit" title="ltbio.pipeline.PipelineUnit.SinglePipelineUnit"><code class="xref py py-class docutils literal notranslate"><span class="pre">SinglePipelineUnit</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.features.FeatureSelector.FeatureSelector.ART_PATH">
+<span class="sig-name descname"><span class="pre">ART_PATH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'resources/pipeline_media/feature_selector.png'</span></em><a class="headerlink" href="#ltbio.features.FeatureSelector.FeatureSelector.ART_PATH" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.features.FeatureSelector.FeatureSelector.PIPELINE_INPUT_LABELS">
+<span class="sig-name descname"><span class="pre">PIPELINE_INPUT_LABELS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'features':</span> <span class="pre">'timeseries'}</span></em><a class="headerlink" href="#ltbio.features.FeatureSelector.FeatureSelector.PIPELINE_INPUT_LABELS" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.features.FeatureSelector.FeatureSelector.PIPELINE_OUTPUT_LABELS">
+<span class="sig-name descname"><span class="pre">PIPELINE_OUTPUT_LABELS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'selected_features':</span> <span class="pre">'timeseries'}</span></em><a class="headerlink" href="#ltbio.features.FeatureSelector.FeatureSelector.PIPELINE_OUTPUT_LABELS" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.FeatureSelector.FeatureSelector.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ltbio.features.FeatureSelector.FeatureSelector.apply" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ltbio.features.Features">
+<span id="ltbio-features-features-module"></span><h2>ltbio.features.Features module<a class="headerlink" href="#module-ltbio.features.Features" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.features.Features.Features">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.features.Features.</span></span><span class="sig-name descname"><span class="pre">Features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original_timeseries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.features.Features.Features" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class that stores extracted features of a Timeseries.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="ltbio.features.Features.Features.original_timeseries">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">original_timeseries</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></em><a class="headerlink" href="#ltbio.features.Features.Features.original_timeseries" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.Features.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.features.Features.Features.to_dict" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.features.Features.</span></span><span class="sig-name descname"><span class="pre">HRVFeatures</span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.csi">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">csi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.csi" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.csv">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.csv" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.det">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">det</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.det" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.get_cosen">
+<span class="sig-name descname"><span class="pre">get_cosen</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.get_cosen" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.get_sampen_backup">
+<span class="sig-name descname"><span class="pre">get_sampen_backup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.get_sampen_backup" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.hf">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.hf" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.hf_lf">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hf_lf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.hf_lf" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.hr">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.hr" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.lf">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.lf" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.lf_hf">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lf_hf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.lf_hf" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.lmax">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lmax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.lmax" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.max_hr">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_hr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.max_hr" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.mean">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.mean" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.nn50">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nn50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.nn50" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.pnn50">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pnn50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.pnn50" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.rec">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.rec" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.rmssd">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rmssd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.rmssd" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.s">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">s</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.s" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.sampen">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sampen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.sampen" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.sd1">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sd1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.sd1" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.sd2">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sd2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.sd2" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.sdnn">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sdnn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.sdnn" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.HRVFeatures.var">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">var</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nni</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.HRVFeatures.var" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.features.Features.TimeFeatures">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.features.Features.</span></span><span class="sig-name descname"><span class="pre">TimeFeatures</span></span><a class="headerlink" href="#ltbio.features.Features.TimeFeatures" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Class with implementation of extraction of of several time features.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.TimeFeatures.deviation">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deviation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">segment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.TimeFeatures.deviation" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.TimeFeatures.mean">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">segment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.TimeFeatures.mean" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.Features.TimeFeatures.variance">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">variance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">segment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#ltbio.features.Features.TimeFeatures.variance" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ltbio.features.SegmentSelector">
+<span id="ltbio-features-segmentselector-module"></span><h2>ltbio.features.SegmentSelector module<a class="headerlink" href="#module-ltbio.features.SegmentSelector" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ltbio.features.SegmentSelector.SegmentSelector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ltbio.features.SegmentSelector.</span></span><span class="sig-name descname"><span class="pre">SegmentSelector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbio.features.SegmentSelector.SegmentSelector" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="autoapi/ltbio/pipeline/PipelineUnit/index.html#ltbio.pipeline.PipelineUnit.SinglePipelineUnit" title="ltbio.pipeline.PipelineUnit.SinglePipelineUnit"><code class="xref py py-class docutils literal notranslate"><span class="pre">SinglePipelineUnit</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.features.SegmentSelector.SegmentSelector.ART_PATH">
+<span class="sig-name descname"><span class="pre">ART_PATH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'resources/pipeline_media/feature_selector.png'</span></em><a class="headerlink" href="#ltbio.features.SegmentSelector.SegmentSelector.ART_PATH" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.features.SegmentSelector.SegmentSelector.PIPELINE_INPUT_LABELS">
+<span class="sig-name descname"><span class="pre">PIPELINE_INPUT_LABELS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'timeseries':</span> <span class="pre">'timeseries'}</span></em><a class="headerlink" href="#ltbio.features.SegmentSelector.SegmentSelector.PIPELINE_INPUT_LABELS" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ltbio.features.SegmentSelector.SegmentSelector.PIPELINE_OUTPUT_LABELS">
+<span class="sig-name descname"><span class="pre">PIPELINE_OUTPUT_LABELS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'selected_features':</span> <span class="pre">'timeseries'}</span></em><a class="headerlink" href="#ltbio.features.SegmentSelector.SegmentSelector.PIPELINE_OUTPUT_LABELS" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ltbio.features.SegmentSelector.SegmentSelector.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="autoapi/ltbio/biosignals/timeseries/Timeseries/index.html#ltbio.biosignals.timeseries.Timeseries.Timeseries" title="ltbio.biosignals.timeseries.Timeseries.Timeseries"><span class="pre">Timeseries</span></a></span></span><a class="headerlink" href="#ltbio.features.SegmentSelector.SegmentSelector.apply" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ltbio.features">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ltbio.features" title="Permalink to this heading">#</a></h2>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, ScientISST
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/jomy-kk/IT-LongTermBiosignals" aria-label="GitHub">
+                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                    </svg>
+                </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">ltbio.features package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ltbio.features.FeatureExtractor">ltbio.features.FeatureExtractor module</a></li>
+<li><a class="reference internal" href="#module-ltbio.features.FeatureSelector">ltbio.features.FeatureSelector module</a></li>
+<li><a class="reference internal" href="#module-ltbio.features.Features">ltbio.features.Features module</a></li>
+<li><a class="reference internal" href="#module-ltbio.features.SegmentSelector">ltbio.features.SegmentSelector module</a></li>
+<li><a class="reference internal" href="#module-ltbio.features">Module contents</a><ul>
+<li><a class="reference internal" href="#ltbio.features.FeatureExtractor.FeatureExtractor">FeatureExtractor</a><ul>
+<li><a class="reference internal" href="#ltbio.features.FeatureExtractor.FeatureExtractor.ART_PATH">ART_PATH</a></li>
+<li><a class="reference internal" href="#ltbio.features.FeatureExtractor.FeatureExtractor.PIPELINE_INPUT_LABELS">PIPELINE_INPUT_LABELS</a></li>
+<li><a class="reference internal" href="#ltbio.features.FeatureExtractor.FeatureExtractor.PIPELINE_OUTPUT_LABELS">PIPELINE_OUTPUT_LABELS</a></li>
+<li><a class="reference internal" href="#ltbio.features.FeatureExtractor.FeatureExtractor.apply">apply</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.features.FeatureSelector.FeatureSelector">FeatureSelector</a><ul>
+<li><a class="reference internal" href="#ltbio.features.FeatureSelector.FeatureSelector.ART_PATH">ART_PATH</a></li>
+<li><a class="reference internal" href="#ltbio.features.FeatureSelector.FeatureSelector.PIPELINE_INPUT_LABELS">PIPELINE_INPUT_LABELS</a></li>
+<li><a class="reference internal" href="#ltbio.features.FeatureSelector.FeatureSelector.PIPELINE_OUTPUT_LABELS">PIPELINE_OUTPUT_LABELS</a></li>
+<li><a class="reference internal" href="#ltbio.features.FeatureSelector.FeatureSelector.apply">apply</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.features.Features.Features">Features</a><ul>
+<li><a class="reference internal" href="#ltbio.features.Features.Features.original_timeseries">original_timeseries</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.Features.to_dict">to_dict</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures">HRVFeatures</a><ul>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.csi">csi</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.csv">csv</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.det">det</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.get_cosen">get_cosen</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.get_sampen_backup">get_sampen_backup</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.hf">hf</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.hf_lf">hf_lf</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.hr">hr</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.lf">lf</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.lf_hf">lf_hf</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.lmax">lmax</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.max_hr">max_hr</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.mean">mean</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.nn50">nn50</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.pnn50">pnn50</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.rec">rec</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.rmssd">rmssd</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.s">s</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.sampen">sampen</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.sd1">sd1</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.sd2">sd2</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.sdnn">sdnn</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.HRVFeatures.var">var</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.features.Features.TimeFeatures">TimeFeatures</a><ul>
+<li><a class="reference internal" href="#ltbio.features.Features.TimeFeatures.deviation">deviation</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.TimeFeatures.mean">mean</a></li>
+<li><a class="reference internal" href="#ltbio.features.Features.TimeFeatures.variance">variance</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ltbio.features.SegmentSelector.SegmentSelector">SegmentSelector</a><ul>
+<li><a class="reference internal" href="#ltbio.features.SegmentSelector.SegmentSelector.ART_PATH">ART_PATH</a></li>
+<li><a class="reference internal" href="#ltbio.features.SegmentSelector.SegmentSelector.PIPELINE_INPUT_LABELS">PIPELINE_INPUT_LABELS</a></li>
+<li><a class="reference internal" href="#ltbio.features.SegmentSelector.SegmentSelector.PIPELINE_OUTPUT_LABELS">PIPELINE_OUTPUT_LABELS</a></li>
+<li><a class="reference internal" href="#ltbio.features.SegmentSelector.SegmentSelector.apply">apply</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    </body>
+</html>

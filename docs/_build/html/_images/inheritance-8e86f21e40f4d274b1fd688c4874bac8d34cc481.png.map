@@ -1,0 +1,5 @@
+<map id="inheritance72c1380760" name="inheritance72c1380760">
+<area shape="rect" id="node1" title="Helper class that provides a standard way to create an ABC using" alt="" coords="5,5,77,31"/>
+<area shape="rect" id="node2" href="../../../../ltbio.biosignals.modalities.html#ltbio.biosignals.modalities.Biosignal.Biosignal" target="_top" title="A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable." alt="" coords="125,5,200,31"/>
+<area shape="rect" id="node3" href="../../../../ltbio.biosignals.modalities.html#ltbio.biosignals.modalities.HR.HR" target="_top" title="HR" alt="" coords="248,5,320,31"/>
+</map>

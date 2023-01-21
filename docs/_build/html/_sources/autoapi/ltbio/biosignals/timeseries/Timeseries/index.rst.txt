@@ -1,0 +1,348 @@
+
+:py:mod:`ltbio.biosignals.timeseries.Timeseries`
+================================================
+
+.. py:module:: ltbio.biosignals.timeseries.Timeseries
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`Timeseries <ltbio.biosignals.timeseries.Timeseries.Timeseries>`
+     - A Timeseries is a sequence of data points that occur in successive order over some period of time.
+   * - :py:obj:`OverlappingTimeseries <ltbio.biosignals.timeseries.Timeseries.OverlappingTimeseries>`
+     - An OverlappingTimeseries is a Timeseries that violates the rule that to each time point of its domain it must
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: Timeseries(samples: ndarray | list | tuple, initial_datetime: datetime.datetime, sampling_frequency: float, units: ltbio.biosignals.timeseries.Unit.Unit = None, name: str = None)
+
+   A Timeseries is a sequence of data points that occur in successive order over some period of time.
+   In a Biosignal, one Timeseries' data points are the measurement of a biological variable, in some unit, taken from a
+   sensor or channel. This data points are often called samples, and are acquired at fixed sampling frequency.
+
+   To each time point of a Timeseries' domain corresponds one and only one sample. However, a Timeseries might be
+   contiguous if a sample was acquired at every sampling time point, or discontiguous if there were interruptions. Each
+   interval/sequence of contiguous samples is called a Segment, but those are managed internally.
+
+   Constructors / Initializers
+   ______________
+
+   Timeseries: default
+       Instantiates a Timeseries with a contiguous sequence of samples.
+
+   Timeseries.withDiscontiguousSegments
+       Instantiates a Timeseries with discontiguous sequences of samples.
+
+
+   Properties:
+   ______________
+
+   name: str
+       The name of the Timeseries, if any.
+
+   samples: array  # FIXME
+       Contiguous or discontiguous sequence of samples.
+
+   sampling_frequency: float
+       The frequency at which the samples were acquired, in Hz.
+
+   units: Unit
+       The physical unit at which the samples should be interpreted.
+
+   events: tuple[Event]
+       The events timely associated to the Timeseries.
+
+   initial_datetime: datetime
+       The date and time of the first sample.
+
+   final_datetime: datetime
+       The date and time of the last sample.
+
+   duration: timedelta
+       The total time of acquired samples, excluding interruptions.
+
+   domain: tuple[DateTimeRange]
+       The intervals of date and time in which the Timeseries is defined, i.e., samples were acquired.
+
+   is_equally_segmented: bool
+       The logic value stating if each interval in the domain has the same duration.
+
+   segment_duration: timedelta:
+       Duration of all segments, if is_equally_segmented is True.
+
+
+   Built-ins:
+   ______________
+
+   len: Returns the total number of samples.
+
+   copy: Copies all Timeseries' content.
+
+   iter: Returns an iterator over the samples of all Timeseries' Segments.
+
+   in: Returns True if a date, time or event is contained in the Timeseries.
+
+   [] : Indexes by date, time or events.
+
+   + : Adds Timeseries.
+
+   += : Appends more samples to the last Timeseries' Segment.
+
+   Methods:
+   ______________
+
+   append(datetime, array):
+       Appends a new sequence of samples in a separate Segment.
+
+   associate(Event):
+       Timely associates a given Event to the Timeseries.
+
+   dissociate(str):
+       Removes any association the Timeseries has with an Event with the given name.
+
+   filter(Filter):
+       Filters the Timeseries with the given design.
+
+   undo_filters():
+       Reverts the effect of all filters.
+
+   plot():
+       Plots the Timeseries amplitude over time, with all its interruptions, if any.
+
+   plot():
+       Plots the Timeseries frequency spectrum.
+
+   ______________
+
+   Full documentation in:
+   https://github.com/jomy-kk/IT-LongTermBiosignals/wiki/%5BClass%5D-Timeseries
+
+   .. py:property:: segments
+      :type: list
+
+
+   .. py:property:: samples
+      :type: list | ndarray
+
+
+   .. py:property:: initial_datetime
+      :type: datetime.datetime
+
+      The date and time of the first sample.
+
+
+   .. py:property:: final_datetime
+      :type: datetime.datetime
+
+      The date and time of the last sample.
+
+
+   .. py:property:: domain
+      :type: Tuple[datetimerange.DateTimeRange]
+
+      The intervals of date and time in which the Timeseries is defined, i.e., samples were acquired.
+
+
+   .. py:property:: subdomains
+      :type: Tuple[datetimerange.DateTimeRange]
+
+
+   .. py:property:: duration
+      :type: datetime.timedelta
+
+      returns actual recorded time without interruptions
+              
+
+
+   .. py:property:: sampling_frequency
+      :type: float
+
+      The frequency at which the samples were acquired, in Hz.
+
+
+   .. py:property:: units
+
+      The physical unit at which the samples should be interpreted.
+
+
+   .. py:property:: name
+
+      The name of the Timeseries, if any.
+
+
+   .. py:property:: is_contiguous
+      :type: bool
+
+      The logic value stating if there are no interruptions in time.
+
+
+   .. py:property:: is_equally_segmented
+      :type: bool
+
+      The logic value stating if each interval in the domain has the same duration.
+
+
+   .. py:property:: segment_duration
+      :type: datetime.timedelta
+
+      Duration of segments, if equally segmented.
+
+
+   .. py:property:: segment_length
+      :type: int
+
+      Number of samples of segments, if equally segmented.
+
+
+   .. py:property:: n_segments
+      :type: int
+
+      The number of uninterrupted segments.
+
+
+   .. py:property:: events
+      :type: Tuple[ltbio.biosignals.timeseries.Event.Event]
+
+      The events timely associated to the Timeseries, timely ordered.
+
+
+   .. py:property:: tags
+      :type: tuple[str]
+
+
+   .. py:method:: withDiscontiguousSegments(segments_by_time: Dict[Timeseries.withDiscontiguousSegments.datetime, ndarray | list | tuple], sampling_frequency: float, units: ltbio.biosignals.timeseries.Unit.Unit = None, name: str = None)
+      :classmethod:
+
+      Give a dictionary of discontiguous sequences of samples, keyed by their initial date and time.
+      It also receives the sampling frequency of the samples.
+      Additionally, it can receive the samples' units and a name, if needed.
+
+      Parameters
+      ------------
+      samples: dict [datetime, ndarray | list | tuple]
+          The sequence of samples to store as separate Segments, in the format { datetime: [, ... ], ... }.
+
+      initial_datetime: datetime
+          The date and time of the first sample.
+
+      sampling_frequency: float | Frequency
+          The frequency at which the samples where sampled.
+
+      units: Unit
+          The physical units of the variable measured.
+
+      name: str
+          A symbolic name for the Timeseries. It is mentioned in plots, reports, error messages, etc.
+
+
+   .. py:method:: max()
+
+      Returns the maximum aplitude value of the Timeseries.
+
+
+   .. py:method:: min()
+
+      Returns the minimum aplitude value of the Timeseries.
+
+
+   .. py:method:: overlap(other) -> Tuple[datetimerange.DateTimeRange]
+
+
+   .. py:method:: append(initial_datetime: datetime.datetime, samples: ndarray | list | tuple)
+
+      Appends a new sequence of samples in a separate Segment.
+      :param initial_datetime: The date and time of the first sample in 'samples'.
+      :param samples: The sequence of samples to add as a separate Segment.
+      :return: None
+
+
+   .. py:method:: associate(events: Event | Collection[Event] | Dict[str, Event])
+
+      Associates an Event with the Timeseries. Events have names that serve as keys. If keys are given,
+      i.e. if 'events' is a dict, then the Event names are override.
+      :param events: One or multiple Event objects.
+      :return: None
+
+
+   .. py:method:: disassociate(event_name: str)
+
+      Dissociate the event named after the given name.
+      :param event_name: The name of the event to dissociate.
+      :return: None
+      :raise NameError: If there is no associated Event with the given name.
+
+
+   .. py:method:: delete_events()
+
+
+   .. py:method:: tag(tags: str | tuple[str])
+
+      Mark the Timeseries with a tag. Useful to mark machine learning targets.
+      :param tags: The label or labels to tag the Timeseries.
+      :return: None
+
+
+
+.. py:class:: OverlappingTimeseries(samples: ndarray | list | tuple, initial_datetime: datetime.datetime, sampling_frequency: float, units: ltbio.biosignals.timeseries.Unit.Unit = None, name: str = None)
+
+   Bases: :py:obj:`Timeseries`
+
+   .. autoapi-inheritance-diagram:: ltbio.biosignals.timeseries.Timeseries.OverlappingTimeseries
+      :parts: 1
+
+   An OverlappingTimeseries is a Timeseries that violates the rule that to each time point of its domain it must
+   correspond one and only one sample. This special kind of Timeseries allows overlapping Segments, although it looses
+   all its interpretational meaning in the context of being successive data points in time. This kind is useful to
+   extract features from modalities or to train machine learning models.
+
+   It inherits all properties of Timeseries and most of its behaviour.
+   In order to have overlapping Segments, indexing an exact timepoint is no longer possible; Although it is legal to
+   index slices. # FIXME
+
+   .. py:property:: domain
+      :type: Tuple[datetimerange.DateTimeRange]
+
+      The intervals of date and time in which the Timeseries is defined, i.e., samples were acquired.
+
+
+   .. py:property:: subdomains
+      :type: Tuple[datetimerange.DateTimeRange]
+
+
+   .. py:property:: duration
+      :type: datetime.timedelta
+
+      Returns real time passed from start to end, without overlaps.
+
+
+   .. py:method:: append(initial_datetime: datetime.datetime, samples: ndarray | list | tuple)
+
+      Appends a new sequence of samples in a separate Segment.
+      :param initial_datetime: The date and time of the first sample in 'samples'.
+      :param samples: The sequence of samples to add as a separate Segment.
+      :return: None
+
+
+

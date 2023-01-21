@@ -1,0 +1,24 @@
+ltbio package
+=============
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   ltbio.biosignals
+   ltbio.clinical
+   ltbio.decision
+   ltbio.features
+   ltbio.ml
+   ltbio.pipeline
+   ltbio.processing
+
+Module contents
+---------------
+
+.. automodule:: ltbio
+   :members:
+   :undoc-members:
+   :show-inheritance:

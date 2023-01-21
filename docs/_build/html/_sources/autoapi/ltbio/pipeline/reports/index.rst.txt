@@ -1,0 +1,125 @@
+
+:py:mod:`ltbio.pipeline.reports`
+================================
+
+.. py:module:: ltbio.pipeline.reports
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`PDFWriter <ltbio.pipeline.reports.PDFWriter>`
+     - PDF Generation class
+   * - :py:obj:`Reporter <ltbio.pipeline.reports.Reporter>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: PDFWriter
+
+   Bases: :py:obj:`fpdf.fpdf.FPDF`
+
+   .. autoapi-inheritance-diagram:: ltbio.pipeline.reports.PDFWriter
+      :parts: 1
+
+   PDF Generation class
+
+   .. py:method:: header()
+
+      Header to be implemented in your own inherited class
+
+      This is automatically called by `add_page()`
+      and should not be called directly by the user application.
+      The default implementation performs nothing: you have to override this method
+      in a subclass to implement your own rendering logic.
+
+
+   .. py:method:: footer()
+
+      Footer to be implemented in your own inherited class.
+
+      This is automatically called by `add_page()` and `close()`
+      and should not be called directly by the user application.
+      The default implementation performs nothing: you have to override this method
+      in a subclass to implement your own rendering logic.
+
+
+   .. py:method:: add_section_cell(name: str)
+
+
+   .. py:method:: add_subsection_cell(text: str)
+
+
+   .. py:method:: add_log_cell(text: str)
+
+
+   .. py:method:: add_text_cell(text: str)
+
+
+   .. py:method:: add_image_fullwidth_cell(filepath: str)
+
+
+   .. py:method:: add_image_grid_cell(filepaths: tuple[str])
+
+
+
+.. py:class:: Reporter(writer: PDFWriter = None)
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.pipeline.reports.Reporter
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:method:: body()
+      :abstractmethod:
+
+
+   .. py:method:: set_title(title: str)
+
+
+   .. py:method:: begin_section(name: str)
+
+
+   .. py:method:: begin_subsection(name: str)
+
+
+   .. py:method:: add_text_block(text: str)
+
+
+   .. py:method:: add_log_block(text: str)
+
+
+   .. py:method:: add_image_fullwidth(filepath: str)
+
+
+   .. py:method:: add_image_grid(filepaths: tuple[str])
+
+
+   .. py:method:: output_report(title: str, filepath: str)
+
+
+

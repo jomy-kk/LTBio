@@ -1,0 +1,82 @@
+
+:py:mod:`ltbio.clinical.conditions`
+===================================
+
+.. py:module:: ltbio.clinical.conditions
+
+
+Overview
+----------------
+
+
+Submodules
+~~~~~~~
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   COVID19/index.rst
+   Epilepsy/index.rst
+   MedicalCondition/index.rst
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`COVID19 <ltbio.clinical.conditions.COVID19>`
+     - Helper class that provides a standard way to create an ABC using
+   * - :py:obj:`Epilepsy <ltbio.clinical.conditions.Epilepsy>`
+     - Helper class that provides a standard way to create an ABC using
+
+
+
+
+
+
+
+
+
+Contents
+----------------
+
+.. py:class:: COVID19(years_since_diagnosis: float = None)
+
+   Bases: :py:obj:`ltbio.clinical.conditions.MedicalCondition.MedicalCondition`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.conditions.COVID19
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+
+.. py:class:: Epilepsy(years_since_diagnosis: float = None, seizures: tuple = ())
+
+   Bases: :py:obj:`ltbio.clinical.conditions.MedicalCondition.MedicalCondition`
+
+   .. autoapi-inheritance-diagram:: ltbio.clinical.conditions.Epilepsy
+      :parts: 1
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: n_seizures
+      :type: int
+
+
+   .. py:property:: seizures
+      :type: tuple[Seizure]
+
+
+   .. py:method:: add_seizure(seizure: Seizure)
+
+
+

@@ -1,0 +1,84 @@
+
+:py:mod:`ltbio.ml.supervised.models.SupervisedModel`
+====================================================
+
+.. py:module:: ltbio.ml.supervised.models.SupervisedModel
+
+
+Overview
+---------------
+
+
+
+
+
+
+Classes
+~~~~~~~
+.. list-table::
+   :header-rows: 0
+   :widths: auto
+   :class: summarytable
+
+   * - :py:obj:`SupervisedModel <ltbio.ml.supervised.models.SupervisedModel.SupervisedModel>`
+     - A generic machine learning supervised model.
+
+
+
+
+
+
+
+
+
+Contents
+---------------
+
+.. py:class:: SupervisedModel(design, name: str = None)
+
+   Bases: :py:obj:`abc.ABC`
+
+   .. autoapi-inheritance-diagram:: ltbio.ml.supervised.models.SupervisedModel.SupervisedModel
+      :parts: 1
+
+   A generic machine learning supervised model.
+
+   .. py:property:: design
+
+
+   .. py:property:: current_version
+      :type: int
+
+
+   .. py:property:: versions
+      :type: list[str]
+
+
+   .. py:property:: is_trained
+      :type: bool
+
+
+   .. py:property:: trained_parameters
+      :abstractmethod:
+
+
+   .. py:property:: non_trainable_parameters
+      :abstractmethod:
+
+
+   .. py:property:: best_version_results
+      :type: ltbio.ml.supervised.results.PredictionResults
+
+
+   .. py:method:: train(dataset: ltbio.ml.datasets.BiosignalDataset.BiosignalDataset, conditions: ltbio.ml.supervised.SupervisedTrainConditions) -> ltbio.ml.supervised.results.SupervisedTrainResults
+      :abstractmethod:
+
+
+   .. py:method:: test(dataset: ltbio.ml.datasets.BiosignalDataset.BiosignalDataset, evaluation_metrics: Collection = None, version: int = None) -> ltbio.ml.supervised.results.PredictionResults
+      :abstractmethod:
+
+
+   .. py:method:: set_to_version(version: int = None)
+
+
+

@@ -1,0 +1,21 @@
+ltbio.clinical.medications package
+==================================
+
+Submodules
+----------
+
+ltbio.clinical.medications.Medication module
+--------------------------------------------
+
+.. automodule:: ltbio.clinical.medications.Medication
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ltbio.clinical.medications
+   :members:
+   :undoc-members:
+   :show-inheritance:
