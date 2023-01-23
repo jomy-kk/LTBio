@@ -32,18 +32,12 @@ release = '1.0.1'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [
-    'sphinx.ext.duration',
-    'sphinx.ext.doctest',
-    'sphinx.ext.autodoc',
-    'autoapi.extension',
-    'sphinx.ext.intersphinx',
-    'sphinx_copybutton',
-    'myst_parser',
-]
+extensions = ['sphinx.ext.duration', 'sphinx.ext.doctest', 'sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx_copybutton',
+              'myst_parser', 'autoapi.extension']
 
 autodoc_default_flags = ['members']
 autosummary_generate = True
+autoapi_generate_api_docs = True
 
 autoapi_dirs = ['../src/ltbio']
 autoapi_type = "python"
@@ -57,6 +51,9 @@ autoapi_options = [
     "show-inheritance-diagram",
     "autoapi_keep_files",
 ]
+
+autoapi_member_order = 'groupwise'
+
 autodoc_typehints = "signature"
 
 # Add any paths that contain templates here, relative to this directory.
