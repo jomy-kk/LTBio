@@ -55,6 +55,9 @@ class Biosignal(ABC):
         self.__source = source
 
         # Create some empty properites
+        self.__patient = None
+        self.__acquisition_location = None
+        self.__name = None
         self.__associated_events = {}
         self.__added_noise = None
 
@@ -78,13 +81,13 @@ class Biosignal(ABC):
                 # 'events': tuple of Events
                 # 'name': string
                 self.__timeseries = data['timeseries']
-                if 'patient' in data:
+                if data['patient'] is not None:
                     self.__patient = data['patient']
-                if 'acquisition_location' in data:
+                if data['acquisition_location'] is not None:
                     self.__acquisition_location = data['acquisition_location']
-                if 'events' in data:
+                if data['events'] is not None:
                     self.associate(data['events'])
-                if 'name' in data:
+                if data['name'] is not None:
                     self.__name = data['name']
 
         # Option 2: timeseries is a time interval -> Fetch from database
