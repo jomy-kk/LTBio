@@ -18,6 +18,8 @@ from enum import unique, Enum
 @unique
 class Semiology(str, Enum):
 
+    APHASIA = "Aphasia"
+
     MOTOR = "Non-specific Motor"
     NONMOTOR = "Non-specific Non-motor"
 

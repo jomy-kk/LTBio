@@ -72,6 +72,14 @@ class VPA(Medication):
     def name(self):
         return 'Valproic Acid'
 
+class VIM(Medication):
+    def __init__(self, dose=None, unit=None, frequency=None):
+        super().__init__(dose, unit, frequency)
+
+    @property
+    def name(self):
+        return 'Vimpat'
+
 
 class ESL(Medication):
     def __init__(self, dose=None, unit=None, frequency=None):
@@ -125,3 +133,19 @@ class TPM(Medication):
     @property
     def name(self):
         return 'Topiramate'
+
+class FEL(Medication):
+    def __init__(self, dose=None, unit=None, frequency=None):
+        super().__init__(dose, unit, frequency)
+
+    @property
+    def name(self):
+        return 'Felbamate'
+
+class GAB(Medication):
+    def __init__(self, dose=None, unit=None, frequency=None):
+        super().__init__(dose, unit, frequency)
+
+    @property
+    def name(self):
+        return 'Gabapentin'
