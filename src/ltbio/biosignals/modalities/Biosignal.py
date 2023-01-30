@@ -9,7 +9,7 @@
 # Description: The base class holding all data related to a biosignal and its channels.
 
 # Contributors: João Saraiva, Mariana Abreu
-# Last Updated: 09/07/2022
+# Last Updated: 26/01/2023
 
 # ===================================
 
@@ -25,62 +25,74 @@ import matplotlib.pyplot as plt
 import numpy as np
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime, ParserError
-from numpy import ndarray, array
+from numpy import ndarray
 
-from ltbio.biosignals.timeseries.Unit import Unitless
 from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
 from ltbio.biosignals.timeseries.Event import Event
-from .. import timeseries
-from ltbio.clinical.conditions.MedicalCondition import MedicalCondition
-#from ...processing.filters.Filter import Filter
+from ltbio.biosignals.timeseries.Unit import Unitless
+# from ...processing.filters.Filter import Filter
 from ltbio.clinical.BodyLocation import BodyLocation
 from ltbio.clinical.Patient import Patient
+from ltbio.clinical.conditions.MedicalCondition import MedicalCondition
 from ltbio.processing.noises.Noise import Noise
+from .. import timeseries
 
 
 class Biosignal(ABC):
-    '''
-    A Biosignal is a set of Timeseries, called channels, of samples measuring a biological variable.
+    """
+    A Biosignal is a set of channels (Timeseries), each of which with samples measuring a biological variable.
     It may be associated with a source, a patient, and a body location. It can also have a name.
     It has an initial and final datetime. Its length is its number of channels.
     It can be resampled, filtered, and concatenated to other Biosignals.
     Amplitude and spectrum plots can be displayed and saved.
-    '''
+    """
 
     __SERIALVERSION: int = 1
 
-    def __init__(self, timeseries: Dict[str|BodyLocation, timeseries.Timeseries] | str | Tuple[datetime], source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None):
-        self.__name = name
+    def __init__(self, timeseries: Dict[str|BodyLocation, timeseries.Timeseries] | str | Tuple[datetime], source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, **options):
+
+        # Save BiosignalSource, if given
         self.__source = source
-        self.__patient = patient
-        self.__acquisition_location = acquisition_location
+
+        # Create some empty properites
         self.__associated_events = {}
         self.__added_noise = None
 
-        # Handle timeseries
-        if isinstance(timeseries, str): # this should be a filepath -> read samples from file
+        # Populate property timeseries
+        # Option 1: timeseries is a filepath -> Read samples from file
+        if isinstance(timeseries, str):
+            filepath = timeseries
             if source is None:
-                raise ValueError("To read a biosignal from a file, specify the biosignal source.")
+                raise ValueError("To read a biosignal from a file, specify a BiosignalSource in 'source'.")
             else:
-                read_data = self.source._read(timeseries, type=type(self) )
+                # BiosignalSource can give the samples (required) and many other optional metadata.
+                # It's the BiosignalSource that decides what it gives, depending on what it can read.
 
-                if isinstance(read_data, dict):  # Get Timeseries
-                    self.__timeseries = read_data
+                # Get all data that the source can read:
+                data = self.__source._get(filepath, type(self), **options)
 
-                elif isinstance(read_data, tuple):  # Get Timeseries and location
-                    self.__timeseries = read_data[0]
-                    self.__acquisition_location = read_data[1]
+                # Unwrap data:
+                # 'timeseries': dictionary of Timeseries (required)
+                # 'patient': Patient
+                # 'acquisition_location': BodyLocation
+                # 'events': tuple of Events
+                # 'name': string
+                self.__timeseries = data['timeseries']
+                if 'patient' in data:
+                    self.__patient = data['patient']
+                if 'acquisition_location' in data:
+                    self.__acquisition_location = data['acquisition_location']
+                if 'events' in data:
+                    self.associate(data['events'])
+                if 'name' in data:
+                    self.__name = data['name']
 
-                # Get Events, if any
-                events = self.source._events(timeseries)
-                if events is not None:
-                    self.associate(events)
+        # Option 2: timeseries is a time interval -> Fetch from database
+        if isinstance(timeseries, datetime):
+            pass  # TODO
 
-
-        if isinstance(timeseries, datetime): # this should be a time interval -> fetch from database
-            pass # TODO
-
-        if isinstance(timeseries, dict): # this should be the {chanel name: Timeseries} -> save samples directly
+        # Option 3: timeseries is dictionary {chanel name: Timeseries} -> Save directly
+        if isinstance(timeseries, dict):
             self.__timeseries = timeseries
             # Check if Timeseries come with Events associated
             for ts in timeseries.values():
@@ -90,8 +102,13 @@ class Biosignal(ABC):
                     else:
                         self.__associated_events[event.name] = event
 
-        if self.__acquisition_location is not None:
-            self.__acquisition_location = acquisition_location  # override with user input
+        # If user gives metadata, override what was given by the source:
+        if patient is not None:
+            self.__patient = patient
+        if acquisition_location is not None:
+            self.__acquisition_location = acquisition_location
+        if name is not None:
+            self.__name = name
 
     def __copy__(self):
         return type(self)({ts: self.__timeseries[ts].__copy__() for ts in self.__timeseries}, self.__source, self.__patient, self.__acquisition_location, str(self.__name))

@@ -56,6 +56,28 @@ class BiosignalSource(ABC):
     def _transfer(samples:array, type) -> array:
         pass
 
+    @classmethod
+    def _get(cls, path:str, type, **options):
+        return {
+            'timeseries': cls._read(path, type, **options),
+            'patient': cls._patient(path, **options),
+            'acquisition_location': cls._acquisition_location(path, type, **options),
+            'events': cls._events(path, **options),
+            'name': cls._name(path, type, **options)
+        }
+
+    @staticmethod
+    def _patient(path, **options):
+        return None  # Override implementation is optional
+
+    @staticmethod
+    def _acquisition_location(path, type, **options):
+        return None  # Override implementation is optional
+
+    @staticmethod
+    def _name(path, type, **options):
+        return None  # Override implementation is optional
+
     def __getstate__(self):
         """
         1: other... (dict)
