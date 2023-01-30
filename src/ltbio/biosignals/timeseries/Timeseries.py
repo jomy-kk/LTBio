@@ -18,13 +18,14 @@
 from datetime import datetime, timedelta
 from math import ceil
 from typing import List, Iterable, Collection, Dict, Tuple, Callable
+from os import path, mkdir
 
 import matplotlib.pyplot as plt
 import numpy as np
 from biosppy.signals.tools import power_spectrum
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime
-from numpy import array, append, ndarray, divide, concatenate, tile
+from numpy import array, append, ndarray, divide, concatenate, tile, memmap
 from scipy.signal import resample
 
 from ltbio.biosignals.timeseries.Event import Event
@@ -198,7 +199,7 @@ class Timeseries():
         def __init__(self, samples: ndarray, initial_datetime: datetime, sampling_frequency: Frequency,
                      is_filtered: bool = False):
             """
-            A Segment is an interrupted sequence of samples.
+            A Segment is an uninterrupted sequence of samples.
 
             Parameters
             ------------
@@ -215,10 +216,22 @@ class Timeseries():
                 If samples have been filtered.
             """
 
-            self.__samples = samples if isinstance(samples, ndarray) else array(samples)
+            if not isinstance(samples, memmap):
+                # Create a memory map for the array
+                if not path.exists('temp'):
+                    mkdir('temp')
+                self.__map_filepath = f'temp/{initial_datetime}_{int(samples[0])}_{int(samples[-1])}.segment'
+                self.__samples = memmap(self.__map_filepath, dtype='float32', mode='w+',
+                                        shape=samples.shape)
+                self.__samples[:] = samples[:]
+                self.__samples.flush()  # release memory in RAM; don't know if this is actually helping
+                del samples  # delete np.array
+            else:
+                self.__samples = samples
+
             self.__initial_datetime = initial_datetime
-            self.__final_datetime = self.initial_datetime + timedelta(seconds=len(samples) / sampling_frequency)
-            self.__raw_samples = samples  # if some filter is applied to a Timeseries, the raw version of each Segment should be saved here
+            self.__final_datetime = self.initial_datetime + timedelta(seconds=len(self.__samples) / sampling_frequency)
+            self.__raw_samples = []  # if some filter is applied to a Timeseries, the raw version of each Segment should be saved here
             self.__is_filtered = is_filtered
             self.__sampling_frequency = sampling_frequency
 
@@ -1069,7 +1082,7 @@ class Timeseries():
         for segment in self.__segments:
             segment._apply_operation(operation, **kwargs)
 
-    def _apply_operation_and_return(self, operation, **kwargs) -> list:
+    def _apply_operation_and_return(self, operation, iterate_along_segments_key: [str] = None, **kwargs) -> list:
         """
         Applies operation out-of-place to every Segment's samples and returns the ordered output of each in a list.
 
@@ -1078,7 +1091,22 @@ class Timeseries():
         Procedure output can return whatever, which shall be returned.
         """
         res = []
-        for segment in self.__segments:
+
+        if isinstance(iterate_along_segments_key, str):
+            items = kwargs[iterate_along_segments_key]
+            for segment, item in zip(self, items):
+                kwargs[iterate_along_segments_key] = item
+                new_segment = segment._apply_operation_and_return(operation, **kwargs)
+                res.append(new_segment)
+        elif isinstance(iterate_along_segments_key, list) and all(isinstance(x, str) for x in iterate_along_segments_key):
+            items = [kwargs[it] for it in iterate_along_segments_key]
+            for segment, item in zip(self, *items):
+                for it in iterate_along_segments_key:
+                    kwargs[it] = item
+                new_segment = segment._apply_operation_and_return(operation, *items, **kwargs)
+                res.append(new_segment)
+
+        else:
             res.append(segment._apply_operation_and_return(operation, **kwargs))
         return res
 
