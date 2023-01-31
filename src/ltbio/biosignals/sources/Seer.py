@@ -31,7 +31,7 @@ class Seer(BiosignalSource):
     def __init__(self):
         super().__init__()
 
-    def __str__(self):
+    def __repr__(self):
         return "Seer Epilepsy Database"
 
     @staticmethod
@@ -57,7 +57,7 @@ class Seer(BiosignalSource):
         return signal, date
 
     @staticmethod
-    def _read(dir, type, **options):
+    def _timeseries(dir, type, **options):
         '''Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.
         Args:
             dir (str): directory that contains bitalino files in txt format
@@ -107,7 +107,7 @@ class Seer(BiosignalSource):
         if len(selected_patient) == 1:
             print(f'{selected_patient=}')
             path_ = path.join(source_dir, selected_patient[0])
-            files = Seer._read(path_, type)
+            files = Seer._timeseries(path_, type)
             return files
         elif len(selected_patient) > 1:
             raise IOError(f'More than one patient found {selected_patient=}')

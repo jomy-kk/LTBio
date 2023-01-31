@@ -31,7 +31,7 @@ class HSM(BiosignalSource):
     def __init__(self):
         super().__init__()
 
-    def __str__(self):
+    def __repr__(self):
         return "Hospital de Santa Maria"
 
     @staticmethod
@@ -57,7 +57,7 @@ class HSM(BiosignalSource):
         return hsm_sig[0], hsm_data.info['meas_date'].replace(tzinfo=None)
 
     @staticmethod
-    def _read(dir, type, **options):
+    def _timeseries(dir, type, **options):
         '''Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.'''
         if type is modalities.ECG:
             label = 'ecg'

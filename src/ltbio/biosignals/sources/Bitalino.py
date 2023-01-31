@@ -31,7 +31,7 @@ class Bitalino(BiosignalSource):
     def __init__(self):
         super().__init__()
 
-    def __str__(self):
+    def __repr__(self):
         return "Bitalino"
 
     def __aux_date(header):
@@ -212,7 +212,7 @@ class Bitalino(BiosignalSource):
             raise IOError(f"Sensor {sensor} was not found in this acquisition, please insert another")
 
     @staticmethod
-    def _read(dir, type, startkey='A20', **options):
+    def _timeseries(dir, type, startkey='A20', **options):
         """Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.
         Args:
             dir (str): directory that contains bitalino files in txt format

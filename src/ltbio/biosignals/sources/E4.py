@@ -35,7 +35,7 @@ class E4(BiosignalSource):
     def __init__(self):
         super().__init__()
 
-    def __str__(self):
+    def __repr__(self):
         return "Empatica E4 - Epilepsy Wristband"
 
     @staticmethod
@@ -96,7 +96,7 @@ class E4(BiosignalSource):
             return {label: samples[i] for i, label in enumerate(channel_labels)}, datetime, sampling_frequency
 
     @staticmethod
-    def _read(dir, type, **options):
+    def _timeseries(dir, type, **options):
         '''
         Reads multiple CSV files on multiple subdirectories of 'path' and returns a Biosignal associated with a Patient.
         Args:
