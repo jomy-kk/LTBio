@@ -59,7 +59,7 @@ class HSMTestCase(unittest.TestCase):
         cls.assertEqual((x[cls.channely])[cls.initial1], cls.samplesy1[0])
 
     def test_read_ECG(cls):
-        x = cls.HSM._read(cls.testpath, ECG)
+        x = cls.HSM._timeseries(cls.testpath, ECG)
         cls.verify_data(x)
 
     # TODO

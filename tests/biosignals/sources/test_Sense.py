@@ -34,15 +34,15 @@ class SenseTestCase(unittest.TestCase):
             self.assertEqual(float((x[l])[self.initial]), float(first_sample[i]))
 
     def test_read_ECG(self):
-        x = self.Sense._read(self.data_path, ECG)
+        x = self.Sense._timeseries(self.data_path, ECG)
         self.verify_data(x, ('Gel', 'Band' ), 1000.0, 899000, None, (1904.0, 1708.0))
 
     def test_read_RESP(self):
-        x = self.Sense._read(self.data_path, RESP)
+        x = self.Sense._timeseries(self.data_path, RESP)
         self.verify_data(x, ('Resp Band', ), 1000.0, 899000, None, (2214.0, ))
 
     def test_read_ACC(self):
-        x = self.Sense._read(self.data_path, ACC)
+        x = self.Sense._timeseries(self.data_path, ACC)
         self.verify_data(x, ('x', 'y', 'z'), 1000.0, 899000, None, (1392., 2322., 1821.))
 
 

@@ -50,7 +50,7 @@ class MITDBTestCase(unittest.TestCase):
         self.assertEqual((x[self.channely]).segments[0].samples.tolist()[:15], self.samplesy)
 
     def test_read_ECG(self):
-        x = self.MITDB._read(self.testpath, ECG)
+        x = self.MITDB._timeseries(self.testpath, ECG)
         self.verify_data(x)
 
 
