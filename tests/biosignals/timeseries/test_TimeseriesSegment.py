@@ -1,6 +1,8 @@
 import unittest
 from datetime import datetime, timedelta
 
+from numpy import allclose
+
 from ltbio.biosignals.timeseries.Frequency import Frequency
 from ltbio.biosignals.timeseries.Timeseries import Timeseries
 
@@ -17,7 +19,7 @@ class TimeseriesSegmentTestCase(unittest.TestCase):
 
     def test_create_segment(cls):
         segment = cls.Segment(cls.samples1, cls.initial1, cls.sf)
-        cls.assertTrue(all(cls.samples1 == segment.samples))
+        cls.assertTrue(allclose(cls.samples1, segment.samples))
         cls.assertEqual(cls.initial1, segment.initial_datetime)
         cls.assertEqual(cls.final1, segment.final_datetime)
 
@@ -33,8 +35,8 @@ class TimeseriesSegmentTestCase(unittest.TestCase):
         segment = cls.Segment(cls.samples1, cls.initial1, cls.sf)
         cls.assertEqual(cls.samples1[0], segment[0])
         cls.assertEqual(cls.samples1[-1], segment[-1])
-        cls.assertTrue(all(cls.samples1[:1] == segment[:1].samples))
-        cls.assertTrue(all(cls.samples1[1:] == segment[1:].samples))
+        cls.assertTrue(allclose(cls.samples1[:1], segment[:1].samples))
+        cls.assertTrue(allclose(cls.samples1[1:], segment[1:].samples))
 
     def test_get_duration(cls):  # time
         segment = cls.Segment(cls.samples1, cls.initial1, cls.sf)

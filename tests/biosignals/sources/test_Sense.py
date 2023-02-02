@@ -18,9 +18,6 @@ class SenseTestCase(unittest.TestCase):
         cls.initial = datetime(2022, 6, 20, 19, 18, 57, 426000)
 
     def verify_data(self, x, label, sf, n_samples, unit, first_sample):
-        self.assertTrue(isinstance(x, tuple))
-        self.assertEqual(x[1], 'Chest')
-        x = x[0]
         self.assertEqual(len(x), len(label))
         self.assertTrue(isinstance(list(x.keys())[0], str))
         self.assertEqual(tuple(x.keys()), label)

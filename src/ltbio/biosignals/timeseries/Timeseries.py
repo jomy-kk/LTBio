@@ -224,7 +224,7 @@ class Timeseries():
             # Save metadata
             self.__initial_datetime = initial_datetime
             self.__final_datetime = self.initial_datetime + timedelta(seconds=len(samples) / sampling_frequency)
-            self.__raw_samples = []  # if some filter is applied to a Timeseries, the raw version of each Segment should be saved here
+            self.__raw_samples = samples  # if some filter is applied to a Timeseries, the raw version of each Segment should be saved here
             self.__is_filtered = is_filtered
             self.__sampling_frequency = sampling_frequency
 
@@ -516,10 +516,12 @@ class Timeseries():
             1: __initial_datetime (datetime)
             2: __samples (ndarray)
             """
-            if isinstance(self.__samples, memmap):
+            if isinstance(self.__samples, memmap):  # Case: has been saved as .biosignal before
                 return (Timeseries._Timeseries__Segment._Segment__SERIALVERSION, self.__initial_datetime, self.__samples)
-            else:
+            elif hasattr(self, '_Segment__memory_map'):  # Case: being saved as .biosignal for the first time
                 return (Timeseries._Timeseries__Segment._Segment__SERIALVERSION, self.__initial_datetime, self.__memory_map)
+            else:  # Case: being called by deepcopy
+                return (Timeseries._Timeseries__Segment._Segment__SERIALVERSION, self.__initial_datetime, self.__samples)
 
         def __setstate__(self, state):
             """
@@ -1126,7 +1128,8 @@ class Timeseries():
                 res.append(new_segment)
 
         else:
-            res.append(segment._apply_operation_and_return(operation, **kwargs))
+            for segment in self.__segments:
+                res.append(segment._apply_operation_and_return(operation, **kwargs))
         return res
 
     # Purpose-specific
