@@ -17,8 +17,9 @@
 
 from datetime import datetime, timedelta
 from math import ceil
+from os.path import join
+from tempfile import mkstemp
 from typing import List, Iterable, Collection, Dict, Tuple, Callable
-from os import path, mkdir
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,6 +32,8 @@ from scipy.signal import resample
 from ltbio.biosignals.timeseries.Event import Event
 from ltbio.biosignals.timeseries.Frequency import Frequency
 from ltbio.biosignals.timeseries.Unit import Unit
+
+
 #from ltbio.processing.filters.Filter import Filter
 
 class Timeseries():
@@ -196,6 +199,8 @@ class Timeseries():
 
         """
 
+        __SERIALVERSION: int = 2
+
         def __init__(self, samples: ndarray, initial_datetime: datetime, sampling_frequency: Frequency,
                      is_filtered: bool = False):
             """
@@ -216,24 +221,27 @@ class Timeseries():
                 If samples have been filtered.
             """
 
+            # Save metadata
+            self.__initial_datetime = initial_datetime
+            self.__final_datetime = self.initial_datetime + timedelta(seconds=len(samples) / sampling_frequency)
+            self.__raw_samples = []  # if some filter is applied to a Timeseries, the raw version of each Segment should be saved here
+            self.__is_filtered = is_filtered
+            self.__sampling_frequency = sampling_frequency
+
+            # Save samples
+            self.__samples = samples
+            """
             if not isinstance(samples, memmap):
                 # Create a memory map for the array
-                if not path.exists('temp'):
-                    mkdir('temp')
-                self.__map_filepath = f'temp/{initial_datetime}_{int(samples[0])}_{int(samples[-1])}.segment'
-                self.__samples = memmap(self.__map_filepath, dtype='float32', mode='w+',
-                                        shape=samples.shape)
+                file_name = str(hash(self.__initial_datetime) * hash(self.__final_datetime) * hash(len(samples)))
+                self.__filepath = join(__temp__.name, file_name)
+                self.__samples = memmap(self.__filepath, dtype='float32', mode='w+', shape=samples.shape)
                 self.__samples[:] = samples[:]
                 self.__samples.flush()  # release memory in RAM; don't know if this is actually helping
                 del samples  # delete np.array
             else:
                 self.__samples = samples
-
-            self.__initial_datetime = initial_datetime
-            self.__final_datetime = self.initial_datetime + timedelta(seconds=len(self.__samples) / sampling_frequency)
-            self.__raw_samples = []  # if some filter is applied to a Timeseries, the raw version of each Segment should be saved here
-            self.__is_filtered = is_filtered
-            self.__sampling_frequency = sampling_frequency
+            """
 
         # ===================================
         # Properties
@@ -492,6 +500,14 @@ class Timeseries():
         # ===================================
         # SERIALIZATION
 
+        def _memory_map(self, path):
+            if not isinstance(self.__samples, memmap):  # Create a memory map for the array
+                _, file_name = mkstemp(dir=path, suffix='.segment')
+                filepath = join(path, file_name)
+                self.__memory_map = memmap(filepath, dtype='float32', mode='r+', shape=self.__samples.shape)
+                self.__memory_map[:] = self.__samples[:]
+                self.__memory_map.flush()  # release memory in RAM; don't know if this is actually helping
+
         def __hash__(self):
             return hash(self.__initial_datetime) * hash(self.__final_datetime) * hash(self.__samples)
 
@@ -500,7 +516,10 @@ class Timeseries():
             1: __initial_datetime (datetime)
             2: __samples (ndarray)
             """
-            return (Timeseries._Timeseries__SERIALVERSION, self.__initial_datetime, self.__samples)
+            if isinstance(self.__samples, memmap):
+                return (Timeseries._Timeseries__Segment._Segment__SERIALVERSION, self.__initial_datetime, self.__samples)
+            else:
+                return (Timeseries._Timeseries__Segment._Segment__SERIALVERSION, self.__initial_datetime, self.__memory_map)
 
         def __setstate__(self, state):
             """
@@ -1407,6 +1426,11 @@ class Timeseries():
 
     # ===================================
     # SERIALIZATION
+
+    def _memory_map(self, path):
+        # Create a memory map for the array
+        for seg in self:
+            seg._memory_map(path)
 
     def __getstate__(self):
         """

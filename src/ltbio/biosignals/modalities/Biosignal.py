@@ -19,6 +19,8 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from inspect import isclass
 from math import ceil
+from shutil import rmtree
+from tempfile import mkdtemp
 from typing import Dict, Tuple, Collection, Set, ClassVar
 
 import matplotlib.pyplot as plt
@@ -47,7 +49,7 @@ class Biosignal(ABC):
     Amplitude and spectrum plots can be displayed and saved.
     """
 
-    __SERIALVERSION: int = 1
+    __SERIALVERSION: int = 2
 
     def __init__(self, timeseries: Dict[str|BodyLocation, timeseries.Timeseries] | str | Tuple[datetime], source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, **options):
 
@@ -1166,7 +1168,7 @@ class Biosignal(ABC):
                 tuple(self.__associated_events.values()), self.__timeseries)
 
     def __setstate__(self, state):
-        if state[0] == 1:
+        if state[0] in (1, 2):
             self.__name, self.__source, self.__patient, self.__acquisition_location = state[1:5]
             self.__timeseries = state[6]
             self.__associated_events = {}
@@ -1174,7 +1176,7 @@ class Biosignal(ABC):
         else:
             raise IOError(
                 f'Version of {self.__class__.__name__} object not supported. Serialized version: {state[0]};'
-                f'Supported versions: 1.')
+                f'Supported versions: 1 and 2.')
 
     EXTENSION = '.biosignal'
 
@@ -1183,11 +1185,19 @@ class Biosignal(ABC):
         if not save_to.endswith(Biosignal.EXTENSION):
             save_to += Biosignal.EXTENSION
 
+        # Make memory maps
+        temp_dir = mkdtemp(prefix='ltbio.')
+        for _, channel in self:
+            channel._memory_map(temp_dir)
+
         # Write
         from bz2 import BZ2File
         from _pickle import dump
         with BZ2File(save_to, 'w') as f:
             dump(self, f)
+
+        # Clean up memory maps
+        rmtree(temp_dir)
 
     @classmethod
     def load(cls, filepath:str):
