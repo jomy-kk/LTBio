@@ -25,14 +25,14 @@ class Multisource(BiosignalSource):
         super().__init__()
         self.sources = sources
 
-    def __str__(self):
+    def __repr__(self):
         res = "Multisource: "
         for source in self.sources:
             res += str(source) + ', '
         return res[:-2]
 
     @staticmethod
-    def _read(dir, type, **options):
+    def _timeseries(dir, type, **options):
         pass
 
     @staticmethod

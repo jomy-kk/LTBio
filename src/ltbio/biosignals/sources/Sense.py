@@ -59,18 +59,20 @@ class Sense(BiosignalSource):
         if defaults_path is not None:
             Sense.DEFAULTS_PATH = defaults_path
         else:
-           #try:
-            config = configparser.ConfigParser()
-            config.read('../resources/config.ini')
-            Sense.DEFAULTS_PATH = config['defaults']['Sense']
-            #print(f"Getting default mapping from {Sense.DEFAULTS_PATH}")
-            #except:
-            #    raise FileNotFoundError('No defaults file for Sense devices was provided, nor a config.ini was found.')
+            if not path.exists('resources/config.ini'):
+                raise FileNotFoundError('No config.ini was found.')
+            try:
+                config = configparser.ConfigParser()
+                config.read('resources/config.ini')
+                Sense.DEFAULTS_PATH = config['DEFAULT']['Sense']
+                print(f"Getting default mapping from {Sense.DEFAULTS_PATH}")
+            except IndexError:
+                raise KeyError("No defaults file indicated 'Sense' devices in config.ini.")
         self.__defaults_path = defaults_path
 
         Sense.BAD_FORMAT = False
 
-    def __str__(self):
+    def __repr__(self):
         return "ScientISST Sense"
 
 
@@ -301,7 +303,7 @@ class Sense(BiosignalSource):
 
 
     @staticmethod
-    def _read(dir, type, **options):
+    def _timeseries(dir, type, **options):
         """Reads multiple csv files on the directory 'path' and returns a Biosignal associated with a Patient.
         @param dir (str): directory that contains Sense files in csv format
         @param type (subclass of Biosignal): type of biosignal to extract can be one of ECG, EDA, PPG, RESP, ACC and EMG
@@ -317,7 +319,7 @@ class Sense(BiosignalSource):
         """
 
         # STEP 0 - Get defaults
-        modalities_available, channel_labels, body_location = Sense.__get_defaults()
+        modalities_available, channel_labels, _ = Sense.__get_defaults()
 
         # STEP 1 - Get files
         # A list is created with all the filenames that end with '.csv' inside the given directory.
@@ -369,7 +371,12 @@ class Sense(BiosignalSource):
             else:
                 res[channel] = timeseries.Timeseries(tuple(segments[channel].values())[0], tuple(segments[channel].keys())[0], sampling_frequency=res[channel])
 
-        return res if body_location is None else res, body_location
+        return res
+
+    @staticmethod
+    def _acquisition_location(path, type, **options):
+        _, _, bl = Sense.__get_defaults()
+        return bl
 
     @staticmethod
     def _write(dir, timeseries):

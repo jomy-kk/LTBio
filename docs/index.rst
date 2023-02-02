@@ -11,3 +11,4 @@ LongTermBiosignals Documentation
 
    learn/learn
    autoapi/index
+   changelog/index

@@ -54,7 +54,7 @@ class HEMTestCase(unittest.TestCase):
         cls.assertEqual((x[cls.channely])[cls.initial1], cls.samplesy1[0])
 
     def test_read_ECG(cls):
-        x = cls.HEM._read(cls.testpath, ECG)
+        x = cls.HEM._timeseries(cls.testpath, ECG)
         cls.verify_data(x)
 
     # TODO

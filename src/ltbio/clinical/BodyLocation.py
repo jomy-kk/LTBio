@@ -84,6 +84,9 @@ class BodyLocation(str, Enum):
     FT_L = "Left Fronto-Temporal lobe"
     FT_R = "Right Fronto-Temporal lobe"
 
+    PARIETAL_L = 'Left Parietal lobe'
+    PARIETAL_R = 'Right Parietal lobe'
+
 
 
 

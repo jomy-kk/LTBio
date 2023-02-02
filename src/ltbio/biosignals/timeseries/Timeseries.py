@@ -17,6 +17,8 @@
 
 from datetime import datetime, timedelta
 from math import ceil
+from os.path import join
+from tempfile import mkstemp
 from typing import List, Iterable, Collection, Dict, Tuple, Callable
 
 import matplotlib.pyplot as plt
@@ -24,12 +26,14 @@ import numpy as np
 from biosppy.signals.tools import power_spectrum
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime
-from numpy import array, append, ndarray, divide, concatenate, tile
+from numpy import array, append, ndarray, divide, concatenate, tile, memmap
 from scipy.signal import resample
 
 from ltbio.biosignals.timeseries.Event import Event
 from ltbio.biosignals.timeseries.Frequency import Frequency
 from ltbio.biosignals.timeseries.Unit import Unit
+
+
 #from ltbio.processing.filters.Filter import Filter
 
 class Timeseries():
@@ -195,10 +199,12 @@ class Timeseries():
 
         """
 
+        __SERIALVERSION: int = 2
+
         def __init__(self, samples: ndarray, initial_datetime: datetime, sampling_frequency: Frequency,
                      is_filtered: bool = False):
             """
-            A Segment is an interrupted sequence of samples.
+            A Segment is an uninterrupted sequence of samples.
 
             Parameters
             ------------
@@ -215,12 +221,27 @@ class Timeseries():
                 If samples have been filtered.
             """
 
-            self.__samples = samples if isinstance(samples, ndarray) else array(samples)
+            # Save metadata
             self.__initial_datetime = initial_datetime
             self.__final_datetime = self.initial_datetime + timedelta(seconds=len(samples) / sampling_frequency)
             self.__raw_samples = samples  # if some filter is applied to a Timeseries, the raw version of each Segment should be saved here
             self.__is_filtered = is_filtered
             self.__sampling_frequency = sampling_frequency
+
+            # Save samples
+            self.__samples = samples
+            """
+            if not isinstance(samples, memmap):
+                # Create a memory map for the array
+                file_name = str(hash(self.__initial_datetime) * hash(self.__final_datetime) * hash(len(samples)))
+                self.__filepath = join(__temp__.name, file_name)
+                self.__samples = memmap(self.__filepath, dtype='float32', mode='w+', shape=samples.shape)
+                self.__samples[:] = samples[:]
+                self.__samples.flush()  # release memory in RAM; don't know if this is actually helping
+                del samples  # delete np.array
+            else:
+                self.__samples = samples
+            """
 
         # ===================================
         # Properties
@@ -479,6 +500,14 @@ class Timeseries():
         # ===================================
         # SERIALIZATION
 
+        def _memory_map(self, path):
+            if not isinstance(self.__samples, memmap):  # Create a memory map for the array
+                _, file_name = mkstemp(dir=path, suffix='.segment')
+                filepath = join(path, file_name)
+                self.__memory_map = memmap(filepath, dtype='float32', mode='r+', shape=self.__samples.shape)
+                self.__memory_map[:] = self.__samples[:]
+                self.__memory_map.flush()  # release memory in RAM; don't know if this is actually helping
+
         def __hash__(self):
             return hash(self.__initial_datetime) * hash(self.__final_datetime) * hash(self.__samples)
 
@@ -487,7 +516,12 @@ class Timeseries():
             1: __initial_datetime (datetime)
             2: __samples (ndarray)
             """
-            return (Timeseries._Timeseries__SERIALVERSION, self.__initial_datetime, self.__samples)
+            if isinstance(self.__samples, memmap):  # Case: has been saved as .biosignal before
+                return (Timeseries._Timeseries__Segment._Segment__SERIALVERSION, self.__initial_datetime, self.__samples)
+            elif hasattr(self, '_Segment__memory_map'):  # Case: being saved as .biosignal for the first time
+                return (Timeseries._Timeseries__Segment._Segment__SERIALVERSION, self.__initial_datetime, self.__memory_map)
+            else:  # Case: being called by deepcopy
+                return (Timeseries._Timeseries__Segment._Segment__SERIALVERSION, self.__initial_datetime, self.__samples)
 
         def __setstate__(self, state):
             """
@@ -1069,7 +1103,7 @@ class Timeseries():
         for segment in self.__segments:
             segment._apply_operation(operation, **kwargs)
 
-    def _apply_operation_and_return(self, operation, **kwargs) -> list:
+    def _apply_operation_and_return(self, operation, iterate_along_segments_key: [str] = None, **kwargs) -> list:
         """
         Applies operation out-of-place to every Segment's samples and returns the ordered output of each in a list.
 
@@ -1078,8 +1112,24 @@ class Timeseries():
         Procedure output can return whatever, which shall be returned.
         """
         res = []
-        for segment in self.__segments:
-            res.append(segment._apply_operation_and_return(operation, **kwargs))
+
+        if isinstance(iterate_along_segments_key, str):
+            items = kwargs[iterate_along_segments_key]
+            for segment, item in zip(self, items):
+                kwargs[iterate_along_segments_key] = item
+                new_segment = segment._apply_operation_and_return(operation, **kwargs)
+                res.append(new_segment)
+        elif isinstance(iterate_along_segments_key, list) and all(isinstance(x, str) for x in iterate_along_segments_key):
+            items = [kwargs[it] for it in iterate_along_segments_key]
+            for segment, item in zip(self, *items):
+                for it in iterate_along_segments_key:
+                    kwargs[it] = item
+                new_segment = segment._apply_operation_and_return(operation, *items, **kwargs)
+                res.append(new_segment)
+
+        else:
+            for segment in self.__segments:
+                res.append(segment._apply_operation_and_return(operation, **kwargs))
         return res
 
     # Purpose-specific
@@ -1379,6 +1429,11 @@ class Timeseries():
 
     # ===================================
     # SERIALIZATION
+
+    def _memory_map(self, path):
+        # Create a memory map for the array
+        for seg in self:
+            seg._memory_map(path)
 
     def __getstate__(self):
         """

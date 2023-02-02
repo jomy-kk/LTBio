@@ -37,19 +37,19 @@ class E4TestCase(unittest.TestCase):
             self.assertEqual(float((x[l])[self.initial2]), float(first_samples[1][i]))
 
     def test_read_EDA(self):
-        x = self.E4._read(self.testpath, EDA)
+        x = self.E4._timeseries(self.testpath, EDA)
         self.verify_data(x, ('eda', ), 4.0, 6084, None, ((0.0, ), (0.0, )) )
 
     def test_read_PPG(self):
-        x = self.E4._read(self.testpath, PPG)
+        x = self.E4._timeseries(self.testpath, PPG)
         self.verify_data(x, ('bvp', ), 64.0, 97361, None, ((0.0, ), (0.0, )) )
 
     def test_read_TEMP(self):
-        x = self.E4._read(self.testpath, TEMP)
+        x = self.E4._timeseries(self.testpath, TEMP)
         self.verify_data(x, ('temp', ), 4.0, 6080, None, ((34.630001068115234, ), (36.77000045776367, )) )
 
     def test_read_ACC(self):
-        x = self.E4._read(self.testpath, ACC)
+        x = self.E4._timeseries(self.testpath, ACC)
         self.verify_data(x, ('x', 'y', 'z'), 32.0, 48684, None, ((26,-33,47), (-60,-26,-16)) )
 
     def test_get_events(self):

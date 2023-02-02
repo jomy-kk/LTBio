@@ -33,7 +33,7 @@ class HEM(BiosignalSource):
     def __init__(self):
         super().__init__()
 
-    def __str__(self):
+    def __repr__(self):
         return "Hospital Egas Moniz"
 
     @staticmethod
@@ -61,7 +61,7 @@ class HEM(BiosignalSource):
         return array(hem_sig[:, find_idx].T), hem_data.rec_datetime, ch_list[find_idx]
 
     @staticmethod
-    def _read(dir, type, **options):
+    def _timeseries(dir, type, **options):
         '''Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.'''
         # first a list is created with all the filenames that end in .edf and are inside the chosen dir
         # this is a list of lists where the second column is the type of channel to extract

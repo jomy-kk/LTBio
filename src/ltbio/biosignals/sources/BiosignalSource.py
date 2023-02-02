@@ -31,7 +31,7 @@ class BiosignalSource(ABC):
         pass
 
     @abstractmethod
-    def __str__(self):
+    def __repr__(self):
         pass
 
     def __eq__(self, other):
@@ -39,11 +39,11 @@ class BiosignalSource(ABC):
 
     @staticmethod
     @abstractmethod
-    def _read(path:str, type, **options):
+    def _timeseries(path:str, type, **options):
         pass
 
     @staticmethod
-    def _events(path:str, **options) -> Collection[Event] | None:
+    def _events(path:str, **options) -> tuple[Event] | None:
         return None  # Override implementation is optional
 
     @staticmethod
@@ -55,6 +55,28 @@ class BiosignalSource(ABC):
     @abstractmethod
     def _transfer(samples:array, type) -> array:
         pass
+
+    @classmethod
+    def _get(cls, path:str, type, **options):
+        return {
+            'timeseries': cls._timeseries(path, type, **options),
+            'patient': cls._patient(path, **options),
+            'acquisition_location': cls._acquisition_location(path, type, **options),
+            'events': cls._events(path, **options),
+            'name': cls._name(path, type, **options)
+        }
+
+    @staticmethod
+    def _patient(path, **options):
+        return None  # Override implementation is optional
+
+    @staticmethod
+    def _acquisition_location(path, type, **options):
+        return None  # Override implementation is optional
+
+    @staticmethod
+    def _name(path, type, **options):
+        return None  # Override implementation is optional
 
     def __getstate__(self):
         """

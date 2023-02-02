@@ -36,7 +36,7 @@ class MITDB(BiosignalSource):
     def __init__(self):
         super().__init__()
 
-    def __str__(self):
+    def __repr__(self):
         return "MIT-BIH Arrhythmia Database"
 
     def __aux_date(header):
@@ -73,7 +73,7 @@ class MITDB(BiosignalSource):
         return signal, MITDB.__aux_date(fields)
 
     @staticmethod
-    def _read(dir, type, **options):
+    def _timeseries(dir, type, **options):
         '''Reads multiple EDF/EDF+ files on the directory 'path' and returns a Biosignal associated with a Patient.
         Args:
             dir (str): directory that contains bitalino files in txt format
@@ -117,7 +117,7 @@ class MITDB(BiosignalSource):
         temp_dir = wget.download('https://physionet.org/content/mitdb/1.0.0/'+str(patient_code)+'.dat', out=temp_dir)
         if temp_dir != '':
             print(f'{temp_dir=}')
-            files = MITDB._read(temp_dir, type)
+            files = MITDB._timeseries(temp_dir, type)
             return files
         elif len(temp_dir) == '':
             raise IOError(f'No patient was found {patient_code=}')
