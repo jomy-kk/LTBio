@@ -495,7 +495,10 @@ class ECG(Biosignal):
             peaks1 = self.__r_indices(channel, hamilton_segmenter)
             peaks2 = self.__r_indices(channel, christov_segmenter)
 
-            res[channel_name] = [channel._apply_operation_and_return(ZZ2018, p1, p2, fs=channel.sampling_frequency, search_window=100, nseg=1024, mode='fuzzy')
+            def aux(signal, p1, p2, **kwargs):
+                return ZZ2018(signal, p1, p2, **kwargs)
+
+            res[channel_name] = [channel._apply_operation_and_return(aux, fs=channel.sampling_frequency, search_window=100, nseg=1024, mode='fuzzy')
                                  for p1, p2 in zip(peaks1, peaks2)]
 
             if not by_segment:
@@ -505,8 +508,12 @@ class ECG(Biosignal):
 
 class RRI(DerivedBiosignal):
 
-    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None, original=None):
+    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None, original: ECG | None = None):
         super().__init__(timeseries, source, patient, acquisition_location, name, original)
+
+    @classmethod
+    def fromECG(cls):
+        pass
 
     def plot_summary(self, show: bool = True, save_to: str = None):
         pass
