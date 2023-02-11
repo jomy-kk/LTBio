@@ -489,7 +489,7 @@ class Timeseries():
             res = []
 
             step = individual_length - overlap_length
-            for i in range(0, len(self) - individual_length, step):
+            for i in range(0, len(self), step):
                 trimmed_samples = self.__samples[i: i + individual_length]
                 trimmed_raw_samples = self.__raw_samples[i: i + individual_length]
                 res.append(self._new(samples=trimmed_samples, raw_samples=trimmed_raw_samples,
