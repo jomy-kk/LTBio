@@ -17,10 +17,11 @@
 
 import csv
 from ast import literal_eval
-from datetime import datetime
+from datetime import datetime, timedelta
 from os import listdir, path, sep
 from os.path import isdir
 
+import numpy as np
 from numpy import vstack
 
 from .. import timeseries
@@ -85,7 +86,7 @@ class E4(BiosignalSource):
             channel_labels = (channel_labels, ) if len(a[0]) == 1 else ('x', 'y', 'z')
 
             # First row is the initial datetime
-            datetime = E4.__aux_date(a[0][0])
+            datetime = E4._aux_date(a[0][0])
 
             # Second row is sampling frequency
             sampling_frequency = float(a[1][0])
@@ -177,7 +178,7 @@ class E4(BiosignalSource):
                         # Events are named numerically
                         for i in range(len(a)):
                             n_events += 1
-                            res.append(timeseries.Event('event' + str(n_events), E4.__aux_date(a[i][0])))
+                            res.append(timeseries.Event('event' + str(n_events), E4._aux_date(a[i][0])))
         return res
 
     @staticmethod
@@ -191,3 +192,35 @@ class E4(BiosignalSource):
     @staticmethod
     def _transfer(samples, to_unit):
         pass
+
+    @staticmethod
+    def onbody(biosignal):
+
+        window = timedelta(minutes=1)
+
+        def condition_is_met_99_percent(x, condition):
+            count = np.count_nonzero(condition)
+            return count / len(x) >= 0.99
+
+        if type(biosignal) is modalities.ACC:
+            biosignal = biosignal['x'] + biosignal['y'] + biosignal['z']  # sum sample-by-sample the 3 axes
+
+            def moving_std(x):
+                window_size = 10 * biosignal.sampling_frequency  # 10 s moving standard deviation
+                cumsum = np.cumsum(x, dtype=float)
+                cumsum[window_size:] = cumsum[window_size:] - cumsum[:-window_size]
+                moving_averages = cumsum[window_size - 1:] / window_size
+                moving_sq_averages = np.cumsum(x ** 2, dtype=float)
+                moving_sq_averages[window_size:] = moving_sq_averages[window_size:] - moving_sq_averages[:-window_size]
+                moving_sq_averages = moving_sq_averages[window_size - 1:] / window_size
+                return np.sqrt(moving_sq_averages - moving_averages ** 2)
+
+            return biosignal.when(lambda x: condition_is_met_99_percent(x, moving_std(x) > 0.2), window=window)
+
+        if type(biosignal) is modalities.EDA:
+            return biosignal.when(lambda x: condition_is_met_99_percent(x, x > 0.05), window=window)
+
+        if type(biosignal) is modalities.TEMP:
+            return biosignal.when(lambda x: condition_is_met_99_percent(x, 25 < x < 40), window=window)
+
+        return None
