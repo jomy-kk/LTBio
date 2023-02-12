@@ -700,10 +700,16 @@ class Biosignal(ABC):
         name = f"{self.name} and {other.name}"
         acquisition_location = self.acquisition_location if self.acquisition_location == other.acquisition_location else None
         patient = self.__patient if self.patient_code == other.patient_code else None
-        source = type(self.source) if ((isinstance(self.source, ABCMeta) and isinstance(other.source, ABCMeta)
-                                       and self.source == other.source) or
-                                       (type(self.source) == type(other.source))
-                                       ) else None
+        if isclass(self.source) and isclass(other.source):  # Un-instatiated sources
+            if self.source == other.source:
+                source = self.__source
+            else:
+                source = None
+        else:
+            if type(self.source) == type(other.source) and self.source == other.source:
+                source = self.__source
+            else:
+                source = None
 
         # Join channels
         res_timeseries = {}
@@ -742,10 +748,16 @@ class Biosignal(ABC):
         name = f"{self.name} >> {other.name}"
         acquisition_location = self.acquisition_location if self.acquisition_location == other.acquisition_location else None
         patient = self.__patient if self.patient_code == other.patient_code else None
-        source = type(self.source) if ((isinstance(self.source, ABCMeta) and isinstance(other.source, ABCMeta)
-                                        and self.source == other.source) or
-                                       (type(self.source) == type(other.source))
-                                       ) else None
+        if isclass(self.source) and isclass(other.source):  # Un-instatiated sources
+            if self.source == other.source:
+                source = self.__source
+            else:
+                source = None
+        else:
+            if type(self.source) == type(other.source) and self.source == other.source:
+                source = self.__source
+            else:
+                source = None
 
         # Perform concatenation
         res_timeseries = {}
