@@ -351,23 +351,10 @@ class Biosignal(ABC):
 
             return new
 
-
         if isinstance(item, tuple):
-            if len(self) == 1:
-                res = list()
-                for k in item:
-                    if isinstance(k, datetime):
-                        res.append(self.__timeseries[k])
-                    if isinstance(k, str):
-                        try:
-                            res.append(self.__timeseries[to_datetime(k)])
-                        except ParserError:
-                            raise IndexError("String datetimes must be in a correct format.")
-                    else:
-                        raise IndexError("Index types not supported. Give a tuple of datetimes (can be in string format).")
-                return tuple(res)
 
-            else:
+            # Structure-related: Channels
+            if all(isinstance(k, (str, BodyLocation)) and k in self.channel_names for k in item):
                 ts = {}
                 events = set()
                 for k in item:
@@ -381,6 +368,28 @@ class Biosignal(ABC):
                     events.update(set(self.__timeseries[k].events))
                 new = self._new(timeseries=ts, events=events)
                 return new
+
+            # Time-related: Slices, Datetimes, Events, ...
+            else:
+                item = sorted(item)
+                res = None
+                for k in item:
+                    if res is None:
+                        res = self[item[0]]
+                    else:
+                        print(k)
+                        res = res >> self[k]
+
+                res.name = self.name
+                return res
+
+        if isinstance(item, Timeline):
+            if item.is_index:
+                res = self[item._as_index()]
+                res.name += f" indexed by '{item.name}'"
+                return res
+            else:
+                return IndexError("This Timeline cannot serve as index, because it contains multiple groups of intervals or points.")
 
         raise IndexError("Index types not supported. Give a datetime (can be in string format), a slice or a tuple of those.")
 
