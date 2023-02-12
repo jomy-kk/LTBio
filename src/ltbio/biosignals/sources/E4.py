@@ -39,7 +39,7 @@ class E4(BiosignalSource):
         return "Empatica E4 - Epilepsy Wristband"
 
     @staticmethod
-    def __aux_date(date):
+    def _aux_date(date):
         """ Receives a string that contains a unix timestamp in UTC
         Returns a datetime after convertion
         """
