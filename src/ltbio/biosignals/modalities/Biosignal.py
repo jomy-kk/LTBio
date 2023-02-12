@@ -452,6 +452,10 @@ class Biosignal(ABC):
             return cumulative_intersection
 
     @property
+    def domain_timeline(self) -> Timeline:  # TODO: mmerge with domain
+        return Timeline(Timeline.Group(self.domain), name=self.name + ' Domain')
+
+    @property
     def subdomains(self) -> Tuple[DateTimeRange]:
         if len(self) == 1:
             return tuple(self.__timeseries.values())[0].subdomains
