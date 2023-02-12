@@ -1298,6 +1298,34 @@ class Biosignal(ABC):
 
         return cls(channels, name=name)
 
+    def acquisition_scores(self):
+        print(f"Acquisition scores for '{self.name}'")
+        completness_score = self.completeness_score()
+        print("Completness Score = " + ("%.2f" % (completness_score*100) if completness_score else "n.d.") + "%")
+        onbody_score = self.onbody_score()
+        print("On-body Score = " + ("%.2f" % (onbody_score*100) if onbody_score else "n.d.") + "%")
+        quality_score = self.quality_score(_onbody_duration=onbody_score*self.duration)
+        print("Quality Score = " + ("%.2f" % (quality_score*100) if quality_score else "n.d.") + "%")
+
+    def completeness_score(self):
+        recorded_duration = self.duration
+        expected_duration = self.final_datetime - self.initial_datetime
+        return recorded_duration / expected_duration
+
+    def onbody_score(self):
+        if hasattr(self.source, 'onbody'):  # if the BiosignalSource defines an 'onbody' method, then this score exists, it's computed and returned
+            x = self.source.onbody(self)
+            if x:
+                return self.source.onbody(self).duration / self.duration
+
+    def quality_score(self, _onbody_duration=None):
+        if _onbody_duration:
+            if hasattr(self, 'acceptable_quality'):  # if the Biosignal modality defines an 'acceptable_quality' method, then this score exists, it's computed and returned
+                return self.acceptable_quality().duration / _onbody_duration
+        else:
+            if hasattr(self, 'acceptable_quality') and hasattr(self.source, 'onbody'):
+                return self.acceptable_quality().duration / self.source.onbody(self).duration
+
     # ===================================
     # SERIALIZATION
 
