@@ -1127,11 +1127,14 @@ class Timeseries():
                 raise IndexError(
                     f"Interval given is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
 
-    def _indices_to_timepoints(self, indices: list[list[int]], by_segment=False) -> tuple[datetime] | tuple[list[datetime]]:
+    def _indices_to_timepoints(self, indices: Sequence[Sequence[int]] | Sequence[Sequence[Sequence[int]]], by_segment=False) -> Sequence[datetime] | Sequence[Sequence[datetime]] | Sequence[DateTimeRange] | Sequence[Sequence[DateTimeRange]]:
         all_timepoints = []
         for index, segment in zip(indices, self.__segments):
-            timepoints = divide(index, self.__sampling_frequency)  # Transform to timepoints
-            x = [segment.initial_datetime + timedelta(seconds=tp) for tp in timepoints]
+            timepoints = divide(index, self.__sampling_frequency)  # Transform to seconds
+            if isinstance(timepoints, ndarray) and len(timepoints.shape) == 2 and timepoints.shape[1] == 2:  # Intervals
+                x = [DateTimeRange(segment.initial_datetime + timedelta(seconds=tp[0]), segment.initial_datetime + timedelta(seconds=tp[1])) for tp in timepoints]
+            else:  # Timepoints
+                x = [segment.initial_datetime + timedelta(seconds=tp) for tp in timepoints]
             if by_segment:
                 all_timepoints.append(x)  # Append as list
             else:
