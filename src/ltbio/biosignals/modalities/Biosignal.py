@@ -1295,9 +1295,8 @@ class Biosignal(ABC):
             channel._memory_map(temp_dir)
 
         # Write
-        from bz2 import BZ2File
         from _pickle import dump
-        with BZ2File(save_to, 'w') as f:
+        with open(save_to, 'wb') as f:
             dump(self, f)
 
         # Clean up memory maps
@@ -1309,11 +1308,20 @@ class Biosignal(ABC):
         if not filepath.endswith(Biosignal.EXTENSION):
             raise IOError("Only .biosignal files are allowed.")
 
-        # Read
-        from bz2 import BZ2File
         from _pickle import load
-        data = BZ2File(filepath, 'rb')
-        return load(data)
+        from _pickle import UnpicklingError
+
+        # Read
+        try:  # Versions >= 2023.0:
+            f = open(filepath, 'rb')
+            biosignal = load(f)
+        except UnpicklingError as e:  # Versions 2022.0, 2022.1 and 2022.2:
+            from bz2 import BZ2File
+            # print("Loading...\nNote: Loading a version older than 2023.0 takes significantly more time. It is suggested you save this Biosignal again, so you can have it in the newest fastest format.")
+            f = BZ2File(filepath, 'rb')
+            biosignal = load(f)
+        f.close()
+        return biosignal
 
 
 class DerivedBiosignal(Biosignal):
