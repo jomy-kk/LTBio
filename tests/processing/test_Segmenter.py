@@ -37,8 +37,8 @@ class SegmenterTestCase(unittest.TestCase):
         x_segmented = segmenter.apply(self.x)
         y_segmented = segmenter.apply(self.y)
 
-        self.assertEqual(len(x_segmented), 649998)
-        self.assertEqual(len(y_segmented), 649998)
+        self.assertEqual(len(x_segmented), 650000)
+        self.assertEqual(len(y_segmented), 650000)
 
         segment_length = int(0.01*self.sf)  # each segment should have 3 samples
 
@@ -58,8 +58,8 @@ class SegmenterTestCase(unittest.TestCase):
         self.assertTrue(isinstance(x_segmented, OverlappingTimeseries))
         self.assertTrue(isinstance(y_segmented, OverlappingTimeseries))
 
-        self.assertEqual(len(x_segmented), 974997)
-        self.assertEqual(len(y_segmented), 974997)
+        self.assertEqual(len(x_segmented), 974999)
+        self.assertEqual(len(y_segmented), 974999)
 
         segment_length = int(0.01*self.sf)  # each segment should have 3 samples
         n_samples_overlap = int(0.003*self.sf)  # 1 sample of overlap
