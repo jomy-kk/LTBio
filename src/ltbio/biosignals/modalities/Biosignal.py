@@ -358,12 +358,6 @@ class Biosignal(ABC):
                 ts = {}
                 events = set()
                 for k in item:
-                    if isinstance(k, datetime):
-                        raise IndexError("This Biosignal has multiple channels. Index the channel before indexing the datetimes.")
-                    if isinstance(k, str) and (k not in self.channel_names):
-                        raise IndexError("'{}' is not a channel of this Biosignal.".format(k))
-                    if not isinstance(k, str):
-                        raise IndexError("Index types not supported. Give a tuple of channel names (in str).")
                     ts[k] = self.__timeseries[k]
                     events.update(set(self.__timeseries[k].events))
                 new = self._new(timeseries=ts, events=events)
