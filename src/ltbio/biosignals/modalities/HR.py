@@ -37,3 +37,9 @@ class HR(DerivedBiosignal):
 
     def plot_summary(self, show: bool = True, save_to: str = None):
         pass
+
+    def acceptable_quality(self):  # -> Timeline
+        """
+        Acceptable physiological values
+        """
+        return self.when(lambda x: 40 <= x <= 200)  # between 40-200 bpm
