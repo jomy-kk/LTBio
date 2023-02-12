@@ -442,11 +442,11 @@ class Timeseries():
             :return: A new Segment with the given fields changed. All other contents shall remain the same.
             :rtype: Segment
             """
-            samples = self.__samples.copy() if samples is None else samples  # copy
+            samples = self.__samples if samples is None else samples
             initial_datetime = self.__initial_datetime if initial_datetime is None else initial_datetime
-            sampling_frequency = self.__sampling_frequency.__copy__() if sampling_frequency is None else sampling_frequency
+            sampling_frequency = self.__sampling_frequency if sampling_frequency is None else sampling_frequency
             is_filtered = self.__is_filtered if is_filtered is None else is_filtered
-            raw_samples = self.__raw_samples if raw_samples is None else raw_samples  # no copy
+            raw_samples = self.__raw_samples if raw_samples is None else raw_samples
 
             new = type(self)(samples, initial_datetime, sampling_frequency, is_filtered)
             new._Segment__raw_samples = raw_samples
@@ -1210,8 +1210,7 @@ class Timeseries():
         """
 
         initial_datetime = self.initial_datetime if segments is None else segments[0].initial_datetime
-        segments = [seg.__copy__() for seg in
-                    self.__segments] if segments is None else segments  # Uses shortcut in __init__
+        segments = self.__segments if segments is None else segments  # Uses shortcut in __init__
         sampling_frequency = self.__sampling_frequency if sampling_frequency is None else sampling_frequency if isinstance(
             sampling_frequency,
             Frequency) else Frequency(sampling_frequency)
