@@ -21,7 +21,7 @@ from inspect import isclass
 from math import ceil
 from shutil import rmtree
 from tempfile import mkdtemp
-from typing import Dict, Tuple, Collection, Set, ClassVar
+from typing import Dict, Tuple, Collection, Set, ClassVar, Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -39,6 +39,7 @@ from ltbio.clinical import Patient
 from ltbio.clinical.conditions.MedicalCondition import MedicalCondition
 from ltbio.processing.noises.Noise import Noise
 from .. import timeseries
+from ..timeseries.Timeline import Timeline
 
 
 class Biosignal(ABC):
@@ -120,7 +121,7 @@ class Biosignal(ABC):
         return type(self)({ts: self.__timeseries[ts].__copy__() for ts in self.__timeseries}, self.__source, self.__patient, self.__acquisition_location, str(self.__name))
 
     def _new(self, timeseries: Dict[str|BodyLocation, timeseries.Timeseries] | str | Tuple[datetime] = None, source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, events:Collection[Event]=None, added_noise=None):
-        timeseries = {ts: self.__timeseries[ts].__copy__() for ts in self.__timeseries} if timeseries is None else timeseries  # copy
+        timeseries = {ts: self.__timeseries[ts] for ts in self.__timeseries} if timeseries is None else timeseries  # copy
         source = self.__source if source is None else source  # no copy
         patient = self.__patient if patient is None else patient  # no copy
         acquisition_location = self.__acquisition_location if acquisition_location is None else acquisition_location  # no copy
@@ -194,6 +195,10 @@ class Biosignal(ABC):
             return self[middle - timedelta(seconds=2) : middle + timedelta(seconds=3)]
         except IndexError:
             raise AssertionError(f"The middle segment of {self.name} from {self.patient_code} does not have at least 5 seconds to return a preview.")
+
+    def when(self, condition: Callable, window: timedelta = None):
+        return Timeline(*[Timeline.Group(channel._when(condition, window), name=channel_name) for channel_name, channel in self],
+                        name=self.name + " when '" + condition.__name__ + "' is True" + f" (in windows of {window})" if window else "")
 
     def __getitem__(self, item):
         '''The built-in slicing and indexing operations.'''
@@ -816,6 +821,58 @@ class Biosignal(ABC):
         return self._new(timeseries=res_timeseries, source=source, patient=patient, acquisition_location=acquisition_location, name=name,
                          events=events)
 
+    # ===================================
+    # Binary Logic using Time and Conditions
+
+    def __lt__(self, other):
+        if isinstance(other, Biosignal):
+            return self.final_datetime < other.initial_datetime
+        else:
+            res = self.when(lambda x: x < other)
+            res.name(self.name + ' < ' + str(other))
+            return res
+
+    def __le__(self, other):
+        if isinstance(other, Biosignal):
+            return self.final_datetime <= other.initial_datetime
+        else:
+            res = self.when(lambda x: x <= other)
+            res.name(self.name + ' >= ' + str(other))
+            return res
+
+    def __gt__(self, other):
+        if isinstance(other, Biosignal):
+            return self.initial_datetime > other.final_datetime
+        else:
+            res = self.when(lambda x: x > other)
+            res.name(self.name + ' >= ' + str(other))
+            return res
+
+    def __ge__(self, other):
+        if isinstance(other, Biosignal):
+            return self.initial_datetime >= other.final_datetime
+        else:
+            res = self.when(lambda x: x >= other)
+            res.name(self.name + ' >= ' + str(other))
+            return res
+
+    def __eq__(self, other):
+        if isinstance(other, Biosignal):
+            return self.initial_datetime == other.initial_datetime and self.final_datetime == other.final_datetime
+        else:
+            res = self.when(lambda x: x == other)
+            res.name(self.name + ' >= ' + str(other))
+            return res
+
+    def __ne__(self, other):
+        if isinstance(other, Biosignal):
+            return not self.__eq__(other)
+        else:
+            res = self.when(lambda x: x != other)
+            res.name(self.name + ' >= ' + str(other))
+            return res
+
+    ######## Events
 
     def set_channel_name(self, current:str|BodyLocation, new:str|BodyLocation):
         if current in self.__timeseries.keys():
