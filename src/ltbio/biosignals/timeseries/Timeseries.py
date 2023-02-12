@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 from math import ceil
 from os.path import join
 from tempfile import mkstemp
-from typing import List, Iterable, Collection, Dict, Tuple, Callable
+from typing import List, Iterable, Collection, Dict, Tuple, Callable, Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -329,28 +329,46 @@ class Timeseries():
             return np.min(self.__samples)
 
         # ===================================
-        # Binary Logic using Time
+        # Binary Logic using Time and Conditions
 
         def __lt__(self, other):
             """A Segment comes before other Segment if its end is less than the other's start."""
-            return self.final_datetime < other.initial_datetime
+            if isinstance(other, Timeseries._Timeseries__Segment):
+                return self.final_datetime < other.initial_datetime
+            else:
+                return tuple(self.__when(self.__samples < other))
 
         def __le__(self, other):
-            return self.final_datetime <= other.initial_datetime
+            if isinstance(other, Timeseries._Timeseries__Segment):
+                return self.final_datetime <= other.initial_datetime
+            else:
+                return tuple(self.__when(self.__samples <= other))
 
         def __gt__(self, other):
             """A Segment comes after other Segment if its start is greater than the other's end."""
-            return self.initial_datetime > other.final_datetime
+            if isinstance(other, Timeseries._Timeseries__Segment):
+                return self.initial_datetime > other.final_datetime
+            else:
+                return tuple(self.__when(self.__samples > other))
 
         def __ge__(self, other):
-            return self.initial_datetime >= other.final_datetime
+            if isinstance(other, Timeseries._Timeseries__Segment):
+                return self.initial_datetime >= other.final_datetime
+            else:
+                return tuple(self.__when(self.__samples >= other))
 
         def __eq__(self, other):
             """A Segment corresponds to the same time period than other Segment if their start and end are equal."""
-            return self.initial_datetime == other.initial_datetime and self.final_datetime == other.final_datetime
+            if isinstance(other, Timeseries._Timeseries__Segment):
+                return self.initial_datetime == other.initial_datetime and self.final_datetime == other.final_datetime
+            else:
+                return tuple(self.__when(self.__samples == other))
 
         def __ne__(self, other):
-            return not self.__eq__(other)
+            if isinstance(other, Timeseries._Timeseries__Segment):
+                return not self.__eq__(other)
+            else:
+                return tuple(self.__when(self.__samples != other))
 
         def overlaps(self, other):
             """A Segment overlaps other Segment if its end comes after the other's start, or its start comes before the others' end, or vice versa."""
@@ -362,6 +380,38 @@ class Timeseries():
         def adjacent(self, other):
             """Returns True if the Segments' start or end touch."""
             return self.final_datetime == other.initial_datetime or self.initial_datetime == other.final_datetime
+
+        def __when(self, condition):
+            intervals = []
+            true_interval = False
+            start, end = None, None
+
+            for i, x in enumerate(condition):
+                if x:
+                    if not true_interval:  # not open
+                        true_interval = True  # then open
+                        start = i
+                else:
+                    if true_interval:  # is open
+                        true_interval = False
+                        end = i
+                        intervals.append((start, end))  # close interval
+
+            if true_interval:  # is open
+                intervals.append((start, i+1))  # then close
+
+            return intervals
+
+        def _when(self, condition, window_length: int = 1):
+            assert  window_length > 0
+            if window_length == 1:
+                evaluated = [condition(x) for x in self.__samples]
+            else:
+                evaluated = []
+                for i in range(0, len(self.__samples), window_length):
+                    x = self.__samples[i: i+window_length]
+                    evaluated += [condition(x), ] * len(x)
+            return self.__when(evaluated)
 
         # ===================================
         # INTERNAL USAGE - Accept Methods
@@ -848,6 +898,53 @@ class Timeseries():
                               name=self.name + ' >> ' + other.name if self.name != other.name else self.name)
 
         raise TypeError("Trying to concatenate an object of type {}. Expected type: Timeseries.".format(type(other)))
+
+    # ===================================
+    # Binary Logic using Time and Conditions
+
+    def __lt__(self, other):
+        if isinstance(other, Timeseries):
+            return self.final_datetime < other.initial_datetime
+        else:
+            return self._indices_to_timepoints([seg < other for seg in self.__segments])
+
+    def __le__(self, other):
+        if isinstance(other, Timeseries):
+            return self.final_datetime <= other.initial_datetime
+        else:
+            return self._indices_to_timepoints(np.concatenate([seg <= other for seg in self.__segments]), by_segment=False)
+
+    def __gt__(self, other):
+        if isinstance(other, Timeseries):
+            return self.initial_datetime > other.final_datetime
+        else:
+            return self._indices_to_timepoints([seg > other for seg in self.__segments])
+
+    def __ge__(self, other):
+        if isinstance(other, Timeseries):
+            return self.initial_datetime >= other.final_datetime
+        else:
+            return self._indices_to_timepoints(np.concatenate([seg >= other for seg in self.__segments]), by_segment=False)
+
+    def __eq__(self, other):
+        if isinstance(other, Timeseries):
+            return self.initial_datetime == other.initial_datetime and self.final_datetime == other.final_datetime
+        else:
+            return self._indices_to_timepoints(np.concatenate([seg == other for seg in self.__segments]), by_segment=False)
+
+    def __ne__(self, other):
+        if isinstance(other, Timeseries):
+            return not self.__eq__(other)
+        else:
+            return self._indices_to_timepoints(np.concatenate([seg != other for seg in self.__segments]), by_segment=False)
+
+    def _when(self, condition, window: timedelta):
+        if window is not None:
+            window_length = int(window.total_seconds() * self.__sampling_frequency)
+            x = [seg._when(condition, window_length) for seg in self.__segments]
+        else:
+            x = [seg._when(condition) for seg in self.__segments]
+        return self._indices_to_timepoints(x, by_segment=False)
 
     # ===================================
     # Methods
