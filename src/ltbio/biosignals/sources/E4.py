@@ -198,15 +198,15 @@ class E4(BiosignalSource):
 
         window = timedelta(minutes=1)
 
-        def condition_is_met_99_percent(x, condition):
+        def condition_is_met_1_percent(x, condition):
             count = np.count_nonzero(condition)
-            return count / len(x) >= 0.99
+            return count / len(x) >= 0.01
 
         if type(biosignal) is modalities.ACC:
             biosignal = biosignal['x'] + biosignal['y'] + biosignal['z']  # sum sample-by-sample the 3 axes
+            window_size = int(10 * biosignal.sampling_frequency)  # 10 s moving standard deviation
 
             def moving_std(x):
-                window_size = 10 * biosignal.sampling_frequency  # 10 s moving standard deviation
                 cumsum = np.cumsum(x, dtype=float)
                 cumsum[window_size:] = cumsum[window_size:] - cumsum[:-window_size]
                 moving_averages = cumsum[window_size - 1:] / window_size
@@ -215,12 +215,18 @@ class E4(BiosignalSource):
                 moving_sq_averages = moving_sq_averages[window_size - 1:] / window_size
                 return np.sqrt(moving_sq_averages - moving_averages ** 2)
 
-            return biosignal.when(lambda x: condition_is_met_99_percent(x, moving_std(x) > 0.2), window=window)
+            x = biosignal.when(lambda x: condition_is_met_1_percent(x, moving_std(x) > 0.2), window=window)
+            x.name = biosignal.name + " Onbody Domain"
+            return x
 
         if type(biosignal) is modalities.EDA:
-            return biosignal.when(lambda x: condition_is_met_99_percent(x, x > 0.05), window=window)
+            x = biosignal.when(lambda x: condition_is_met_1_percent(x, x > 0.05), window=window)
+            x.name = biosignal.name + " Onbody Domain"
+            return x
 
         if type(biosignal) is modalities.TEMP:
-            return biosignal.when(lambda x: condition_is_met_99_percent(x, 25 < x < 40), window=window)
+            x = biosignal.when(lambda x: condition_is_met_1_percent(x, (x > 25) & (x < 40)), window=window)
+            x.name = biosignal.name + " Onbody Domain"
+            return x
 
         return None
