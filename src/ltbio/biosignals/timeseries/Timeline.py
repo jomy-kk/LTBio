@@ -13,7 +13,8 @@
 
 # ===================================
 from datetime import datetime, timedelta
-from typing import Sequence
+from functools import reduce
+from typing import Sequence, List
 
 import matplotlib.pyplot as plt
 from datetimerange import DateTimeRange
@@ -35,11 +36,17 @@ class Timeline():
 
         def __repr__(self):
             res = ''
-            if len(self.intervals) > 1:
-                res += ' U '.join(['[' + str(interval) + '[' for interval in self.intervals])
-            if len(self.points) > 1:
-                res += '\nand the following tiempoints:\n'
-                res += ', '.join(['[' + str(point) + '[' for point in self.points])
+            if 0 < len(self.intervals):
+                if len(self.intervals) < 10:
+                    res += ' U '.join(['[' + str(interval) + '[' for interval in self.intervals])
+                else:
+                    res += f'{len(self.intervals)} intervals with {self.duration} of total duration'
+            if 0 < len(self.points):
+                if len(self.points) < 10:
+                    res += '\nand the following timepoints:\n'
+                    res += ', '.join(['[' + str(point) + '[' for point in self.points])
+                else:
+                    res += f'\nand {len(self.points)} timepoints.\n'
             return res
 
         @property
@@ -64,7 +71,7 @@ class Timeline():
 
         def _as_index(self) -> tuple:
             if self.has_only_intervals:
-                return tuple([slice(interval.start_datetime, interval.end_datetime) for interval in self.intervals])
+                return tuple(self.intervals)
             if self.has_only_points:
                 return tuple(self.points)
             return None
@@ -108,6 +115,14 @@ class Timeline():
     @property
     def final_datetime(self) -> datetime:
         return max([g.final_datetime for g in self.groups])
+
+    @property
+    def has_single_group(self) -> bool:
+        return len(self.groups) == 1
+
+    @property
+    def single_group(self) -> Group:
+        return self.groups[0] if self.has_single_group else None
 
     @property
     def duration(self) -> timedelta:
@@ -173,3 +188,99 @@ class Timeline():
 
     def _repr_png_(self):
         self.plot()
+
+    @classmethod
+    def union(cls, *timelines):
+        # Check input
+        if not all(isinstance(tl, Timeline) for tl in timelines):
+            raise TypeError("Give objects Timeline to Timeline.union.")
+        if len(timelines) < 2:
+            raise ValueError("Give at least 2 Timelines to compute their union.")
+
+        # Get sets of intervals of each Timeline
+        tl_intervals = []
+        for i, tl in enumerate(timelines):
+            if tl.has_single_group and tl.single_group.has_only_intervals:
+                tl_intervals.append(tl.single_group.intervals)
+            else:
+                raise AssertionError(f"The {i+1}th Timeline does not have a single group with only intervals.")
+
+        # Binary function
+        def union_of_two_timelines(intervals1: List[DateTimeRange], intervals2: List[DateTimeRange]):
+            intervals = intervals1 + intervals2
+            intervals.sort(key=lambda x: x.start_datetime)
+            union = [intervals[0]]
+            for i in range(1, len(intervals)):
+                if union[-1].end_datetime >= intervals[i].start_datetime:
+                    union[-1].set_end_datetime(max(union[-1].end_datetime, intervals[i].end_datetime))
+                else:
+                    union.append(intervals[i])
+            return union
+
+        res_intervals = reduce(union_of_two_timelines, tl_intervals)
+        return Timeline(Timeline.Group(res_intervals), name=f"Union of " + ', '.join(tl.name for tl in timelines))
+
+    @classmethod
+    def intersection(cls, *timelines):
+        # Check input
+        if not all(isinstance(tl, Timeline) for tl in timelines):
+            raise TypeError("Give objects Timeline to Timeline.union.")
+        if len(timelines) < 2:
+            raise ValueError("Give at least 2 Timelines to compute their union.")
+
+        # Get sets of intervals of each Timeline
+        tl_intervals = []
+        for i, tl in enumerate(timelines):
+            if tl.has_single_group and tl.single_group.has_only_intervals:
+                tl_intervals.append(tl.single_group.intervals)
+            else:
+                raise AssertionError(f"The {i + 1}th Timeline does not have a single group with only intervals.")
+
+        # Binary function
+        def intersection_of_two_timelines(intervals1: List[DateTimeRange], intervals2: List[DateTimeRange]):
+            intervals1.sort(key=lambda x: x.start)
+            intervals2.sort(key=lambda x: x.start)
+
+            intersection = []
+            i, j = 0, 0
+            while i < len(intervals1) and j < len(intervals2):
+                if intervals1[i].end_datetime <= intervals2[j].start_datetime:
+                    i += 1
+                elif intervals2[j].end_datetime <= intervals1[i].start_datetime:
+                    j += 1
+                else:
+                    start = max(intervals1[i].start_datetime, intervals2[j].start_datetime)
+                    end = min(intervals1[i].end_datetime, intervals2[j].end_datetime)
+                    intersection.append(DateTimeRange(start, end))
+                    if intervals1[i].end_datetime <= intervals2[j].end_datetime:
+                        i += 1
+                    else:
+                        j += 1
+
+            return intersection
+
+        res_intervals = reduce(intersection_of_two_timelines, tl_intervals)
+        return Timeline(Timeline.Group(res_intervals), name=f"Intersection of " + ', '.join(tl.name for tl in timelines))
+
+    EXTENSION = '.timeline'
+
+    def save(self, save_to: str):
+        # Check extension
+        if not save_to.endswith(Timeline.EXTENSION):
+            save_to += Biosignal.EXTENSION
+        # Write
+        from _pickle import dump
+        with open(save_to, 'wb') as f:
+            dump(self, f)
+
+    @classmethod
+    def load(cls, filepath: str):
+        # Check extension
+        if not filepath.endswith(Timeline.EXTENSION):
+            raise IOError("Only .timeline files are allowed.")
+
+        # Read
+        from _pickle import load
+        with open(filepath, 'rb') as f:
+            timeline = load(f)
+            return timeline
