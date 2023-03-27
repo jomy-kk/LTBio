@@ -31,6 +31,7 @@ class ConvolutionOperation(str, Enum):
     PARZEN = 'Parzen'
     KAISER = 'Kaiser'
     GAUSSIAN = 'Gaussian'
+    BOXZEN = 'Boxzen'
 
 
 class TimeDomainFilter(Filter):
