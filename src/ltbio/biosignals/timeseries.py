@@ -1,40 +1,332 @@
-# -*- encoding: utf-8 -*-
+# -- encoding: utf-8 --
 
 # ===================================
 
 # IT - LongTermBiosignals
 
-# Package: biosignals
-# Module: Timeseries
-# Description: Class Timeseries, which mathematically conceptualizes timeseries and their behaviour.
-# Class OverlappingTimeseries, a special kind of Timeseries for signal processing purposes.
+# Package: src/ltbio/biosignals 
+# Module: timeseries
+# Description: 
 
-# Contributors: João Saraiva, Mariana Abreu
+# Contributors: João Saraiva
 # Created: 20/04/2022
-# Last Updated: 22/07/2022
+# Last Updated: 07/03/2023
 
 # ===================================
 
-from datetime import datetime, timedelta
+
 from math import ceil
 from os.path import join
 from tempfile import mkstemp
-from typing import List, Iterable, Collection, Dict, Tuple, Callable, Sequence
+from typing import Iterable, Collection, Dict, Tuple, Callable
 
-import matplotlib.pyplot as plt
 import numpy as np
 from biosppy.signals.tools import power_spectrum
-from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime
+from ..biosignals import Event
+from units import Unit
 from numpy import array, append, ndarray, divide, concatenate, tile, memmap
 from scipy.signal import resample
 
-from ltbio.biosignals.timeseries.Event import Event
-from ltbio.biosignals.timeseries.Frequency import Frequency
-from ltbio.biosignals.timeseries.Unit import Unit
+
+class Frequency(float):
+
+    def __init__(self, value:float):
+        self.value = float(value)
+
+    def __str__(self):
+        return str(self.value) + ' Hz'
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __eq__(self, other):
+        if isinstance(other, float):
+            return other == self.value
+        elif isinstance(other, Frequency):
+            return other.value == self.value
+
+    def __float__(self):
+        return self.value
+
+    def __copy__(self):
+        return Frequency(self.value)
 
 
-#from ltbio.processing.filters.Filter import Filter
+from datetime import datetime, timedelta
+from functools import reduce
+from typing import Sequence, List
+
+import matplotlib.pyplot as plt
+from datetimerange import DateTimeRange
+from matplotlib import cm
+from matplotlib.dates import date2num
+from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle
+
+
+class Timeline():
+
+    class Group():
+
+        def __init__(self, intervals: Sequence[DateTimeRange] = [], points: Sequence[datetime] = [], name: str = None, color_hex: str = None):
+            self.intervals = list(intervals)
+            self.points = list(points)
+            self.name = name
+            self.color_hex = color_hex
+
+        def __repr__(self):
+            res = ''
+            if 0 < len(self.intervals):
+                if len(self.intervals) < 10:
+                    res += ' U '.join(['[' + str(interval) + '[' for interval in self.intervals])
+                else:
+                    res += f'{len(self.intervals)} intervals with {self.duration} of total duration'
+            if 0 < len(self.points):
+                if len(self.points) < 10:
+                    res += '\nand the following timepoints:\n'
+                    res += ', '.join(['[' + str(point) + '[' for point in self.points])
+                else:
+                    res += f'\nand {len(self.points)} timepoints.\n'
+            return res
+
+        @property
+        def initial_datetime(self) -> datetime:
+            return min([interval.start_datetime for interval in self.intervals] + self.points)
+
+        @property
+        def final_datetime(self) -> datetime:
+            return max([interval.end_datetime for interval in self.intervals] + self.points)
+
+        @property
+        def duration(self) -> timedelta:
+            return sum([interval.timedelta for interval in self.intervals], timedelta())
+
+        @property
+        def has_only_intervals(self) -> bool:
+            return len(self.intervals) > 0 and len(self.points) == 0
+
+        @property
+        def has_only_points(self) -> bool:
+            return len(self.intervals) == 0 and len(self.points) > 0
+
+        def _as_index(self) -> tuple:
+            if self.has_only_intervals:
+                return tuple(self.intervals)
+            if self.has_only_points:
+                return tuple(self.points)
+            return None
+
+    def __init__(self, *groups: Group, name: str = None):
+        self.groups = list(groups)
+        self.__name = name
+
+    @property
+    def name(self):
+        return self.__name if self.__name else "No Name"
+
+    @name.setter
+    def name(self, name: str):
+        self.__name = name
+
+    def __repr__(self):
+        if len(self.groups) == 1:
+            return repr(self.groups[0])
+        else:
+            res = ''
+            for g in self.groups:
+                res += f'\nGroup {g}\n'
+                res += repr(g)
+            return res
+
+    def __and__(self, other):
+        if isinstance(other, Timeline):
+            groups = []
+            groups += self.groups
+            groups += other.groups
+            group_names = [g.name for g in groups]
+            if len(set(group_names)) != len(group_names):
+                raise NameError('Cannot join Timelines with groups with the same names.')
+            return Timeline(*groups, name = self.name + " and " + other.name)
+
+    @property
+    def initial_datetime(self) -> datetime:
+        return min([g.initial_datetime for g in self.groups])
+
+    @property
+    def final_datetime(self) -> datetime:
+        return max([g.final_datetime for g in self.groups])
+
+    @property
+    def has_single_group(self) -> bool:
+        return len(self.groups) == 1
+
+    @property
+    def single_group(self) -> Group:
+        return self.groups[0] if self.has_single_group else None
+
+    @property
+    def duration(self) -> timedelta:
+        if len(self.groups) == 1:
+            return self.groups[0].duration
+        else:
+            return NotImplementedError()
+
+    @property
+    def is_index(self) -> bool:
+        """
+        Returns whether or not this can serve as an index to a Biosignal.
+        A Timeline can be an index when:
+        - It only contains one interval or a union of intervals (serves as a subdomain)
+        - It only contains one point or a set of points (serves as set of objects)
+        """
+        return len(self.groups) == 1 and (self.groups[0].has_only_intervals ^ self.groups[0].has_only_points)
+
+    def _as_index(self) -> tuple | None:
+        if self.is_index:
+            return self.groups[0]._as_index()
+
+    def plot(self, show:bool=True, save_to:str=None):
+        fig = plt.figure(figsize=(len(self.groups)*10, len(self.groups)*2))
+        ax = plt.gca()
+        legend_elements = []
+
+        cmap = cm.get_cmap('tab20b')
+        for y, g in enumerate(self.groups):
+            color = g.color_hex
+            if color is None:
+                color = cmap(y/len(self.groups))
+
+            for interval in g.intervals:
+                start = date2num(interval.start_datetime)
+                end = date2num(interval.end_datetime)
+                rect = Rectangle((start, y + 0.4), end - start, 0.4, facecolor=color, alpha=0.5)
+                ax.add_patch(rect)
+
+            for point in g.points:
+                ax.scatter(date2num(point), y + 0.95, color=color, alpha=0.5, marker = 'o', markersize=10)
+
+            if len(self.groups) > 1:
+                legend_elements.append(Line2D([0], [0], marker='o', color=color, label=g.name, markerfacecolor='g', markersize=10))
+
+        ax.set_xlim(date2num(self.initial_datetime), date2num(self.final_datetime))
+        ax.set_ylim(0, len(self.groups))
+        ax.get_yaxis().set_visible(False)
+        for pos in ['right', 'top', 'left']:
+            plt.gca().spines[pos].set_visible(False)
+        ax.xaxis_date()
+        fig.autofmt_xdate()
+
+        if len(self.groups) > 1:
+            ax.legend(handles=legend_elements, loc='center')
+
+        if self.name:
+            fig.suptitle(self.name, fontsize=11)
+        fig.tight_layout()
+        if save_to is not None:
+            fig.savefig(save_to)
+        plt.show() if show else plt.close()
+
+    def _repr_png_(self):
+        self.plot()
+
+    @classmethod
+    def union(cls, *timelines):
+        # Check input
+        if not all(isinstance(tl, Timeline) for tl in timelines):
+            raise TypeError("Give objects Timeline to Timeline.union.")
+        if len(timelines) < 2:
+            raise ValueError("Give at least 2 Timelines to compute their union.")
+
+        # Get sets of intervals of each Timeline
+        tl_intervals = []
+        for i, tl in enumerate(timelines):
+            if tl.has_single_group and tl.single_group.has_only_intervals:
+                tl_intervals.append(tl.single_group.intervals)
+            else:
+                raise AssertionError(f"The {i+1}th Timeline does not have a single group with only intervals.")
+
+        # Binary function
+        def union_of_two_timelines(intervals1: List[DateTimeRange], intervals2: List[DateTimeRange]):
+            intervals = intervals1 + intervals2
+            intervals.sort(key=lambda x: x.start_datetime)
+            union = [intervals[0]]
+            for i in range(1, len(intervals)):
+                if union[-1].end_datetime >= intervals[i].start_datetime:
+                    union[-1].set_end_datetime(max(union[-1].end_datetime, intervals[i].end_datetime))
+                else:
+                    union.append(intervals[i])
+            return union
+
+        res_intervals = reduce(union_of_two_timelines, tl_intervals)
+        return Timeline(Timeline.Group(res_intervals), name=f"Union of " + ', '.join(tl.name for tl in timelines))
+
+    @classmethod
+    def intersection(cls, *timelines):
+        # Check input
+        if not all(isinstance(tl, Timeline) for tl in timelines):
+            raise TypeError("Give objects Timeline to Timeline.union.")
+        if len(timelines) < 2:
+            raise ValueError("Give at least 2 Timelines to compute their union.")
+
+        # Get sets of intervals of each Timeline
+        tl_intervals = []
+        for i, tl in enumerate(timelines):
+            if tl.has_single_group and tl.single_group.has_only_intervals:
+                tl_intervals.append(tl.single_group.intervals)
+            else:
+                raise AssertionError(f"The {i + 1}th Timeline does not have a single group with only intervals.")
+
+        # Binary function
+        def intersection_of_two_timelines(intervals1: List[DateTimeRange], intervals2: List[DateTimeRange]):
+            intervals1.sort(key=lambda x: x.start)
+            intervals2.sort(key=lambda x: x.start)
+
+            intersection = []
+            i, j = 0, 0
+            while i < len(intervals1) and j < len(intervals2):
+                if intervals1[i].end_datetime <= intervals2[j].start_datetime:
+                    i += 1
+                elif intervals2[j].end_datetime <= intervals1[i].start_datetime:
+                    j += 1
+                else:
+                    start = max(intervals1[i].start_datetime, intervals2[j].start_datetime)
+                    end = min(intervals1[i].end_datetime, intervals2[j].end_datetime)
+                    intersection.append(DateTimeRange(start, end))
+                    if intervals1[i].end_datetime <= intervals2[j].end_datetime:
+                        i += 1
+                    else:
+                        j += 1
+
+            return intersection
+
+        res_intervals = reduce(intersection_of_two_timelines, tl_intervals)
+        return Timeline(Timeline.Group(res_intervals), name=f"Intersection of " + ', '.join(tl.name for tl in timelines))
+
+    EXTENSION = '.timeline'
+
+    def save(self, save_to: str):
+        # Check extension
+        if not save_to.endswith(Timeline.EXTENSION):
+            save_to += Biosignal.EXTENSION
+        # Write
+        from _pickle import dump
+        with open(save_to, 'wb') as f:
+            dump(self, f)
+
+    @classmethod
+    def load(cls, filepath: str):
+        # Check extension
+        if not filepath.endswith(Timeline.EXTENSION):
+            raise IOError("Only .timeline files are allowed.")
+
+        # Read
+        from _pickle import load
+        with open(filepath, 'rb') as f:
+            timeline = load(f)
+            return timeline
+
+
 
 class Timeseries():
     """
@@ -306,18 +598,25 @@ class Timeseries():
                 # A Segment contains other Segment if its start is less than the other's and its end is greater than the other's.
                 return self.initial_datetime < item.initial_datetime and self.final_datetime > item.final_datetime
 
-        def __getitem__(self, position):
+        def __getitem__(self, item):
             '''The built-in slicing and indexing (segment[x:y]) operations.'''
-            if isinstance(position, (int, tuple)):
-                return self.__samples[position]
-            elif isinstance(position, slice):
-                if position.start is None:
+            if isinstance(item, tuple):
+                return [self[k] for k in item]
+            if isinstance(item, int):
+                return self.__samples[item]
+            elif isinstance(item, slice):
+                if item.start is None:
                     new_initial_datetime = self.__initial_datetime
                 else:
                     new_initial_datetime = self.__initial_datetime + timedelta(
-                        seconds=position.start / self.__sampling_frequency.value)
-                return self._new(samples=self.__samples[position], initial_datetime=new_initial_datetime,
-                                 raw_samples=self.__raw_samples[position])
+                        seconds=item.start / self.__sampling_frequency.value)
+                return self._new(samples=self.__samples[item], initial_datetime=new_initial_datetime,
+                                 raw_samples=self.__raw_samples[item])
+
+        def sliding_window(self, window_length: int):
+            assert window_length > 0
+            for i in range(0, len(self.__samples), window_length):
+                yield self.__samples[i: i + window_length]
 
         # ===================================
         # Amplitude methods
@@ -381,7 +680,8 @@ class Timeseries():
             """Returns True if the Segments' start or end touch."""
             return self.final_datetime == other.initial_datetime or self.initial_datetime == other.final_datetime
 
-        def __when(self, condition):
+        @staticmethod
+        def __when(condition):
             intervals = []
             true_interval = False
             start, end = None, None
@@ -546,6 +846,22 @@ class Timeseries():
                                      initial_datetime=self.__initial_datetime + timedelta(seconds=i/self.__sampling_frequency)))
 
             return res
+
+        @classmethod
+        def _merge(cls, *segments):
+            """
+            It's assummed `segments` is timely ordered and are all of the same sampling frequency.
+            """
+            if len(segments) == 1:
+                return segments[0]
+            else:
+                try:
+                    samples = concatenate([seg.samples for seg in segments])
+                except Exception as e:
+                    pass
+                initial_datetime = segments[0].initial_datetime
+                sampling_frequency = segments[0]._Segment__sampling_frequency
+                return Timeseries._Timeseries__Segment(samples, initial_datetime, sampling_frequency)
 
         # ===================================
         # SERIALIZATION
@@ -806,6 +1122,36 @@ class Timeseries():
 
     def __getitem__(self, item):
         '''The built-in slicing and indexing ([x:y]) operations.'''
+
+        if isinstance(item, tuple):
+            if isinstance(item[0], (datetime, str)):
+                res = list()
+                for timepoint in item:
+                    if isinstance(timepoint, datetime):
+                        res.append(self.__get_sample(timepoint))
+                    elif isinstance(timepoint, str):
+                        res.append(self.__get_sample(to_datetime(timepoint)))
+                    else:
+                        raise IndexError("Index types not supported. Give a tuple of datetimes (can be in string format).")
+                return tuple(res)
+
+            if isinstance(item[0], DateTimeRange):  # This is not publicly documented. Only Biosignal sends a tuple of DateTimeRanges, when it is dealing with Timelines.
+                segments = []
+                for i, interval in enumerate(item):
+                    if i == 193:
+                        pass
+                    try:
+                        x = self.__get_samples(interval.start_datetime, interval.end_datetime)
+                        if x is None:
+                            raise AssertionError(f"x is None for interval {interval}")
+                        segments += x
+                        print(f"Indexed interval {i}")
+                    except IndexError:  # one interval was outside of boundaries
+                        pass  # there's no problem
+                if len(segments) == 0:
+                    raise IndexError("All intervals given are outside of the Timeseries domain.")
+                return self.__new(segments)
+
         if isinstance(item, int):
             return self.__segments[item].samples
 
@@ -818,28 +1164,14 @@ class Timeseries():
         if isinstance(item, slice):
             if item.step is not None:
                 raise IndexError("Indexing with step is not allowed for Timeseries. Try resampling it first.")
-            initial = to_datetime(item.start) if isinstance(item.start,
-                                                            str) else self.initial_datetime if item.start is None else item.start
-            final = to_datetime(item.stop) if isinstance(item.stop,
-                                                         str) else self.final_datetime if item.stop is None else item.stop
+            initial = to_datetime(item.start) if isinstance(item.start, str) else self.initial_datetime if item.start is None else item.start
+            final = to_datetime(item.stop) if isinstance(item.stop, str) else self.final_datetime if item.stop is None else item.stop
             if isinstance(initial, datetime) and isinstance(final, datetime):
                 return self.__new(segments=self.__get_samples(initial, final))
             else:
                 raise IndexError("Index types not supported. Give a slice of datetimes (can be in string format).")
 
-        if isinstance(item, tuple):
-            res = list()
-            for timepoint in item:
-                if isinstance(timepoint, datetime):
-                    res.append(self.__get_sample(timepoint))
-                elif isinstance(timepoint, str):
-                    res.append(self.__get_sample(to_datetime(timepoint)))
-                else:
-                    raise IndexError("Index types not supported. Give a tuple of datetimes (can be in string format).")
-            return tuple(res)
-
-        if isinstance(item,
-                      DateTimeRange):  # This is not publicly documented. Only Biosignal sends DateTimeRanges, when it is dealing with Events.
+        if isinstance(item, DateTimeRange):  # This is not publicly documented. Only Biosignal sends DateTimeRanges, when it is dealing with Events.
             # First, trim the start and end limits of the interval.
             start, end = None, None
             for subdomain in self.domain:  # ordered subdomains
@@ -1079,12 +1411,11 @@ class Timeseries():
 
     def __get_samples(self, initial_datetime: datetime, final_datetime: datetime) -> List[__Segment]:
         '''Returns the samples between the given initial and end datetimes.'''
-        self.__check_boundaries(initial_datetime)
-        self.__check_boundaries(final_datetime)
+        self.__check_boundaries(DateTimeRange(initial_datetime, final_datetime))
         res_segments = []
         for i in range(len(self.__segments)):  # finding the first Segment
             segment = self.__segments[i]
-            if segment.initial_datetime <= initial_datetime <= segment.final_datetime:
+            if segment.initial_datetime <= initial_datetime <= segment.final_datetime or segment.initial_datetime <= final_datetime <= segment.final_datetime:
                 if final_datetime <= segment.final_datetime:
                     trimmed_segment = segment[int((
                                                           initial_datetime - segment.initial_datetime).total_seconds() * self.sampling_frequency):int(
@@ -1107,25 +1438,43 @@ class Timeseries():
                             trimmed_segment = segment[:]
                             res_segments.append(trimmed_segment)
 
+        return res_segments
+
     def __check_boundaries(self, datetime_or_range: datetime | DateTimeRange) -> None:
         intersects = False
         if isinstance(datetime_or_range, datetime):
-            for subdomain in self.domain:
-                if datetime_or_range in subdomain:
+            if datetime_or_range < self.initial_datetime:
+                raise IndexError(f"Datetime given, {datetime_or_range}, is outside of Timeseries domain, which starts at {self.initial_datetime}.")
+            if datetime_or_range > self.final_datetime:
+                raise IndexError(f"Datetime given, {datetime_or_range}, is outside of Timeseries domain, which precisely ends at {self.final_datetime}.")
+
+            domain = self.domain
+            for i, subdomain in enumerate(domain):
+                if datetime_or_range in subdomain:  # success case
                     intersects = True
                     break
-            if not intersects:
-                raise IndexError(
-                    f"Datetime given is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
+                if datetime_or_range < subdomain.start_datetime:  # already passed
+                    raise IndexError("Datetime given is outside of Timeseries domain. "
+                                     f"Timeseries is defined in [{domain[i-1].start_datetime}, {domain[i-1].end_datetime}[ "
+                                     f"and in [{subdomain.start_datetime}, {subdomain.end_datetime}[, "
+                                     f"but not at {datetime_or_range}.")
 
         elif isinstance(datetime_or_range, DateTimeRange):
-            for subdomain in self.domain:
-                if subdomain.is_intersection(datetime_or_range) and datetime_or_range.start_datetime != subdomain.end_datetime:
+            if datetime_or_range.end_datetime < self.initial_datetime:
+                raise IndexError(f"Interval given, {datetime_or_range}, is outside of Timeseries domain, which starts at {self.initial_datetime}.")
+            if datetime_or_range.start_datetime >= self.final_datetime:
+                raise IndexError(f"Interval given, {datetime_or_range}, is outside of Timeseries domain, which precisely ends at {self.final_datetime}.")
+
+            domain = self.domain
+            for i, subdomain in enumerate(domain):
+                if subdomain.is_intersection(datetime_or_range) and datetime_or_range.start_datetime != subdomain.end_datetime:  # success case
                     intersects = True
                     break
-            if not intersects:
-                raise IndexError(
-                    f"Interval given is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
+                if datetime_or_range.end_datetime < subdomain.start_datetime:  # already passed
+                    raise IndexError("Interval given is outside of Timeseries domain. "
+                                     f"Timeseries is defined in [{domain[i-1].start_datetime}, {domain[i-1].end_datetime}[ "
+                                     f"and in [{subdomain.start_datetime}, {subdomain.end_datetime}[, "
+                                     f"but not in {datetime_or_range}.")
 
     def _indices_to_timepoints(self, indices: Sequence[Sequence[int]] | Sequence[Sequence[Sequence[int]]], by_segment=False) -> Sequence[datetime] | Sequence[Sequence[datetime]] | Sequence[DateTimeRange] | Sequence[Sequence[DateTimeRange]]:
         all_timepoints = []
@@ -1525,6 +1874,32 @@ class Timeseries():
 
     def _delete_segments(self, selection_function: Callable[[ndarray], bool]):
         self.__segments = list(filter(lambda seg: selection_function(seg.samples), self.__segments))
+
+    def _merge(self, time_intervals:tuple[DateTimeRange]):
+        res_segments = []
+        begin_search = 0
+        for t in time_intervals:
+            start, end = None, None
+            for i in range(begin_search, len(self.__segments)):
+                seg = self.__segments[i]
+                if seg.initial_datetime >= t.start_datetime:
+                    if not start:
+                        start = i
+                    else:
+                        pass
+                if seg.final_datetime > t.end_datetime:
+                    if start:
+                        end = i
+                        to_merge = self.__segments[start: end + 1]
+                        if len(to_merge) > 0:
+                            res_segments.append(Timeseries.__Segment._merge(*to_merge))
+                        begin_search = end + 1
+                        break
+                    else:
+                        pass
+
+
+
 
     # ===================================
     # SERIALIZATION

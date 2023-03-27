@@ -1,18 +1,21 @@
-# -*- encoding: utf-8 -*-
+# -- encoding: utf-8 --
 
 # ===================================
 
 # IT - LongTermBiosignals
 
-# Package: biosignals
-# Module: ECG
-# Description: Class ECG, a type of Biosignal named Electrocardiogram.
+# Package: src/ltbio/biosignals 
+# Module: modalities
+# Description: 
 
-# Contributors: João Saraiva, Mariana Abreu, Rafael Silva
+# Contributors: João Saraiva, Mariana Abreu
 # Created: 12/05/2022
-# Last Updated: 10/08/2022
+# Last Updated: 07/03/2023
 
 # ===================================
+
+from ltbio.biosignals.modalities.Biosignal import Biosignal, DerivedBiosignal
+from ltbio.biosignals.timeseries.Unit import *
 
 from datetime import timedelta
 from statistics import mean
@@ -32,7 +35,38 @@ from .. import timeseries as _timeseries
 from ltbio.biosignals.timeseries.Unit import Volt, Multiplier, BeatsPerMinute, Second
 
 
+# ===================================
+# Mechanical Modalities
+# ===================================
+
+class ACC(Biosignal):
+
+    DEFAULT_UNIT = G(Multiplier._)
+
+    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None):
+        super(ACC, self).__init__(timeseries, source, patient, acquisition_location, name)
+
+    def plot_summary(self, show: bool = True, save_to: str = None):
+        pass
+
+
+class RESP(Biosignal):
+
+    DEFAULT_UNIT = Volt(Multiplier.m)
+
+    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None):
+        super(RESP, self).__init__(timeseries, source, patient, acquisition_location, name)
+
+    def plot_summary(self, show:bool=True, save_to:str=None):
+        pass
+
+
+# ===================================
+# Electrical Modalities
+# ===================================
+
 class ECG(Biosignal):
+
     DEFAULT_UNIT = Volt(Multiplier.m)
 
     def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None):
@@ -505,15 +539,143 @@ class ECG(Biosignal):
                 res[channel_name] = average(array(res[channel_name]),
                                             weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
 
+class EDA(Biosignal):
 
-class RRI(DerivedBiosignal):
+    DEFAULT_UNIT = Volt(Multiplier.m)
 
-    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None, original: ECG | None = None):
-        super().__init__(timeseries, source, patient, acquisition_location, name, original)
-
-    @classmethod
-    def fromECG(cls):
-        pass
+    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None):
+        super(EDA, self).__init__(timeseries, source, patient, acquisition_location, name)
 
     def plot_summary(self, show: bool = True, save_to: str = None):
         pass
+
+    @property
+    def preview(self):
+        """Returns 2 minutes of the middle of the signal."""
+        domain = self.domain
+        middle_of_domain: DateTimeRange = domain[len(domain) // 2]
+        middle = middle_of_domain.start_datetime + (middle_of_domain.timedelta / 2)
+        try:
+            return self[middle - timedelta(seconds=2): middle + timedelta(minutes=2)]
+        except IndexError:
+            raise AssertionError(
+                f"The middle segment of {self.name} from {self.patient_code} does not have at least 5 seconds to return a preview.")
+
+    @staticmethod
+    def racSQI(samples):
+        """
+        Rate of Amplitude change (RAC)
+        It is recomended to be analysed in windows of 2 seconds.
+        """
+        max_, min_ = max(samples), min(samples)
+        amplitude = max_ - min_
+        return abs(amplitude / max_)
+
+    def acceptable_quality(self):  # -> Timeline
+        """
+        Suggested by Böttcher et al. Scientific Reports, 2022, for wearable wrist EDA.
+        """
+        return self.when(lambda x: mean(x) > 0.05 and EDA.racSQI(x) < 0.2, window=timedelta(seconds=2))
+
+
+class EEG(Biosignal):
+
+    DEFAULT_UNIT = Volt(Multiplier.m)
+
+    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None):
+        super(EEG, self).__init__(timeseries, source, patient, acquisition_location, name)
+
+    def plot_summary(self, show: bool = True, save_to: str = None):
+        pass
+
+
+class EMG(Biosignal):
+
+    DEFAULT_UNIT = Volt(Multiplier.m)
+
+    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None):
+        super(EMG, self).__init__(timeseries, source, patient, acquisition_location, name)
+
+    def plot_summary(self, show: bool = True, save_to: str = None):
+        pass
+
+# ===================================
+# Optical modalities
+# ===================================
+
+class PPG(Biosignal):
+
+    DEFAULT_UNIT = None
+
+    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None, **options):
+        super(PPG, self).__init__(timeseries, source, patient, acquisition_location, name, **options)
+
+    def plot_summary(self, show: bool = True, save_to: str = None):
+        pass
+
+    def acceptable_quality(self):  # -> Timeline
+        """
+        Suggested for wearable wrist PPG by:
+            - Glasstetter et al. MDPI Sensors, 21, 2021
+            - Böttcher et al. Scientific Reports, 2022
+        """
+
+        sfreq = self.sampling_frequency
+        nperseg = int(4 * self.sampling_frequency)  # 4 s window
+        fmin = 0.1  # Hz
+        fmax = 5  # Hz
+
+        def spectral_entropy(x, sfreq, nperseg, fmin, fmax):
+            if len(x) < nperseg:  # if segment smaller than 4s
+                nperseg = len(x)
+            noverlap = int(0.9375 * nperseg)  # if nperseg = 4s, then 3.75 s of overlap
+            f, psd = welch(x, sfreq, nperseg=nperseg, noverlap=noverlap)
+            idx_min = np.argmin(np.abs(f - fmin))
+            idx_max = np.argmin(np.abs(f - fmax))
+            psd = psd[idx_min:idx_max]
+            psd /= np.sum(psd)  # normalize the PSD
+            entropy = -np.sum(psd * np.log2(psd))
+            N = idx_max - idx_min
+            entropy_norm = entropy / np.log2(N)
+            return entropy_norm
+
+        return self.when(lambda x: spectral_entropy(x, sfreq, nperseg, fmin, fmax) < 0.8, window=timedelta(seconds=4))
+
+
+class TEMP(Biosignal):
+
+    DEFAULT_UNIT = DegreeCelsius(Multiplier._)
+
+    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None):
+        super(TEMP, self).__init__(timeseries, source, patient, acquisition_location, name)
+
+    def plot_summary(self, show: bool = True, save_to: str = None):
+        pass
+
+    @property
+    def preview(self):
+        """Returns 2 minutes of the middle of the signal."""
+        domain = self.domain
+        middle_of_domain: DateTimeRange = domain[len(domain) // 2]
+        middle = middle_of_domain.start_datetime + (middle_of_domain.timedelta / 2)
+        try:
+            return self[middle - timedelta(seconds=2): middle + timedelta(minutes=2)]
+        except IndexError:
+            raise AssertionError(
+                f"The middle segment of {self.name} from {self.patient_code} does not have at least 5 seconds to return a preview.")
+
+    @staticmethod
+    def racSQI(samples):
+        """
+        Rate of Amplitude change (RAC)
+        It is recomended to be analysed in windows of 2 seconds.
+        """
+        max_, min_ = max(samples), min(samples)
+        amplitude = max_ - min_
+        return abs(amplitude / max_)
+
+    def acceptable_quality(self):  # -> Timeline
+        """
+        Suggested by Böttcher et al. Scientific Reports, 2022, for wearable wrist TEMP.
+        """
+        return self.when(lambda x: 25 < mean(x) < 40 and TEMP.racSQI(x) < 0.2, window=timedelta(seconds=2))
