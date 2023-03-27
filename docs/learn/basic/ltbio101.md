@@ -35,16 +35,16 @@ For example, to instantiate an `ECG` from a file, one could use the following in
 ecg = ECG('pathToFile', HSM, name='My First Biosignal')
 ```
 
-In the above example, `HSM` is the `BiosignalSource` representing "Hospital de Santa Maria" 🏥, a hospital in Lisbon, Portugal.
+In the above example, `HSM` is the `__BiosignalSource` representing "Hospital de Santa Maria" 🏥, a hospital in Lisbon, Portugal.
 This class _knows_ how to read biosignals from EDF files collected at HSM. 
-As depicted in the above Figure, there can be as many `BiosignalSource` subclasses as the user needs. The ones you see are just examples, 
+As depicted in the above Figure, there can be as many `__BiosignalSource` subclasses as the user needs. The ones you see are just examples, 
 like [ScientISST](scientisst.com/sense) and [BITalino](https://www.pluxbiosignals.com/collections/bitalino) devices, public databases like 
-MITDB and Seer, and many others. A `BiosignalSource` is an entity with knowledge about where (devices, hospitals, databases, etc.) and how 
+MITDB and Seer, and many others. A `__BiosignalSource` is an entity with knowledge about where (devices, hospitals, databases, etc.) and how 
 biosignals are acquired. It has static procedures to ease the reading of biosignals from files of that source, and the respective patient 
 metadata, clinical records, and event annotations. These have their own classes as well, as shall be described ahead.
-Other sources can be easily implemented by deriving `BiosignalSource`. This scalable property is of vital importance, since biosignal
+Other sources can be easily implemented by deriving `__BiosignalSource`. This scalable property is of vital importance, since biosignal
 researchers get data from a large variety of sources that increases by the day. Hence, you have the possibility of working with data from 
-new sources only by creating your own `BiosignalSource`, therefore personalising the framework to your research needs.
+new sources only by creating your own `__BiosignalSource`, therefore personalising the framework to your research needs.
 
 ------------
 
@@ -58,7 +58,7 @@ _Biosignals_ to modify themselves, without you having to remember their metadata
 
 **The Concept as a Class:** A `Biosignal` object is a non-empty set of channels measuring one biological or physiological variable. Each 
 channel is represented by a `Timeseries` object (see UML above). Optionally, it may also have an associated `Patient`, an associated 
-`BodyLocation`, one ore more associated `Event`s, an associated `BiosignalSource`, and a name. All this metadata is introduced later; for now it's crucial you understand how
+`BodyLocation`, one ore more associated `Event`s, an associated `__BiosignalSource`, and a name. All this metadata is introduced later; for now it's crucial you understand how
 channels and samples are organised.
 
 ------------
@@ -96,7 +96,7 @@ endevours. If you want to have it all in one place regarding one biosignal (and 
 with more properties:
 
 * 🤕 **Patient**: An object `Patient` where you can drop any information regarding the 
-patient that can be useful to process the biosignal. If reading from a file or fetching a database, `BiosignalSource` might fill this property
+patient that can be useful to process the biosignal. If reading from a file or fetching a database, `__BiosignalSource` might fill this property
 automatically for you.
 
 * 🧍‍♀️ **Location**: An object `BodyLocation` to remember where the sensors were placed.
@@ -128,7 +128,7 @@ You have three ways 🤯 of instantiating a `Biosignal`.
 
 ### Way 1: Instantiate from files
 
-Give the path to the directory where the files are located and specify the source (`BiosignalSource`) from where the files come from:
+Give the path to the directory where the files are located and specify the source (`__BiosignalSource`) from where the files come from:
 ```
 biosignal = ECG("path_to_files", HSM)
 ```
@@ -139,7 +139,7 @@ you'll want to create your own source.
 
 ### Way 2: Instantiate from a Database [comming 🔜]
 
-Give the patient code, the source (`BiosignalSource`) corresponding to a database, and the interval of time (in tuple) you want to fetch from the database:
+Give the patient code, the source (`__BiosignalSource`) corresponding to a database, and the interval of time (in tuple) you want to fetch from the database:
 ```
 biosignal = ECG(patient_code=101, source=HSM, ('2022-01-01 16:00', '2022-01-01 17:30'))
 ```
