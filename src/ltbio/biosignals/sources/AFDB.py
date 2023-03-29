@@ -30,6 +30,16 @@ class AFDB(BiosignalSource):
         return "MIT-BIH Atrial Fibrillation Database"
 
     @staticmethod
+    def _name(path, type, **options):
+        """
+        Defines the name of the biosignal file.
+        param: path (str) path to the file
+        param: type (modalities) modality of the biosignal
+        return: name (str) name of the biosignal file
+        """
+        return 'ECG'
+
+    @staticmethod
     def _timeseries(path: str, type, **options):
         pass
 
