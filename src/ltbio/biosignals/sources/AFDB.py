@@ -16,6 +16,7 @@
 # ===================================
 
 import os
+import datetime
 
 import wfdb
 from dateutil.parser import parse as to_datetime
@@ -70,6 +71,23 @@ class AFDB(BiosignalSource):
         date = str(header.base_date) if header.base_date is not None else '2000-01-01'
 
         return to_datetime(date + ' ' + time)
+
+    @staticmethod
+    def __aux_sample_to_datetime(sample, start_time, fs):
+        """
+        Get datetime from sample
+        param: sample (int) sample number
+        param: start_time (datetime) starting time of the record
+        param: fs (int) sampling frequency
+        return: time (datetime) datetime of the sample
+        """
+
+        # compute sample timedelta
+        time_delta = datetime.timedelta(seconds=sample / fs)
+
+        # compute sample time by adding the time to the starting time
+
+        return start_time + time_delta
 
     @staticmethod
     def _name(path, type, **options):
@@ -134,6 +152,42 @@ class AFDB(BiosignalSource):
             )
 
         return data
+
+    @staticmethod
+    def _events(path: str, **options):
+        """
+        Defines the events of the biosignal file.
+        param: path (str) path to the file
+        return: events (list) list of events
+        """
+
+        # read data
+        record, header, annotation = AFDB.__read_data(path)
+        start_time = AFDB.__aux_date(header)
+        fs = header.fs if header.fs is not None else 250
+
+        # create events
+        events = []
+        for ind, sample in enumerate(annotation.sample):
+            # get event
+            name = annotation.aux_note[ind]
+
+            # add sequential number to event name
+            name = name + '_' + str(ind)
+
+            # get sample time
+            onset_time = AFDB.__aux_sample_to_datetime(sample, start_time, fs)
+
+            # get offset
+            sample_offset = annotation.sample[ind + 1] - 1 if ind < len(annotation.sample) - 1 else record.p_signal.shape[0]
+            offset_time = AFDB.__aux_sample_to_datetime(sample_offset, start_time, fs)
+
+            # create event
+            events.append(timeseries.Event(name=name,
+                                           onset=onset_time,
+                                           offset=offset_time))
+
+        return events
 
     @staticmethod
     def _write(path: str, timeseries: dict):
