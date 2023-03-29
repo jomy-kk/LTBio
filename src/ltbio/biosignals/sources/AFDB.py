@@ -15,8 +15,11 @@
 
 # ===================================
 
+import os
+
 from ..sources.BiosignalSource import BiosignalSource
 from ltbio.biosignals.timeseries.Unit import *
+from ...clinical import Patient
 
 
 class AFDB(BiosignalSource):
@@ -38,6 +41,18 @@ class AFDB(BiosignalSource):
         return: name (str) name of the biosignal file
         """
         return 'ECG'
+
+    @staticmethod
+    def _patient(path, **options):
+        """
+        Defines the patient of the biosignal file.
+        param: path (str) path to the file
+        return: patient (Patient) patient object
+        """
+        code = path.split(os.sep)[-1]
+        patient = Patient(code=code)
+
+        return patient
 
     @staticmethod
     def _timeseries(path: str, type, **options):
