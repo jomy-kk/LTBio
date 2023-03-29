@@ -19,6 +19,7 @@ import os
 import datetime
 
 import wfdb
+import wget
 from dateutil.parser import parse as to_datetime
 
 from .. import timeseries
@@ -188,6 +189,31 @@ class AFDB(BiosignalSource):
                                            offset=offset_time))
 
         return events
+
+    @staticmethod
+    def fetch(patient_code: str):
+        """ Fetch one patient from the wfdb database.
+        param: patient_code (str) patient code
+        """
+
+        # check if patient code is valid
+        if patient_code is None:
+            raise Exception("Patient code is required.")
+
+        # create directory for patient in folder
+        path = '.cache/afdb/'
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+        # download files
+        for file in ['atr', 'dat', 'hea']:
+            file_path = patient_code + '.' + file
+            # check if file exists
+            if not os.path.exists(path + file_path):
+                # download file
+                wget.download('https://physionet.org/files/afdb/1.0.0/' + file_path, path)
+            else:
+                print('File ' + file_path + ' already exists.')
 
     @staticmethod
     def _write(path: str, timeseries: dict):
