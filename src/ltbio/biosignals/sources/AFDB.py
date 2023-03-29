@@ -11,7 +11,7 @@
 
 # Contributors: Rafael Silva
 # Created: 27/03/2023
-# Last Updated: 27/03/2023
+# Last Updated: 28/03/2023
 
 # ===================================
 
@@ -61,7 +61,7 @@ class AFDB(BiosignalSource):
     @staticmethod
     def __aux_date(header):
         """
-        Get starting time from header
+        Get starting time from header.
         param: header (wfdb.Header)
         """
 
@@ -76,7 +76,7 @@ class AFDB(BiosignalSource):
     @staticmethod
     def __aux_sample_to_datetime(sample, start_time, fs):
         """
-        Get datetime from sample
+        Get datetime from sample.
         param: sample (int) sample number
         param: start_time (datetime) starting time of the record
         param: fs (int) sampling frequency
@@ -87,7 +87,6 @@ class AFDB(BiosignalSource):
         time_delta = datetime.timedelta(seconds=sample / fs)
 
         # compute sample time by adding the time to the starting time
-
         return start_time + time_delta
 
     @staticmethod
@@ -98,6 +97,7 @@ class AFDB(BiosignalSource):
         param: type (modalities) modality of the biosignal
         return: name (str) name of the biosignal file
         """
+
         return 'ECG'
 
     @staticmethod
@@ -107,6 +107,7 @@ class AFDB(BiosignalSource):
         param: path (str) path to the file
         return: patient (Patient) patient object
         """
+
         code = path.split(os.sep)[-1]
         patient = Patient(code=code)
 
@@ -114,6 +115,13 @@ class AFDB(BiosignalSource):
 
     @staticmethod
     def _acquisition_location(path, type, **options):
+        """
+        Defines the acquisition location of the biosignal file.
+        param: path (str) path to the file
+        param: type (modalities) modality of the biosignal
+        return: location (BodyLocation) location of the biosignal file
+        """
+
         return BodyLocation.CHEST
 
     @staticmethod
@@ -192,7 +200,8 @@ class AFDB(BiosignalSource):
 
     @staticmethod
     def fetch(patient_code: str):
-        """ Fetch one patient from the wfdb database.
+        """
+        Fetch one patient from the wfdb database.
         param: patient_code (str) patient code
         """
 
