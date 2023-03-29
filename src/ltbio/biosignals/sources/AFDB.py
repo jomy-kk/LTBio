@@ -19,7 +19,7 @@ import os
 
 from ..sources.BiosignalSource import BiosignalSource
 from ltbio.biosignals.timeseries.Unit import *
-from ...clinical import Patient
+from ...clinical import Patient, BodyLocation
 
 
 class AFDB(BiosignalSource):
@@ -53,6 +53,10 @@ class AFDB(BiosignalSource):
         patient = Patient(code=code)
 
         return patient
+
+    @staticmethod
+    def _acquisition_location(path, type, **options):
+        return BodyLocation.CHEST
 
     @staticmethod
     def _timeseries(path: str, type, **options):
