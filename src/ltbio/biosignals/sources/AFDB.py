@@ -17,6 +17,8 @@
 
 import os
 
+import wfdb
+
 from ..sources.BiosignalSource import BiosignalSource
 from ltbio.biosignals.timeseries.Unit import *
 from ...clinical import Patient, BodyLocation
@@ -31,6 +33,25 @@ class AFDB(BiosignalSource):
 
     def __repr__(self):
         return "MIT-BIH Atrial Fibrillation Database"
+
+    @staticmethod
+    def __read_data(dirfile):
+        """
+        Reads the header, record and annotation files of a record.
+        param: dirfile (str) path to one file
+        return: record (wfdb.Record) record object
+        return: header (wfdb.Header) header object
+        return: annotation (wfdb.Annotation) annotation object
+        """
+
+        # Read header
+        header = wfdb.rdheader(dirfile)
+        # Read record
+        record = wfdb.rdrecord(dirfile)
+        # Read annotation
+        annotation = wfdb.rdann(dirfile, 'atr')
+
+        return record, header, annotation
 
     @staticmethod
     def _name(path, type, **options):
