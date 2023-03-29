@@ -27,7 +27,7 @@ class AFDB(BiosignalSource):
         super().__init__()
 
     def __repr__(self):
-        pass
+        return "MIT-BIH Atrial Fibrillation Database"
 
     @staticmethod
     def _timeseries(path: str, type, **options):
