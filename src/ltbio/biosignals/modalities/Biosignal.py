@@ -28,13 +28,14 @@ import numpy as np
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime, ParserError
 from numpy import ndarray
+from pandas import DataFrame
 
 from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
 from ltbio.biosignals.timeseries.Event import Event
 from ltbio.biosignals.timeseries.Unit import Unitless
 # from ...processing.filters.Filter import Filter
 from ltbio.clinical.BodyLocation import BodyLocation
-from ltbio.clinical.Patient import Patient
+from ltbio.clinical import Patient
 from ltbio.clinical.conditions.MedicalCondition import MedicalCondition
 from ltbio.processing.noises.Noise import Noise
 from .. import timeseries
@@ -562,14 +563,63 @@ class Biosignal(ABC):
     def _to_dict(self) -> Dict[str|BodyLocation, timeseries.Timeseries]:
         return deepcopy(self.__timeseries)
 
-    def _to_array(self) -> ndarray:
+    def to_array(self) -> np.ndarray:
         """
-        Converts Biosignal to a NumPy ndarray.
-        :return: A C x M x N array, where C is the number of channels, M the number of segments of each, and N their length.
-        :rtype: list[numpy.ndarray]
+        Converts Biosignal to a numpy array.
+        The initial datetime is that of the earliest channel. The final datetime is that of the latest channel.
+        When a channel is not defined, the value is NaN (e.g. interruptions, beginings, ends).
+        If the channels are not sampled at the same frequency, the highest sampling frequency is used, and the channels with lower sampling
+        frequency are resampled.
+        :return: A 2D numpy array each channel in each line.
+        :rtype: numpy.ndarray
+
+        Example:
+        Given a Biosignal with 3 channels sampled at 1.1 Hz:
+        Channel 1: 0, 1, 2, 3, 4 (starts at 10:00:02.500)
+        Channel 2: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 (starts at 10:00:04.200)
+        Channel 3: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 (starts at 10:00:00.000)
+        Result: [[np.nan, np.nan, 0, 1, 2, 3, 4, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+                    [np.nan, np.nan, np.nan, np.nan, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]]
         """
-        x = [channel._to_array() for channel in self.__timeseries.values()]
-        return np.stack(x)
+
+        # Get the maximum sampling frequency of the Biosignal
+        max_sf = max(channel.sampling_frequency for _, channel in self)
+
+        # Get the length of the array
+        initial_datetime = self.initial_datetime
+        final_datetime = self.final_datetime
+        n_samples = round((final_datetime - initial_datetime).total_seconds() * max_sf)
+
+        # Create the array full of NaNs
+        res = np.full((len(self), n_samples), np.nan)
+
+        # Fill the array
+        for i, (_, channel) in enumerate(self):
+            if channel.sampling_frequency != max_sf:  # Resample the channel, if necessary
+                channel._resample(max_sf)
+            # Convert channel to array
+            channel_as_array = channel.to_array()
+            # Get the index of the first position of this channel in the array
+            initial_ix = round((channel.initial_datetime - self.initial_datetime).total_seconds() * max_sf)
+            # Broadcat samples to the array
+            res[i, initial_ix: initial_ix + len(channel_as_array)] = channel_as_array
+
+        return res
+
+
+    def to_dataframe(self) -> DataFrame:
+        """
+        Converts Biosignal to a pandas DataFrame.
+        :return: A pandas DataFrame with the channels as columns, and the samples as rows.
+        :rtype: pandas.DataFrame
+        """
+        samples = self.to_array().T  # to follow the standard of pandas
+        channel_names = [ch_name for ch_name, _ in self]  # to keep the order determined by to_array
+        max_sf = max(channel.sampling_frequency for _, channel in self)
+        time_axis = [self.initial_datetime + timedelta(seconds=i/max_sf) for i in range(len(samples))]
+        return DataFrame(samples, columns=channel_names, index=time_axis)
+
 
     def __iter__(self):
         return self.__timeseries.items().__iter__()
