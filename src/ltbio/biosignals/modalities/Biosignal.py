@@ -586,20 +586,22 @@ class Biosignal(ABC):
         # Get the maximum sampling frequency of the Biosignal
         max_sf = max(channel.sampling_frequency for _, channel in self)
 
-        # Get the length of the array
-        initial_datetime = self.initial_datetime
-        final_datetime = self.final_datetime
-        n_samples = round((final_datetime - initial_datetime).total_seconds() * max_sf)
+        # Get the arrays of all channels
+        channels_as_arrays = []
+        for i, (_, channel) in enumerate(self):
+            if channel.sampling_frequency != max_sf:  # Resample the channel, if necessary
+                channel._resample(max_sf)
+            # Convert channel to array
+            channels_as_arrays.append(channel.to_array())
+
+        # Get the length of the samples axes
+        n_samples = max([len(x) for x in channels_as_arrays])
 
         # Create the array full of NaNs
         res = np.full((len(self), n_samples), np.nan)
 
         # Fill the array
-        for i, (_, channel) in enumerate(self):
-            if channel.sampling_frequency != max_sf:  # Resample the channel, if necessary
-                channel._resample(max_sf)
-            # Convert channel to array
-            channel_as_array = channel.to_array()
+        for i, ((_,channel), channel_as_array) in enumerate(zip(self, channels_as_arrays)):
             # Get the index of the first position of this channel in the array
             initial_ix = round((channel.initial_datetime - self.initial_datetime).total_seconds() * max_sf)
             # Broadcat samples to the array
@@ -608,9 +610,10 @@ class Biosignal(ABC):
         return res
 
 
-    def to_dataframe(self) -> DataFrame:
+    def to_dataframe(self, with_events: bool = False) -> DataFrame:
         """
         Converts Biosignal to a pandas DataFrame.
+        If with_events is True, an events column is added to the DataFrame. In each row, the events that occur in that sample are listed, separated by commas.
         :return: A pandas DataFrame with the channels as columns, and the samples as rows.
         :rtype: pandas.DataFrame
         """
@@ -618,7 +621,24 @@ class Biosignal(ABC):
         channel_names = [ch_name for ch_name, _ in self]  # to keep the order determined by to_array
         max_sf = max(channel.sampling_frequency for _, channel in self)
         time_axis = [self.initial_datetime + timedelta(seconds=i/max_sf) for i in range(len(samples))]
-        return DataFrame(samples, columns=channel_names, index=time_axis)
+
+        df = DataFrame(samples, columns=channel_names, index=time_axis)
+
+        if with_events:
+            df['Events'] = [''] * len(df)  # create a list of empty strings
+            for event in self.events:
+                if event.has_onset and event.has_offset:
+                    start_ix = round((event.onset - self.initial_datetime).total_seconds() * max_sf)
+                    end_ix = round((event.offset - self.initial_datetime).total_seconds() * max_sf)
+                elif event.has_onset:
+                    start_ix = round((event.onset - self.initial_datetime).total_seconds() * max_sf)
+                    end_ix = start_ix + 1
+                elif event.has_offset:
+                    end_ix = round((event.offset - self.initial_datetime).total_seconds() * max_sf)
+                    start_ix = end_ix - 1
+                df.loc[df.index[start_ix:end_ix], 'Events'] = df.loc[df.index[start_ix:end_ix], 'Events'] + event.name + ','
+
+        return df
 
 
     def __iter__(self):
