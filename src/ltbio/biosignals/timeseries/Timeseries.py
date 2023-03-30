@@ -1041,15 +1041,23 @@ class Timeseries():
                 all_timepoints += x  # Join them all
         return tuple(all_timepoints)
 
-    def _to_array(self) -> ndarray:
+    def to_array(self) -> np.ndarray:
         """
-        Converts Timeseries to NumPy ndarray, if it is equally segmented.
-        :return: MxN array, where M is the number of segments and N is their length.
-        :rtype: numpy.ndarray
+        Converts a Timeseries into a numpy array. If the Timeseries is composed of multiple Segments, the interruptions are filled with NaNs.
+        :return: A 1D numpy array with its samples.
         """
-        if not self.__is_equally_segmented:
-            raise AssertionError("Timeseries needs to be equally segmented to produce a matricial NumPy ndarray.")
-        return np.vstack([segment.samples for segment in self.__segments])
+        res = np.array(self.__segments[0].samples)
+        for i in range(1, len(self.__segments)):
+            segment = self.__segments[i]
+            # get the time between the end of the current segment and the start of the next one
+            time_between_segments = self.__segments[i].initial_datetime - self.__segments[i - 1].final_datetime
+            # number of NaNs to fill the gap
+            n_nans = int(np.round(self.__sampling_frequency * time_between_segments.total_seconds()))
+            # fill the gap with NaNs
+            res = np.concatenate((res, [np.nan] * n_nans))
+            # add the samples of the current segment
+            res = np.concatenate((res, segment.samples))
+        return res
 
     # ===================================
     # INTERNAL USAGE - Plots
