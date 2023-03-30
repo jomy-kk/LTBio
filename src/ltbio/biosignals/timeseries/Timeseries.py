@@ -1052,7 +1052,7 @@ class Timeseries():
             # get the time between the end of the current segment and the start of the next one
             time_between_segments = self.__segments[i].initial_datetime - self.__segments[i - 1].final_datetime
             # number of NaNs to fill the gap
-            n_nans = int(np.round(self.__sampling_frequency * time_between_segments.total_seconds()))
+            n_nans = round(self.__sampling_frequency * time_between_segments.total_seconds())
             # fill the gap with NaNs
             res = np.concatenate((res, [np.nan] * n_nans))
             # add the samples of the current segment
