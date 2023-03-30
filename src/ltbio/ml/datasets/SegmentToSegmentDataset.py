@@ -99,8 +99,8 @@ class SegmentToSegmentDataset(BiosignalDataset):
             raise AssertionError("All target Timeseries must have the same sampling frequency in a SegmentToSegmentDataset.")
 
         # Gets samples from each Segment of each Timeseries.
-        object_all_segments = np.array([timeseries._to_array() for timeseries in object])
-        target_all_segments = np.array([timeseries._to_array() for timeseries in target])
+        object_all_segments = np.array([timeseries.to_array() for timeseries in object])
+        target_all_segments = np.array([timeseries.to_array() for timeseries in target])
 
         # VStacks the segments of all Timeseries. Each item is a sample to be fed to the model.
         self._BiosignalDataset__objects = object_all_segments.swapaxes(0, 1)
