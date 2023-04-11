@@ -32,10 +32,6 @@ class MultimodalBiosignal(Biosignal):
         events = {}
 
         for label, biosignal in biosignals.items():
-            if patient is None:
-                patient = biosignal._Biosignal__patient
-            elif patient != biosignal._Biosignal__patient:
-                raise ValueError("When joining Biosignals, they all must be from the same Patient.")
 
             for channel_label, ts in biosignal._to_dict().items():
                 timeseries[label+':'+channel_label] = ts  # Join Timeseries in a single dictionary
