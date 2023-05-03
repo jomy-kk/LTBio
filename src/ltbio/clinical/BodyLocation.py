@@ -18,6 +18,14 @@ from enum import unique, Enum
 
 @unique
 class BodyLocation(str, Enum):
+
+    def __contains__(self, location):
+        CHEST = (BodyLocation.V1, BodyLocation.V2, BodyLocation.V3, BodyLocation.V4, BodyLocation.V5, BodyLocation.V6)
+        try:
+            return location is self or location in eval(self.name)
+        except AttributeError:
+            raise AttributeError(f"{self} is not an anatomical group in LTBio.")
+
     CHEST = "Chest"
     LI = 'Chest Lead I'
     LII = 'Chest Lead II'
@@ -86,7 +94,4 @@ class BodyLocation(str, Enum):
 
     PARIETAL_L = 'Left Parietal lobe'
     PARIETAL_R = 'Right Parietal lobe'
-
-
-
 
