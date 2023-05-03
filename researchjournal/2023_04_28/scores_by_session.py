@@ -4,6 +4,7 @@ from os import listdir
 from pandas import DataFrame
 
 from ltbio.biosignals.modalities import ACC
+from ltbio.processing.filters import FrequencyDomainFilter, BandType, FrequencyResponse
 from researchjournal.runlikeascientisstcommons import *
 
 from src.ltbio.biosignals import Biosignal
@@ -13,8 +14,10 @@ completeness_scores, correctness_scores, quality_scores = {x: {} for x in subjec
 for code in subject_codes:
     subject_path = join(acquisitions_path, code)
     for session in listdir(subject_path):
+        print("Session " + session)
         session_path = join(subject_path, session, 'COMPACT')
         for modality in modality_keywords:
+            print("    " + modality)
             biosignal_path = join(session_path, modality + biosignal_file_suffix)
             if isfile(biosignal_path):  # if this modality exists in this subject-session pair
                 biosignal = Biosignal.load(biosignal_path)
@@ -26,12 +29,16 @@ for code in subject_codes:
                         sensor_name = modality
                     completeness_scores[code][sensor_name] = biosignal.completeness_score()
                     correctness_scores[code][sensor_name] = biosignal.onbody_score()
+                    f = FrequencyDomainFilter(FrequencyResponse.FIR, BandType.BANDPASS, (1.0, 40.0), 20)
+                    biosignal.filter(f)
                     quality_scores[code][sensor_name] = biosignal.quality_score()
                 else:
                     for channel_name, _ in biosignal:
                         sensor = biosignal[channel_name]
                         completeness_scores[code][channel_name] = sensor.completeness_score()
                         correctness_scores[code][channel_name] = sensor.onbody_score()
+                        f = FrequencyDomainFilter(FrequencyResponse.FIR, BandType.BANDPASS, (1.0, 40.0), 20)
+                        sensor.filter(f)
                         quality_scores[code][channel_name] = sensor.quality_score()
 
 # Convert to Dataframes

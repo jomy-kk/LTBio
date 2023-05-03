@@ -30,6 +30,8 @@ from .. import timeseries
 from .. import modalities
 from ..sources.BiosignalSource import BiosignalSource
 from ltbio.clinical.BodyLocation import BodyLocation
+from ..timeseries.Timeline import Timeline
+from ..timeseries.Unit import Volt, Multiplier
 
 
 class Sense(BiosignalSource):
@@ -386,3 +388,40 @@ class Sense(BiosignalSource):
     def _transfer(samples, to_unit):
         pass
 
+    @staticmethod
+    def onbody(biosignal):
+
+        onbody = None
+
+        # ECGs
+        if biosignal.type is modalities.ECG:
+
+            # Anywhere at the Chest
+            if biosignal.acquisition_location in BodyLocation.CHEST:
+                """If the electrodes are not in contact with the skin, the signal is flat,
+                assuming all wires are correctly soldered and there is no electronic noise."""
+
+                # Check if all channels are on the same units (only allowed mV or raw)
+                units = set([channel.units for _, channel in biosignal])
+                if len(units) > 1:
+                    raise ValueError(f"All channels must be on the same units. Found {units}. Please convert them all to mV or raw.")
+
+                # Only allowed mV or raw
+                unit = units.pop()
+                if unit == Volt(Multiplier.m):
+                    THRESHOLD = 0.1
+                elif unit is None:
+                    THRESHOLD = 100
+                else:
+                    raise ValueError(
+                            f"All channels are in {unit}. Please convert them all to mV or raw.")
+
+                window_length = timedelta(milliseconds=600)  # 600 ms (~ 1 heartbeat)
+                onbody = biosignal.when(lambda x: all(abs(np.diff(x)) < THRESHOLD), window_length)
+
+        # Not yet implemented for other modalities or locations
+
+        if onbody is not None:
+            onbody.name = biosignal.name + " when electrodes placed on-body"
+
+        return onbody
