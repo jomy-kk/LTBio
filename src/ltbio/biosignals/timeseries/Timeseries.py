@@ -413,6 +413,19 @@ class Timeseries():
                     evaluated += [condition(x), ] * len(x)
             return self.__when(evaluated)
 
+        def sliding_window(self, window_length: int, overlap_length: int = 0) -> Iterable[ndarray]:
+            """
+            Yields windows of length window_length, sliding by overlap_length.
+            If the last window is smaller than window_length, these last samples are not yielded.
+            """
+            assert window_length > 0
+            assert overlap_length > 0
+            assert window_length > overlap_length
+
+            for i in range(0, len(self.__samples), window_length - overlap_length):
+                yield self.__samples[i: i+window_length]
+
+
         # ===================================
         # INTERNAL USAGE - Accept Methods
 
@@ -1066,6 +1079,11 @@ class Timeseries():
                 self.__tags.add(x)
         else:
             raise TypeError("Give one or multiple string labels to tag the Timeseries.")
+
+    def sliding_window(self, window_length: timedelta, overlap_length: timedelta = timedelta(0)):
+        for segment in self:
+            segment.sliding_window(int(window_length.total_seconds() * self.__sampling_frequency),
+                                   int(overlap_length.total_seconds() * self.__sampling_frequency))
 
     # ===================================
     # INTERNAL USAGE - Convert indexes <-> timepoints && Get Samples
