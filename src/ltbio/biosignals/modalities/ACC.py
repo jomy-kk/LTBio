@@ -28,6 +28,8 @@ class ACC(Biosignal):
     def plot_summary(self, show: bool = True, save_to: str = None):
         pass
 
+    def acceptable_quality(self):  # -> Timeline
+        pass
 
 class ACCMAG(DerivedBiosignal):
 
