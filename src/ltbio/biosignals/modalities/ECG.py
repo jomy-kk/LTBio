@@ -344,12 +344,36 @@ class ECG(Biosignal):
         :return: A dictionary of % of flatline value(s) for each channel.
         """
         res = {}
+
+        # No longer using logic from BioSPPy
+        def flatline(signal, sampling_frequency):
+            """
+            Count every x consecutive 1st derivative points that are below THRESHOLD,
+            where x is the number of samples in 600 ms (~ 1 heartbeat).
+            Returns the percentage of the signal that is flatline.
+            """
+            window_length = int(sampling_frequency * 0.6)
+            count = 0
+            for i in range(0, len(signal) - window_length, window_length):
+                abs_der = abs(np.diff(signal[i:i + window_length + 1]))
+                if all(abs_der < THRESHOLD):
+                    count += window_length
+                    print(i)
+            return count / len(signal)
+
         for channel_name, channel in self:
-            skweness_by_segment = channel._apply_operation_and_return(pSQI)
-            if by_segment:
-                res[channel_name] = skweness_by_segment
+            if channel.units == Volt(Multiplier.m):
+                THRESHOLD = 0.1
+            elif channel.units is None:
+                THRESHOLD = 100
             else:
-                res[channel_name] = average(array(skweness_by_segment),
+                raise ValueError(f"Channel {channel_name} has units {channel.units}, which is not supported by this method.")
+
+            flatline_by_segment = channel._apply_operation_and_return(flatline, sampling_frequency=channel.sampling_frequency)
+            if by_segment:
+                res[channel_name] = flatline_by_segment
+            else:
+                res[channel_name] = average(array(flatline_by_segment),
                                             weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
 
         return res
