@@ -714,7 +714,7 @@ class Biosignal(ABC):
                             return Biosignal.withAdditiveNoise(self, other)
                         else:
                             raise TypeError("Cannot add a {0} to a {1} if not as noise.".format(other.type.__name__, self.type.__name__))
-            if self.channel_names != other.channel_names:
+            if len(self) != len(other) != 1 and self.channel_names != other.channel_names:
                 raise ArithmeticError("Biosignals to add must have the same channel names.")
             if self.domain != other.domain:
                 raise ArithmeticError("Biosignals to add must have the same domains.")
@@ -736,8 +736,12 @@ class Biosignal(ABC):
 
             # Perform addition
             res_timeseries = {}
-            for channel_name in self.channel_names:
-                res_timeseries[channel_name] = self._to_dict()[channel_name] + other._to_dict()[channel_name]
+            if len(self) == len(other) == 1:
+                single_channel_name, single_channel = self._get_single_channel()
+                res_timeseries[single_channel_name] = single_channel + other._get_single_channel()[1]  # 0: name, 1: Timeseries
+            else:
+                for channel_name in self.channel_names:
+                    res_timeseries[channel_name] = self._get_channel(channel_name) + other._get_channel(channel_name)
 
             # Union of Events
             events = set(self.events).union(set(other.events))
@@ -1306,6 +1310,7 @@ class Biosignal(ABC):
         print("On-body Score = " + ("%.2f" % (onbody_score*100) if onbody_score else "n.d.") + "%")
         quality_score = self.quality_score(_onbody_duration=onbody_score*self.duration)
         print("Quality Score = " + ("%.2f" % (quality_score*100) if quality_score else "n.d.") + "%")
+        return completness_score, onbody_score, quality_score
 
     def completeness_score(self):
         recorded_duration = self.duration
@@ -1323,8 +1328,11 @@ class Biosignal(ABC):
             if hasattr(self, 'acceptable_quality'):  # if the Biosignal modality defines an 'acceptable_quality' method, then this score exists, it's computed and returned
                 return self.acceptable_quality().duration / _onbody_duration
         else:
-            if hasattr(self, 'acceptable_quality') and hasattr(self.source, 'onbody'):
-                return self.acceptable_quality().duration / self.source.onbody(self).duration
+            if hasattr(self, 'acceptable_quality'):
+                if hasattr(self.source, 'onbody'):
+                    return self.acceptable_quality().duration / self.source.onbody(self).duration
+                else:
+                    return self.acceptable_quality().duration / self.duration
 
     # ===================================
     # SERIALIZATION
