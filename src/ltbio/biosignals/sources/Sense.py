@@ -409,15 +409,35 @@ class Sense(BiosignalSource):
                 # Only allowed mV or raw
                 unit = units.pop()
                 if unit == Volt(Multiplier.m):
-                    THRESHOLD = 0.1
-                elif unit is None:
-                    THRESHOLD = 100
+                    FLATLINE_THRESHOLD = 0.1
+                elif unit is None:  # raw
+                    FLATLINE_THRESHOLD = 30
+                    DISCREPANCY_COEFFICIENT = 0.8
                 else:
                     raise ValueError(
                             f"All channels are in {unit}. Please convert them all to mV or raw.")
 
-                window_length = timedelta(milliseconds=600)  # 600 ms (~ 1 heartbeat)
-                onbody = biosignal.when(lambda x: all(abs(np.diff(x)) < THRESHOLD), window_length)
+                def flatline(x):
+                    return np.all(np.abs(np.diff(x)) < FLATLINE_THRESHOLD)
+
+                def low_saturation_region(x):
+                    # Lowest saturation region is usually attained when - electrode loses contact
+                    derivative = np.abs(np.diff(x))
+                    return np.any(x < 20) and flatline(x)  # Amplitude < 20 and flatline
+
+                def high_saturation_region(x):
+                    # Highest saturation region is usually attained when + electrode loses contact
+                    derivative = np.abs(np.diff(x))
+                    return np.any(x > 3900) and flatline(x)  # Amplitude > 3900 and flatline
+
+                def saturated(x):
+                    return low_saturation_region(x) or high_saturation_region(x)
+
+                not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=50))
+                not_flat = biosignal.when(lambda x: not flatline(x), timedelta(milliseconds=500))
+                electronic_noise = biosignal.when(lambda x: 0.05 < np.var(x)/np.mean(x) < 150., timedelta(milliseconds=500))
+
+                onbody = Timeline.intersection(not_saturated, not_flat, electronic_noise)
 
         # Not yet implemented for other modalities or locations
 
