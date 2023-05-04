@@ -1044,15 +1044,15 @@ class Biosignal(ABC):
             else:
                 raise ValueError(f"Event '{event.name}' is outside of every channel's domain.")
 
-        if isinstance(events, Event):
-            __add_event(events)
-        elif isinstance(events, dict):
+        if isinstance(events, dict):
             for event_key in events:
                 event = events[event_key]
                 __add_event(Event(event_key, event._Event__onset, event._Event__offset))  # rename with given key
-        else:
+        elif isinstance(events, (tuple, set)):
             for event in events:
                 __add_event(event)
+        else:  # single Event
+            __add_event(events)
 
     def disassociate(self, event_name:str):
         '''
