@@ -14,7 +14,7 @@ completeness_scores, correctness_scores, quality_scores = {x: {} for x in subjec
 for code in subject_codes:
     subject_path = join(acquisitions_path, code)
     for session in listdir(subject_path):
-        print("Session " + session)
+        print("Subject " + code + " | Session " + session)
         session_path = join(subject_path, session, 'COMPACT')
         for modality in modality_keywords:
             print("    " + modality)
