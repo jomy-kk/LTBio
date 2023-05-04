@@ -238,8 +238,8 @@ class Timeline():
 
         # Binary function
         def intersection_of_two_timelines(intervals1: List[DateTimeRange], intervals2: List[DateTimeRange]):
-            intervals1.sort(key=lambda x: x.start)
-            intervals2.sort(key=lambda x: x.start)
+            intervals1.sort(key=lambda x: x.start_datetime)
+            intervals2.sort(key=lambda x: x.start_datetime)
 
             intersection = []
             i, j = 0, 0
