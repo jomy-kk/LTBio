@@ -74,8 +74,20 @@ class Timeline():
             return len(self.intervals) > 0 and len(self.points) == 0
 
         @property
+        def has_intervals(self) -> bool:
+            return len(self.intervals) > 0
+
+        @property
         def has_only_points(self) -> bool:
             return len(self.intervals) == 0 and len(self.points) > 0
+
+        @property
+        def has_points(self) -> bool:
+            return len(self.points) > 0
+
+        @property
+        def is_empty(self):
+            return len(self.intervals) == 0 and len(self.points) == 0
 
         def _as_index(self) -> tuple:
             if self.has_only_intervals:
@@ -116,6 +128,18 @@ class Timeline():
                 raise NameError('Cannot join Timelines with groups with the same names.')
             return Timeline(*groups, name = self.name + " and " + other.name)
 
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            for g in self.groups:
+                if g.name == key:
+                    return g
+        else:
+            raise TypeError('Invalid argument type.')
+
+    @property
+    def group_names(self) -> set[str]:
+        return set(g.name for g in self.groups)
+
     @property
     def initial_datetime(self) -> datetime:
         """
@@ -146,6 +170,10 @@ class Timeline():
             return self.groups[0].duration
         else:
             return NotImplementedError()
+
+    @property
+    def is_empty(self) -> bool:
+        return all([g.is_empty for g in self.groups])
 
     @property
     def is_index(self) -> bool:
