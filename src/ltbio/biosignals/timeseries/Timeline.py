@@ -270,17 +270,9 @@ class Timeline():
     def intersection(cls, *timelines):
         # Check input
         if not all(isinstance(tl, Timeline) for tl in timelines):
-            raise TypeError("Give objects Timeline to Timeline.union.")
+            raise TypeError("Give objects Timeline to Timeline.intersection.")
         if len(timelines) < 2:
-            raise ValueError("Give at least 2 Timelines to compute their union.")
-
-        # Get sets of intervals of each Timeline
-        tl_intervals = []
-        for i, tl in enumerate(timelines):
-            if tl.has_single_group and tl.single_group.has_only_intervals:
-                tl_intervals.append(tl.single_group.intervals)
-            else:
-                raise AssertionError(f"The {i + 1}th Timeline does not have a single group with only intervals.")
+            raise ValueError("Give at least 2 Timelines to compute their intersection.")
 
         # Binary function
         def intersection_of_two_timelines(intervals1: List[DateTimeRange], intervals2: List[DateTimeRange]):
@@ -305,8 +297,39 @@ class Timeline():
 
             return intersection
 
-        res_intervals = reduce(intersection_of_two_timelines, tl_intervals)
-        return Timeline(Timeline.Group(res_intervals), name=f"Intersection of " + ', '.join(tl.name for tl in timelines))
+        # Get sets of intervals of each Timeline
+        # Case A: all Timelines have a single group with only intervals
+        if all(tl.has_single_group for tl in timelines):
+            if any(tl.single_group.has_points for tl in timelines):
+                raise NotImplementedError("Give Timelines with only intervals.")
+            elif any(tl.single_group.has_intervals for tl in timelines):
+                tl_intervals = []
+                for i, tl in enumerate(timelines):
+                        tl_intervals.append(tl.single_group.intervals)
+
+                res_intervals = reduce(intersection_of_two_timelines, tl_intervals)
+                return Timeline(Timeline.Group(res_intervals),
+                                name=f"Intersection of " + ', '.join(tl.name for tl in timelines))
+
+        # Case B: all Timelines have the same number of groups with matching names, and each group has only intervals:
+        else:
+            group_names = timelines[0].group_names
+            if all(tl.group_names == group_names for tl in timelines):
+                if all([g.has_only_intervals for g in tl.groups] for tl in timelines):
+                    intervals_by_group = {name: [] for name in group_names}
+                    for i, tl in enumerate(timelines):
+                        for g in tl.groups:
+                            intervals_by_group[g.name].append(g.intervals)
+
+                    for name in group_names:
+                        intervals_by_group[name] = reduce(intersection_of_two_timelines, intervals_by_group[name])
+
+                    return Timeline(*[Timeline.Group(intervals_by_group[name], name=name) for name in group_names],
+                                    name=f"Intersection of " + ', '.join(tl.name for tl in timelines))
+                else:
+                    raise NotImplementedError("Give Timelines with only intervals.")
+
+
 
     EXTENSION = '.timeline'
 
