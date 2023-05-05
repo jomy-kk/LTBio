@@ -1317,22 +1317,37 @@ class Biosignal(ABC):
         expected_duration = self.final_datetime - self.initial_datetime
         return recorded_duration / expected_duration
 
-    def onbody_score(self):
+    def onbody_score(self, show=False, save_to=None):
         if hasattr(self.source, 'onbody'):  # if the BiosignalSource defines an 'onbody' method, then this score exists, it's computed and returned
-            x = self.source.onbody(self)
-            if x:
-                return self.source.onbody(self).duration / self.duration
+            # Find Timeline
+            onbody = self.source.onbody(self)
 
-    def quality_score(self, _onbody_duration=None):
-        if _onbody_duration:
-            if hasattr(self, 'acceptable_quality'):  # if the Biosignal modality defines an 'acceptable_quality' method, then this score exists, it's computed and returned
-                return self.acceptable_quality().duration / _onbody_duration
-        else:
-            if hasattr(self, 'acceptable_quality'):
-                if hasattr(self.source, 'onbody'):
-                    return self.acceptable_quality().duration / self.source.onbody(self).duration
+            # Plot?
+            if show or save_to is not None:
+                onbody.plot(show=show, save_to=save_to)
+
+            # Compute ratio
+            return onbody.duration / self.duration
+
+    def quality_score(self, show=False, save_to=None, _onbody_duration=None):
+        if hasattr(self, 'acceptable_quality'):  # if the Biosignal modality defines an 'acceptable_quality' method, then this score exists, it's computed and returned
+            # Find Timeline
+            try:
+                acceptable_quality = self.acceptable_quality()
+                # Plot?
+                if show or save_to is not None:
+                    acceptable_quality.plot(show=show, save_to=save_to)
+
+                # Compute ratio
+                if _onbody_duration:
+                    return acceptable_quality.duration / _onbody_duration
                 else:
-                    return self.acceptable_quality().duration / self.duration
+                    if hasattr(self.source, 'onbody'):
+                        return acceptable_quality.duration / self.source.onbody(self).duration
+                    else:
+                        return acceptable_quality.duration / self.duration
+            except RuntimeError as e:
+                RuntimeError("Could not compute acceptable quality, because: " + str(e))
 
     # ===================================
     # SERIALIZATION
