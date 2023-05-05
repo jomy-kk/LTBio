@@ -189,39 +189,41 @@ class Timeline():
         if self.is_index:
             return self.groups[0]._as_index()
 
-    def plot(self, show:bool=True, save_to:str=None):
+    def plot(self, show: bool = True, save_to: str = None):
         fig = plt.figure(figsize=(len(self.groups)*10, len(self.groups)*2))
         ax = plt.gca()
         legend_elements = []
 
         cmap = cm.get_cmap('tab20b')
-        for y, g in enumerate(self.groups):
-            color = g.color_hex
-            if color is None:
-                color = cmap(y/len(self.groups))
 
-            for interval in g.intervals:
-                start = date2num(interval.start_datetime)
-                end = date2num(interval.end_datetime)
-                rect = Rectangle((start, y + 0.4), end - start, 0.4, facecolor=color, alpha=0.5)
-                ax.add_patch(rect)
+        if not self.is_empty:
+            for y, g in enumerate(self.groups):
+                color = g.color_hex
+                if color is None:
+                    color = cmap(y/len(self.groups))
 
-            for point in g.points:
-                ax.scatter(date2num(point), y + 0.95, color=color, alpha=0.5, marker = 'o', markersize=10)
+                for interval in g.intervals:
+                    start = date2num(interval.start_datetime)
+                    end = date2num(interval.end_datetime)
+                    rect = Rectangle((start, y + 0.4), end - start, 0.4, facecolor=color, alpha=0.5)
+                    ax.add_patch(rect)
+
+                for point in g.points:
+                    ax.scatter(date2num(point), y + 0.95, color=color, alpha=0.5, marker = 'o', markersize=10)
+
+                if len(self.groups) > 1:
+                    legend_elements.append(Line2D([0], [0], marker='o', color=color, label=g.name, markerfacecolor='g', markersize=10))
+
+            ax.set_xlim(date2num(self.initial_datetime), date2num(self.final_datetime))
+            ax.set_ylim(0, len(self.groups))
+            ax.get_yaxis().set_visible(False)
+            for pos in ['right', 'top', 'left']:
+                plt.gca().spines[pos].set_visible(False)
+            ax.xaxis_date()
+            fig.autofmt_xdate()
 
             if len(self.groups) > 1:
-                legend_elements.append(Line2D([0], [0], marker='o', color=color, label=g.name, markerfacecolor='g', markersize=10))
-
-        ax.set_xlim(date2num(self.initial_datetime), date2num(self.final_datetime))
-        ax.set_ylim(0, len(self.groups))
-        ax.get_yaxis().set_visible(False)
-        for pos in ['right', 'top', 'left']:
-            plt.gca().spines[pos].set_visible(False)
-        ax.xaxis_date()
-        fig.autofmt_xdate()
-
-        if len(self.groups) > 1:
-            ax.legend(handles=legend_elements, loc='center')
+                ax.legend(handles=legend_elements, loc='center')
 
         if self.name:
             fig.suptitle(self.name, fontsize=11)
