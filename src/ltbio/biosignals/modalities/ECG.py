@@ -81,9 +81,12 @@ class ECG(Biosignal):
         This procedures shall be passed to '_apply_operation_and_return'.
         """
         from biosppy.signals.ecg import correct_rpeaks
-        indices = algorithm_method(signal, sampling_rate, **kwargs)['rpeaks']  # Compute indices
-        corrected_indices = correct_rpeaks(signal, indices, sampling_rate)['rpeaks']  # Correct indices
-        return corrected_indices
+        try:
+            indices = algorithm_method(signal, sampling_rate, **kwargs)['rpeaks']  # Compute indices
+            corrected_indices = correct_rpeaks(signal, indices, sampling_rate)['rpeaks']  # Correct indices
+            return corrected_indices
+        except ValueError as e:
+            raise RuntimeError("Biosppy algorithm failed to find R peaks, because: " + str(e))
 
     def __r_indices(self, channel: _timeseries.Timeseries, segmenter: Callable = hamilton_segmenter):
 
