@@ -114,7 +114,7 @@ class Timeline():
         else:
             res = ''
             for g in self.groups:
-                res += f'\nGroup {g}\n'
+                res += f'\nGroup {g.name}\n'
                 res += repr(g)
             return res
 
