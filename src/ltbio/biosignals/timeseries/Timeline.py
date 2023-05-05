@@ -50,12 +50,20 @@ class Timeline():
             return res
 
         @property
-        def initial_datetime(self) -> datetime:
-            return min([interval.start_datetime for interval in self.intervals] + self.points)
+        def initial_datetime(self) -> datetime | None:
+            all_datetimes = [interval.start_datetime for interval in self.intervals] + self.points
+            if len(all_datetimes) > 0:
+                return min([interval.start_datetime for interval in self.intervals] + self.points)
+            else:
+                return None
 
         @property
-        def final_datetime(self) -> datetime:
-            return max([interval.end_datetime for interval in self.intervals] + self.points)
+        def final_datetime(self) -> datetime | None:
+            all_datetimes = [interval.end_datetime for interval in self.intervals] + self.points
+            if len(all_datetimes) > 0:
+                return max([interval.end_datetime for interval in self.intervals] + self.points)
+            else:
+                return None
 
         @property
         def duration(self) -> timedelta:
@@ -110,11 +118,19 @@ class Timeline():
 
     @property
     def initial_datetime(self) -> datetime:
-        return min([g.initial_datetime for g in self.groups])
+        """
+        Finds the minimum initial datetime of all groups.
+        Careful: Some groups return None if they are empty.
+        """
+        return min([g.initial_datetime for g in self.groups if g.initial_datetime is not None])
 
     @property
     def final_datetime(self) -> datetime:
-        return max([g.final_datetime for g in self.groups])
+        """
+        Finds the maximum final datetime of all groups.
+        Careful: Some groups return None if they are empty.
+        """
+        return max([g.final_datetime for g in self.groups if g.final_datetime is not None])
 
     @property
     def has_single_group(self) -> bool:
