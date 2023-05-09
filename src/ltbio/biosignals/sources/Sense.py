@@ -55,6 +55,10 @@ class Sense(BiosignalSource):
     # Flag to deal with badly-formatted CSV files
     BAD_FORMAT = False
 
+    # Regarding the device hardware and expected raw values
+    EMG_REST_STD_THRESHOLD = 100
+
+
     def __init__(self, device_id:str, defaults_path:str=None):
         super().__init__()
         self.__device_id = device_id
