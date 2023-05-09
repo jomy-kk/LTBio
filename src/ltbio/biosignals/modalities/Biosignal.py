@@ -366,7 +366,6 @@ class Biosignal(ABC):
 
             # Time-related: Slices, Datetimes, Events, ...
             else:
-                item = sorted(item)
                 res = None
                 for k in item:
                     if res is None:
