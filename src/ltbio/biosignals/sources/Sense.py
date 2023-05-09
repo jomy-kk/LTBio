@@ -471,7 +471,7 @@ class Sense(BiosignalSource):
             b = high_saturation_region(x)
             c = low_high_saturation_transition(x)
             decision = a or b or c
-            if True:
+            if False:
                 print("Mean:", np.mean(x), "Median:", np.median(x), "Max:", np.max(x), "Min:", np.min(x))
                 print("Any Below 20:", np.any(x < LOW_SATURATION_THRESHOLD))
                 print("Any Above 3900:", np.any(x > HIGH_SATURATION_THRESHOLD))
@@ -486,7 +486,7 @@ class Sense(BiosignalSource):
             return decision
 
         # ECGs
-        if biosignal.type is modalities.ECG:
+        if isinstance(biosignal, (modalities.ECG, modalities.EMG)):
 
             # Anywhere at the Chest
             if biosignal.acquisition_location in BodyLocation.CHEST:
