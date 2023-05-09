@@ -839,7 +839,7 @@ class Biosignal(ABC):
             res_timeseries[channel_name] = self._to_dict()[channel_name] >> other._to_dict()[channel_name]
 
         # Union of Events
-        events = set(self.__associated_events).union(set(other._Biosignal__associated_events))
+        events = set(self.__associated_events.values()).union(set(other._Biosignal__associated_events.values()))
 
         return self._new(timeseries=res_timeseries, source=source, patient=patient, acquisition_location=acquisition_location, name=name,
                          events=events)
@@ -1048,7 +1048,7 @@ class Biosignal(ABC):
             for event_key in events:
                 event = events[event_key]
                 __add_event(Event(event_key, event._Event__onset, event._Event__offset))  # rename with given key
-        elif isinstance(events, (tuple, set)):
+        elif isinstance(events, (tuple, set, list)):
             for event in events:
                 __add_event(event)
         else:  # single Event

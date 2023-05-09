@@ -1045,7 +1045,7 @@ class Timeseries():
             for event_key in events:
                 event = events[event_key]
                 __add_event(Event(event_key, event._Event__onset, event._Event__offset))  # rename with given key
-        elif isinstance(events, (tuple, set)):
+        elif isinstance(events, (tuple, set, list)):
             for event in events:
                 __add_event(event)
         else:  # single Event
