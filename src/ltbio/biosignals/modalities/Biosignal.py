@@ -1232,6 +1232,15 @@ class Biosignal(ABC):
         else:
             NotImplementedError("Not yet implemented.")
 
+    def timeshift(self, delta: timedelta):
+        """
+        Shifts the time index of the Biosignal, forward or backwards.
+        Useful, for instance, to hide the true day of the acquisition.
+        :param delta: Positive or negative amount of time to shift the Biosignal.
+        """
+        for _, channel in self:
+            channel.timeshift(delta)
+
     def tag(self, tags: str | tuple[str]):
         """
         Mark all channels with a tag. Useful to mark machine learning targets.

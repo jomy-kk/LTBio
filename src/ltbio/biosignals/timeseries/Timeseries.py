@@ -425,6 +425,9 @@ class Timeseries():
             for i in range(0, len(self.__samples), window_length - overlap_length):
                 yield self.__samples[i: i+window_length]
 
+        def timeshift(self, delta: timedelta):
+            self.__initial_datetime = self.__initial_datetime + delta
+            self.__final_datetime = self.__final_datetime + delta
 
         # ===================================
         # INTERNAL USAGE - Accept Methods
@@ -1065,6 +1068,10 @@ class Timeseries():
 
     def delete_events(self):
         self.__associated_events = {}
+
+    def timeshift(self, delta: timedelta):
+        for segment in self:
+            segment.timeshift(delta)
 
     def tag(self, tags: str | tuple[str]):
         """
