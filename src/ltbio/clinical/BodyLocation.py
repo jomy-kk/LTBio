@@ -21,6 +21,9 @@ class BodyLocation(str, Enum):
 
     def __contains__(self, location):
         CHEST = (BodyLocation.V1, BodyLocation.V2, BodyLocation.V3, BodyLocation.V4, BodyLocation.V5, BodyLocation.V6)
+        ARM = (BodyLocation.ARM_L, BodyLocation.ARM_R, BodyLocation.UPPERARM_L, BodyLocation.UPPERARM_R,
+               BodyLocation.FOREARM_L, BodyLocation.FOREARM_R, BodyLocation.BICEP_L, BodyLocation.BICEP_R,
+               BodyLocation.RA, BodyLocation.LA, BodyLocation.RL, BodyLocation.LL, BodyLocation.MLII)
         try:
             return location is self or location in eval(self.name)
         except AttributeError:
@@ -55,6 +58,7 @@ class BodyLocation(str, Enum):
     ARM_R = "Right Arm"
     INDEX_L = "Left index finger"
     INDEX_R = "Right index finger"
+    ARM = "Arm"
 
     SCALP = "Scalp"
     FP1 = "Fronto-parietal 1"
