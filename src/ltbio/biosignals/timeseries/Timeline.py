@@ -1,5 +1,5 @@
 # -- encoding: utf-8 --
-
+from copy import deepcopy
 # ===================================
 
 # IT - LongTermBiosignals
@@ -329,7 +329,72 @@ class Timeline():
                 else:
                     raise NotImplementedError("Give Timelines with only intervals.")
 
+    def __sub__(self, other):
+        """
+        Returns A\B (A except B), where A and B are Timelines.
+        """
 
+        if not isinstance(other, Timeline):
+            raise TypeError("The second value should be a Timeline.")
+
+        def _binary_except(i1: DateTimeRange, i2: DateTimeRange) -> List[DateTimeRange]:
+            return i1.subtract(i2)  # Returns a list of 0, 1 or 2 intervals
+
+        def _set_except_set(intervals1: List[DateTimeRange], intervals2: List[DateTimeRange]):
+            # Create a copy of intervals1
+            new_intervals1 = deepcopy(intervals1)
+            # For each interval in intervals2
+            for i2 in intervals2:
+                # Check if it intersects with any interval in new_intervals1
+                for index, i1 in enumerate(new_intervals1):
+                    if i1.is_intersection(i2):
+                        # If yes, compute i1\i2 and substitute the result in new_intervals1, in the exact location where i1 was
+                        new_intervals1.pop(index)
+                        i1_except_i2 = _binary_except(i1, i2)
+                        if len(i1_except_i2) == 1: # this is needed because there might be two intervals in i1_except_i2
+                            new_intervals1.insert(index, i1_except_i2[0])
+                        if len(i1_except_i2) == 2:
+                            new_intervals1.insert(index, i1_except_i2[0])
+                            new_intervals1.insert(index+1, i1_except_i2[1])
+
+                        #break  # go to the next interval in intervals2, which its subtraction is now going to be computed based on the updated new_intervals1
+
+            return new_intervals1  # return the last updated version of new_intervals1
+
+
+        # Case A: both Timelines have a single group with only intervals
+        if self.has_single_group and other.has_single_group:
+            if self.single_group.has_points or other.single_group.has_points:
+                raise NotImplementedError("Give Timelines with only intervals.")
+            elif not self.single_group.has_intervals:
+                return self  # A\B = A, when A is empty
+            else:
+                if not other.single_group.has_intervals:
+                    return self  # A\B = A, when B is empty
+                else:
+                    intervals1 = self.single_group.intervals
+                    intervals2 = other.single_group.intervals
+                    res = _set_except_set(intervals1, intervals2)
+                    return Timeline(Timeline.Group(res, name=self.single_group.name),
+                                    name=f"{self.name} except {other.name}")
+
+        # Case B: both Timelines have the same number of groups with matching names, and each group has only intervals:
+        else:
+            if self.group_names == other.group_names:
+                if self.single_group.has_points or other.single_group.has_points:
+                    raise NotImplementedError("Give Timelines with only intervals.")
+
+                intervals_by_group = {name: [] for name in self.group_names}
+                for g in self.groups:
+                    intervals1 = g.intervals
+                    intervals2 = other[g.name].intervals
+                    res = _set_except_set(intervals1, intervals2)
+                    intervals_by_group[g.name] = res
+
+                return Timeline(*[Timeline.Group(intervals_by_group[g.name], name=g.name) for g in self.groups],
+                                name=f"{self.name} except {other.name}")
+            else:
+                raise NotImplementedError("Give Timelines with matching group names.")
 
     EXTENSION = '.timeline'
 
