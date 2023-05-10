@@ -492,8 +492,8 @@ class Sense(BiosignalSource):
                 print("-----")
             return decision
 
-        # ECGs
-        if isinstance(biosignal, (modalities.ECG, modalities.EMG)):
+        # ECG and EMG
+        if isinstance(biosignal, modalities.ECG):
 
             # Anywhere at the Chest
             if biosignal.acquisition_location in BodyLocation.CHEST:
@@ -528,6 +528,38 @@ class Sense(BiosignalSource):
 
                 onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
 
+        elif biosignal.type is modalities.EMG:
+            if biosignal.acquisition_location in BodyLocation.ARM:
+                # Check if all channels are on the same units (only allowed mV or raw)
+                units = set([channel.units for _, channel in biosignal])
+                if len(units) > 1:
+                    raise ValueError(
+                        f"All channels must be on the same units. Found {units}. Please convert them all to mV or raw.")
+
+                # Only allowed mV or raw
+                unit = units.pop()
+                if unit == Volt(Multiplier.m):
+                    pass
+                elif unit is None:  # raw
+                    # For derivatives
+                    FLATLINE_THRESHOLD = 400
+                    BASELINE_FLATLINE_THRESHOLD = 10  # if muscle is at rest, the sensor is high-quality hardware, skin is well prepared and electrodes are well placed, the signal can look flat, so this threshold should be really low
+                    DISCREPEANCY_THRESHOLD = 2000
+                    # For amplitudes
+                    LOW_SATURATION_THRESHOLD = 500
+                    HIGH_SATURATION_THRESHOLD = 3500
+
+                else:
+                    raise ValueError(
+                        f"All channels are in {unit}. Please convert them all to mV or raw.")
+
+                not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=50))
+                not_baseline_saturated = biosignal.when(lambda x: not baseline_saturation(x),
+                                                        timedelta(milliseconds=800))
+
+                onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
+
+        # PPG
         elif biosignal.type is modalities.PPG:
 
             # Check if all channels are on the same units (only allowed mV or raw)
@@ -555,8 +587,9 @@ class Sense(BiosignalSource):
                 onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
                 # onbody = not_baseline_saturated
 
-
-        # TODO: Not yet implemented for other modalities or locations
+        else:
+            raise NotImplementedError(f"Onbody detection for modality {biosignal.type} not yet implemented.")
+            # TODO: Not yet implemented for other modalities or locations
 
         if onbody is not None:
             onbody.name = biosignal.name + " when electrodes placed on-body"
