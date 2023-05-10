@@ -15,7 +15,7 @@ from src.ltbio.biosignals import Biosignal
 completeness_scores, correctness_scores, quality_scores = {}, {}, {}
 
 #correct_sources = {BodyLocation.WRIST_L: E4, BodyLocation.INDEX_L: Sense('run-arm')}
-#my_filter = FrequencyDomainFilter(FrequencyResponse.FIR, BandType.BANDPASS, (0.5, 20.0), 20)
+my_filter = FrequencyDomainFilter(FrequencyResponse.FIR, BandType.BANDPASS, (10., 400.0), 30)
 show = False
 
 all_subjects = {}
