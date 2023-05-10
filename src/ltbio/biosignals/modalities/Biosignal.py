@@ -155,8 +155,8 @@ class Biosignal(ABC):
         return self._new(new_channels, source=source, patient=patient, acquisition_location=acquisition_location,
                          name=name, events=events)
 
-    def _apply_operation_and_return(self, operation, **kwargs):
-        pass  # TODO
+    def apply_operation_and_return(self, operation, **kwargs):
+        return {channel_name: channel._apply_operation_and_return(operation, **kwargs) for channel_name, channel in self}
 
     @property
     def __has_single_channel(self) -> bool:
@@ -371,7 +371,6 @@ class Biosignal(ABC):
                     if res is None:
                         res = self[item[0]]
                     else:
-                        print(k)
                         res = res >> self[k]
 
                 res.name = self.name
