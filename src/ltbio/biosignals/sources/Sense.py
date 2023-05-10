@@ -56,7 +56,14 @@ class Sense(BiosignalSource):
     BAD_FORMAT = False
 
     # Regarding the device hardware and expected raw values
+    LOWEST_VALUE = 0
+    HIGHEST_VALUE = 4095
+
+    # Modality-specific thresholds
     EMG_REST_STD_THRESHOLD = 100
+    EMG_HIGH_SATURATION_THRESHOLD = 4096-20
+    EMG_LOW_SATURATION_THRESHOLD = 20
+    EMG_TYPICAL_REST_RMS = (1291 + 1586) / 2  # two examples, one with rhythmic activity (lifting a chair), one with intense activity (running)
 
 
     def __init__(self, device_id:str, defaults_path:str=None):
