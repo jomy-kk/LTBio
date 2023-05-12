@@ -32,7 +32,7 @@ from .. import modalities
 from ..sources.BiosignalSource import BiosignalSource
 from ltbio.clinical.BodyLocation import BodyLocation
 from ..timeseries.Timeline import Timeline
-from ..timeseries.Unit import Volt, Multiplier
+from ..timeseries.Unit import Volt, Multiplier, Siemens, Percentage
 
 
 class Sense(BiosignalSource):
@@ -589,6 +589,31 @@ class Sense(BiosignalSource):
                 onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
                 # onbody = not_baseline_saturated
 
+        elif biosignal.type is modalities.EDA:
+            # Check if all channels are on the same units (only allowed mV or raw)
+            units = set([channel.units for _, channel in biosignal])
+            if len(units) > 1:
+                raise ValueError(
+                    f"All channels must be on the same units. Found {units}. Please convert them all to uS or raw.")
+
+            # Only allowed mV or raw
+            unit = units.pop()
+            if unit == Siemens(Multiplier.u):
+                pass
+            elif unit is None:
+                # For derivatives
+                FLATLINE_THRESHOLD = 35
+                BASELINE_FLATLINE_THRESHOLD = 0.5  # EDA is a very low frequency signal, so this threshold should be really low
+                DISCREPEANCY_THRESHOLD = 100  # Same here, a discrepancy higher than 150 is very unlikely
+                # For amplitudes
+                LOW_SATURATION_THRESHOLD = 50
+                HIGH_SATURATION_THRESHOLD = 4096-50
+
+                not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=30))
+                not_baseline_saturated = biosignal.when(lambda x: not baseline_saturation(x),
+                                                        timedelta(seconds=10))
+
+                onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
         else:
             raise NotImplementedError(f"Onbody detection for modality {biosignal.type} not yet implemented.")
             # TODO: Not yet implemented for other modalities or locations
