@@ -25,6 +25,7 @@ class Multiplier(Enum):
     """
     Common multipliers used when describing orders of magnitude.
     """
+    c = 1e-2  # centi
     m = 1e-3  # milli
     u = 1e-6  # micro
     n = 1e-9  # nano
