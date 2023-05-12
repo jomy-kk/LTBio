@@ -37,6 +37,8 @@ from ..timeseries.Unit import Volt, Multiplier
 
 class Sense(BiosignalSource):
 
+    RESOLUTION = 12  # bits
+
     # Sense Defaults files use these keys:
     MODALITIES = 'modalities'
     CHANNEL_LABELS = 'labels'
