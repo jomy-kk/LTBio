@@ -308,8 +308,11 @@ class Timeline():
                         tl_intervals.append(tl.single_group.intervals)
 
                 res_intervals = reduce(intersection_of_two_timelines, tl_intervals)
-                return Timeline(Timeline.Group(res_intervals),
+                return Timeline(Timeline.Group(res_intervals, name=tl.single_group.name),
                                 name=f"Intersection of " + ', '.join(tl.name for tl in timelines))
+            else:
+                return Timeline(Timeline.Group(name=timelines[0].single_group.name),
+                                name=f"Intersection of " + ', '.join(tl.name for tl in timelines))  # empty Timeline
 
         # Case B: all Timelines have the same number of groups with matching names, and each group has only intervals:
         else:
