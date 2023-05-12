@@ -1350,10 +1350,11 @@ class Biosignal(ABC):
 
                 # Compute ratio
                 if _onbody_duration:
-                    return acceptable_quality.duration / _onbody_duration
+                    return acceptable_quality.duration / _onbody_duration if _onbody_duration != timedelta(seconds=0) else 0
                 else:
                     if hasattr(self.source, 'onbody'):
-                        return acceptable_quality.duration / self.source.onbody(self).duration
+                        _onbody_duration = self.source.onbody(self).duration
+                        return acceptable_quality.duration / _onbody_duration if _onbody_duration != timedelta(seconds=0) else 0
                     else:
                         return acceptable_quality.duration / self.duration
             except RuntimeError as e:
