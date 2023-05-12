@@ -399,8 +399,11 @@ class Sense(BiosignalSource):
         pass  # TODO
 
     @staticmethod
-    def _transfer(samples, to_unit):
-        pass
+    def _transfer(x, to_unit):
+        if to_unit == Percentage:
+            return ((x / (2**Sense.RESOLUTION)) - 0.5) * 100
+        else:
+            raise NotImplementedError(f"Conversion of {Sense} biosignals to {to_unit} is not implemented.")
 
     @staticmethod
     def onbody(biosignal):
