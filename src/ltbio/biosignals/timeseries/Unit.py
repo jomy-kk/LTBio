@@ -172,3 +172,20 @@ class Second(Unit):
     def convert_to(self, unit):
         pass
 
+class Meter(Unit):
+    def __init__(self, multiplier=Multiplier._):
+        super().__init__(multiplier)
+
+    SHORT = "m"
+
+    def convert_to(self, unit):
+        pass
+
+class Percentage(Unit):
+    def __init__(self, multiplier=Multiplier._):
+        super().__init__(multiplier)
+
+    SHORT = "m"
+
+    def convert_to(self, unit):
+        pass
