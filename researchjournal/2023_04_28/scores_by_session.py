@@ -1,3 +1,4 @@
+from datetime import timedelta
 from os.path import join, isfile, isdir
 from os import listdir, mkdir
 
@@ -7,15 +8,17 @@ from pandas import DataFrame
 from ltbio.biosignals.modalities import ACC
 from ltbio.biosignals.sources import E4, Sense
 from ltbio.clinical import BodyLocation
-from ltbio.processing.filters import FrequencyDomainFilter, BandType, FrequencyResponse
+from ltbio.processing.filters import FrequencyDomainFilter, BandType, FrequencyResponse, TimeDomainFilter, \
+    ConvolutionOperation
 from researchjournal.runlikeascientisstcommons import *
 
 from src.ltbio.biosignals import Biosignal
 
 completeness_scores, correctness_scores, quality_scores = {}, {}, {}
 
-correct_sources = {'E4': E4, 'Gel': Sense('run-arm')}
-my_filter = FrequencyDomainFilter(FrequencyResponse.FIR, BandType.LOWPASS, 1.9, 30)
+#correct_sources = {'E4': E4, 'Gel': Sense('run-arm')}
+bandpass_frequency = FrequencyDomainFilter(FrequencyResponse.FIR, BandType.BANDPASS, (0.5, 15), 20)
+median_filter = TimeDomainFilter(ConvolutionOperation.MEDIAN, timedelta(seconds=3), timedelta(seconds=3*0.9))
 show = False
 
 all_subjects = {}
@@ -37,7 +40,10 @@ for code in subject_codes:
             biosignal_path = join(session_path, modality + biosignal_file_suffix)
             if isfile(biosignal_path):  # if this modality exists in this subject-session pair
                 biosignal = Biosignal.load(biosignal_path)
-                biosignal.filter(my_filter)
+                if biosignal.type is ACC and biosignal.sampling_frequency > 50:
+                    biosignal.resample(50)  # otherwise median is too expensive
+                biosignal.filter(bandpass_frequency)
+                biosignal.filter(median_filter)
 
                 all_at_once = False
                 if len(biosignal) == 1:  # When there is only one channel
@@ -60,7 +66,7 @@ for code in subject_codes:
                         channel_name = tuple(activity.channel_names)[0]
                         if len(activity) == 1:  # sometimes, a sensor was not active during one activity
                             sensor_name = channel_name
-                        activity._Biosignal__source = correct_sources[channel_name]  # some sources were overriden
+                        #activity._Biosignal__source = correct_sources[channel_name]  # some sources were overriden
                         print("\t\t\t" + repr(activity.source))
                         plots_path = join(subject_scores_path, '_'.join([event.name, sensor_name]))
                         completeness_score = activity.completeness_score()
@@ -70,7 +76,7 @@ for code in subject_codes:
                     else:
                         for channel_name, _ in biosignal:
                             channel = activity[channel_name]
-                            channel._Biosignal__source = correct_sources[channel_name]  # some sources were overriden
+                            #channel._Biosignal__source = correct_sources[channel_name]  # some sources were overriden
                             print("\t\t\t" + repr(channel.source))
                             sensor_name = modality + channel_name
                             plots_path = join(subject_scores_path, '_'.join([event.name, sensor_name + '.png']))

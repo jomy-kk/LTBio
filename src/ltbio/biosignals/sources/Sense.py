@@ -620,7 +620,6 @@ class Sense(BiosignalSource):
 
         elif biosignal.type is modalities.ACC:
             biosignal = biosignal['x'] + biosignal['y'] + biosignal['z']  # sum sample-by-sample the 3 axes
-            biosignal.plot()
 
             if biosignal.acquisition_location in BodyLocation.CHEST:
                 if asleep:
