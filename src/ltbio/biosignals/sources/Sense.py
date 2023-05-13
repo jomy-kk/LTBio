@@ -32,7 +32,7 @@ from .. import modalities
 from ..sources.BiosignalSource import BiosignalSource
 from ltbio.clinical.BodyLocation import BodyLocation
 from ..timeseries.Timeline import Timeline
-from ..timeseries.Unit import Volt, Multiplier, Siemens, Percentage
+from ..timeseries.Unit import Volt, Multiplier, Siemens, Percentage, G
 
 
 class Sense(BiosignalSource):
@@ -406,7 +406,7 @@ class Sense(BiosignalSource):
             raise NotImplementedError(f"Conversion of {Sense} biosignals to {to_unit} is not implemented.")
 
     @staticmethod
-    def onbody(biosignal):
+    def onbody(biosignal, asleep:bool = False):
 
         onbody = None
         # Resample to 200 Hz, because the saturation thresholds are defined for 200 Hz.
@@ -617,6 +617,27 @@ class Sense(BiosignalSource):
                                                         timedelta(seconds=10))
 
                 onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
+
+        elif biosignal.type is modalities.ACC:
+            biosignal = biosignal['x'] + biosignal['y'] + biosignal['z']  # sum sample-by-sample the 3 axes
+            biosignal.plot()
+
+            if biosignal.acquisition_location in BodyLocation.CHEST:
+                if asleep:
+                    raise NotImplementedError("Onbody detection for chest ACC when asleep not yet implemented.")
+                else:
+                    # Only allowed g or raw
+                    unit = biosignal._get_single_channel()[1].units
+                    if unit == G():
+                        pass
+                    elif unit is None:
+                        NO_MOVEMENT_THRESHOLD = 100
+                        WINDOW = timedelta(seconds=5)
+
+                    onbody = biosignal.when(lambda x: not total_flatline(x, NO_MOVEMENT_THRESHOLD), WINDOW)
+            else:
+                raise NotImplementedError(f"Onbody detection for ACC outside of the chest not yet implemented.")
+
         else:
             raise NotImplementedError(f"Onbody detection for modality {biosignal.type} not yet implemented.")
             # TODO: Not yet implemented for other modalities or locations
