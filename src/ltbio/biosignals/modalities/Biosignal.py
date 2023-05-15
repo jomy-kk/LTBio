@@ -504,12 +504,14 @@ class Biosignal(ABC):
             return n_segments
 
     @property
-    def duration(self):
-        common_duration = tuple(self.__timeseries.values())[0].duration
-        for _, channel in self:
-            if channel.duration != common_duration:
-                raise AssertionError("Not all channels have the same duration.")
-        return common_duration
+    def duration(self) -> timedelta:
+        """
+        Returns the total duration when at least one channel is active: the useful duration.
+        """
+        if self.__has_single_channel:
+            return self._get_single_channel()[1].duration
+        else:
+            return Timeline.union([self[channel_name].domain_timeline for channel_name, _ in self]).duration
 
     def __get_events_from_medical_conditions(self):
         res = {}
