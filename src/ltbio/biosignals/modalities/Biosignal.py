@@ -1243,6 +1243,8 @@ class Biosignal(ABC):
         """
         for _, channel in self:
             channel.timeshift(delta)
+        for event in self.events:
+            event.timeshift(delta)
 
     def tag(self, tags: str | tuple[str]):
         """
