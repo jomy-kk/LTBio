@@ -103,6 +103,18 @@ class Event():
 
         return DateTimeRange(start, end)
 
+    def timeshift(self, delta: timedelta):
+        """
+        Shifts the Event's onset and offset by the given timedelta.
+        :param delta: The timedelta to shift the Event by.
+        """
+        if not isinstance(delta, timedelta):
+            raise TypeError('delta must be a timedelta object.')
+        if self.__onset is not None:
+            self.__onset += delta
+        if self.__offset is not None:
+            self.__offset += delta
+
     def __repr__(self):
         if self.__offset is None:
             return self.__name + ': Starts at ' + self.__onset.strftime("%d %b, %H:%M:%S")
