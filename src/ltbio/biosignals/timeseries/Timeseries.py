@@ -1092,6 +1092,29 @@ class Timeseries():
             segment.sliding_window(int(window_length.total_seconds() * self.__sampling_frequency),
                                    int(overlap_length.total_seconds() * self.__sampling_frequency))
 
+    def convert(self, to_unit: Unit, transfer_function: Callable[[ndarray], ndarray] = None):
+        """
+        Converts the Timeseries from the current units to 'to_unit'.
+        If the current units are None (raw signal), then the transfer function must be given.
+        :param to_unit: The unit to convert to.
+        :param transfer_function: The transfer function to apply, if raw signal.
+        :return: None (applied in-place)
+        """
+        if self.__units != to_unit:
+            if self.__units is None:
+                if transfer_function is not None:
+                    try:
+                        self._apply_operation(transfer_function)
+                        self.__units = to_unit
+                    except Exception as e:
+                        raise RuntimeError(f"Conversion failed: {e}")
+                else:
+                    raise ValueError("Cannot convert from raw signal without a transfer function. Give one as argument.")
+            else:
+                raise NotImplementedError("Conversion between units is not implemented yet.")
+        else:
+            print("This Timeseries is already on the given unit.")
+
     # ===================================
     # INTERNAL USAGE - Convert indexes <-> timepoints && Get Samples
 

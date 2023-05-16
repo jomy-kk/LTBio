@@ -32,7 +32,7 @@ from pandas import DataFrame
 
 from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
 from ltbio.biosignals.timeseries.Event import Event
-from ltbio.biosignals.timeseries.Unit import Unitless
+from ltbio.biosignals.timeseries.Unit import Unitless, Unit
 # from ...processing.filters.Filter import Filter
 from ltbio.clinical.BodyLocation import BodyLocation
 from ltbio.clinical import Patient
@@ -571,6 +571,17 @@ class Biosignal(ABC):
             for key, event in events_from_medical_conditions.items():
                 res += f"- {key}:\n{event}\n"
         return res
+
+    def convert(self, to_unit: Unit):
+        for channel_name, channel in self:
+            if channel.units is None:  # raw data
+                transfer_function = self.__source._transfer(to_unit, self.type)  # get transfer function
+                if transfer_function is not None:
+                    channel.convert(to_unit, transfer_function)
+                else:
+                    raise ReferenceError(f"No transfer function to {to_unit} was found in {self.__source}.")
+            else:
+                channel.convert(to_unit)
 
     def _to_dict(self) -> Dict[str|BodyLocation, timeseries.Timeseries]:
         return deepcopy(self.__timeseries)

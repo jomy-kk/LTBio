@@ -16,11 +16,12 @@
 # ===================================
 
 from abc import ABC, abstractmethod
-from typing import Collection
+from typing import Collection, Callable
 
 from numpy import array
 
 from ltbio.biosignals.timeseries.Event import Event
+from ltbio.biosignals.timeseries.Unit import Unit
 
 
 class BiosignalSource(ABC):
@@ -53,7 +54,7 @@ class BiosignalSource(ABC):
 
     @staticmethod
     @abstractmethod
-    def _transfer(samples:array, type) -> array:
+    def _transfer(unit: Unit, type) -> Callable[[array], array]:
         pass
 
     @classmethod
