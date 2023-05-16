@@ -671,7 +671,7 @@ class Biosignal(ABC):
         if isinstance(item, str):
             if item in self.__timeseries.keys():  # if channel exists
                 return True
-            if item in self.__associated_events:  # if Event occurs
+            if item in self.__associated_events.keys():  # if Event occurs
                 return True
             events_from_consitions = self.__get_events_from_medical_conditions()
             for label, event in events_from_consitions:
