@@ -618,7 +618,7 @@ class Biosignal(ABC):
             channels_as_arrays.append(channel.to_array())
 
         # Get the length of the samples axes
-        n_samples = max([len(x) for x in channels_as_arrays])
+        n_samples = ceil((self.final_datetime - self.initial_datetime).total_seconds() * max_sf)
 
         # Create the array full of NaNs
         res = np.full((len(self), n_samples), np.nan)
