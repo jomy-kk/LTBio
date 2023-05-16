@@ -21,10 +21,12 @@ from datetime import timedelta
 from json import load
 from os import listdir, path, access, R_OK
 from os.path import getsize
+from typing import Callable
 from warnings import warn
 
 import numpy as np
 from dateutil.parser import parse as to_datetime
+from numpy import ndarray
 from scipy.stats import stats
 
 from .. import timeseries
@@ -32,7 +34,7 @@ from .. import modalities
 from ..sources.BiosignalSource import BiosignalSource
 from ltbio.clinical.BodyLocation import BodyLocation
 from ..timeseries.Timeline import Timeline
-from ..timeseries.Unit import Volt, Multiplier, Siemens, Percentage, G
+from ..timeseries.Unit import Volt, Multiplier, Siemens, Percentage, G, Unit, Unitless
 
 
 class Sense(BiosignalSource):
@@ -399,9 +401,46 @@ class Sense(BiosignalSource):
         pass  # TODO
 
     @staticmethod
-    def _transfer(x, to_unit):
-        if to_unit == Percentage:
-            return ((x / (2**Sense.RESOLUTION)) - 0.5) * 100
+    def _transfer(to_unit: Unit, type) -> Callable[[ndarray], ndarray]:
+        if isinstance(to_unit, Percentage):
+            if type is modalities.RESP:
+                # From Bitalino
+                return lambda x: ((x / (2**Sense.RESOLUTION)) - 0.5) * 100
+        elif isinstance(to_unit, Volt):
+            if type is modalities.ECG:
+                # From Sense2
+                VCC = 3.3
+                GAIN = 1100
+                y = lambda x: ((x / 2**Sense.RESOLUTION) - 0.5) * VCC / GAIN
+                if to_unit.multiplier is Multiplier._:
+                    return y
+                elif to_unit.multiplier is Multiplier.m:
+                    return lambda y: y / 1000
+            elif type is modalities.EMG:
+                # From Sense
+                VCC = 3.3
+                GAIN = 1000
+                y = lambda x: ((x / 2 ** Sense.RESOLUTION) - 0.5) * VCC / GAIN
+                if to_unit.multiplier is Multiplier._:
+                    return y
+                elif to_unit.multiplier is Multiplier.m:
+                    return lambda y: y / 1000
+        elif isinstance(to_unit, Siemens):
+            if type is modalities.EDA:
+                # From Bitalino: https://bitalino.com/storage/uploads/media/eda-sensor-datasheet-revb.pdf
+                VCC = 3.3
+                y = lambda x: (x / 2**Sense.RESOLUTION * VCC) / 0.132
+                if to_unit.multiplier is Multiplier.u:
+                    return y
+                elif to_unit.multiplier is Multiplier._:
+                    return lambda y: y * 10**(-6)
+        elif isinstance(to_unit, G):
+            if type is modalities.ACC:
+                # From Bitalino: https://bitalino.com/storage/uploads/media/revolution-acc-sensor-datasheet-revb.pdf
+                return lambda x: (x - Sense.LOWEST_VALUE) / (Sense.HIGHEST_VALUE - Sense.LOWEST_VALUE) * 2 - 1
+        elif isinstance(to_unit, Unitless):
+            if type is modalities.PPG:
+                return lambda x: x
         else:
             raise NotImplementedError(f"Conversion of {Sense} biosignals to {to_unit} is not implemented.")
 
