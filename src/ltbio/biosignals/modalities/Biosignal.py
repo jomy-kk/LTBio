@@ -511,7 +511,7 @@ class Biosignal(ABC):
         if self.__has_single_channel:
             return self._get_single_channel()[1].duration
         else:
-            return Timeline.union([self[channel_name].domain_timeline for channel_name, _ in self]).duration
+            return Timeline.union(*[self[channel_name].domain_timeline for channel_name, _ in self]).duration
 
     def __get_events_from_medical_conditions(self):
         res = {}
