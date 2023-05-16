@@ -19,6 +19,8 @@ from datetime import datetime, timedelta
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime
 
+from ltbio.biosignals.timeseries import Timeline
+
 
 class Event():
 
@@ -78,6 +80,10 @@ class Event():
         if self.__offset is None:
             raise AttributeError(f"Event has no duration, only an {self.name} has no onset.")
         return DateTimeRange(self.__onset, self.__offset)
+
+    @property
+    def domain_timeline(self) -> Timeline:  # TODO: mmerge with domain
+        return Timeline(Timeline.Group([self.domain, ]), name=self.name + ' Domain')
 
     @property
     def name(self) -> str:
