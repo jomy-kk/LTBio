@@ -29,6 +29,7 @@ from dateutil.parser import parse as to_datetime
 from numpy import array, append, ndarray, divide, concatenate, tile, memmap
 from scipy.signal import resample
 
+from ltbio.biosignals.timeseries import Timeline
 from ltbio.biosignals.timeseries.Event import Event
 from ltbio.biosignals.timeseries.Frequency import Frequency
 from ltbio.biosignals.timeseries.Unit import Unit
@@ -1743,6 +1744,10 @@ class OverlappingTimeseries(Timeseries):
                 domain.append(DateTimeRange(self._Timeseries__segments[i].initial_datetime, self._Timeseries__segments[i].final_datetime))
 
         return tuple(domain)
+
+    @property
+    def domain_timeline(self) -> Timeline:  # TODO: mmerge with domain
+        return Timeline(Timeline.Group(self.domain), name=self.name + ' Domain')
 
     @property
     def subdomains(self) -> Tuple[DateTimeRange]:
