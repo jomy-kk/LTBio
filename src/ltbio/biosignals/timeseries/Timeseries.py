@@ -568,6 +568,8 @@ class Timeseries():
         # SERIALIZATION
 
         def _memory_map(self, path):
+            if len(self.__samples) == 0:  # Empty Segment, let it go, don't save. This is a very "engineering" solution to a problem that should not exist in the first place. But it works, so we'll keep it.
+                return
             if not isinstance(self.__samples, memmap):  # Create a memory map for the array
                 _, file_name = mkstemp(dir=path, suffix='.segment')
                 filepath = join(path, file_name)
