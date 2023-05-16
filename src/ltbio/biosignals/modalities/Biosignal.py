@@ -559,7 +559,7 @@ class Biosignal(ABC):
             len(self),
             ''.join([(x + ', ') for x in self.channel_names]),
             self.duration,
-            self.source.__str__(None) if isinstance(self.source, ABCMeta) else str(self.source))
+            self.source.__repr__(None) if isinstance(self.source, ABCMeta) else str(self.source))
 
         if len(self.__associated_events) != 0:
             res += "Events:\n"
