@@ -104,7 +104,7 @@ class G(Unit):
     def __init__(self, multiplier=Multiplier._):
         super().__init__(multiplier)
 
-    SHORT = "G"
+    SHORT = "g"
 
     def convert_to(self, unit):
        pass
