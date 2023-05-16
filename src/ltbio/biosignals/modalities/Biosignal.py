@@ -1256,6 +1256,7 @@ class Biosignal(ABC):
             channel.timeshift(delta)
         for event in self.events:
             event.timeshift(delta)
+        self.__patient.timeshift(delta)
 
     def tag(self, tags: str | tuple[str]):
         """
