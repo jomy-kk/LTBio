@@ -38,7 +38,7 @@ class ACC(Biosignal):
         """
         Returns the Timeline of acceptable (good) ACC quality.
         ACC quality is a dubious concept, quite different from what is noise in electrophysiology signals.
-        The concept of motion artifact does not exist, nonetheless, wer know that human motion is usually between
+        The concept of motion artifact does not exist, nonetheless, we know that human motion is usually between
         0 Hz (at rest) and 20 Hz (vigorous movement). And 98% of the FFT amplitude is contained below 10 Hz.
         Source: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3859040/
 
