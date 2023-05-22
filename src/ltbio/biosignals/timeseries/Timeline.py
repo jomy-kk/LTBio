@@ -399,12 +399,48 @@ class Timeline():
             else:
                 raise NotImplementedError("Give Timelines with matching group names.")
 
+    def agglomerate(self, min_interval: timedelta, max_delta: timedelta):
+        """
+        Agglomerates the intervals of a Timeline, based on a minimum interval and a maximum delta.
+        It can be thought as a filter or a smoother of time intervals.
+        It's useful when the Timeline has a lot of small intervals, for instance, distancing milliseconds from each
+        other, that would be rather relevant for analysis if agglomerated.
+        :param min_interval: minimum interval duration every interval should have, inclusively
+        :param max_delta: maximum duration between two consecutive intervals to be agglomerated, inclusively
+        :return: a new Timeline with agglomerated intervals
+        """
+
+        def _agglomerate(intervals: List[DateTimeRange], min_interval: timedelta, max_delta: timedelta):
+            if len(intervals) == 0:
+                return intervals
+
+            # Agglomerate every consecutive pair of intervals
+            new_intervals = [intervals[0], ]
+            for i in intervals[1:]:
+                if i.start_datetime - new_intervals[-1].end_datetime <= max_delta:
+                    new_intervals[-1] = DateTimeRange(new_intervals[-1].start_datetime, i.end_datetime)  # substitute
+                else:
+                    new_intervals.append(i)  # add
+
+            # Remove any interval is smaller than min_interval
+            new_intervals = [i for i in new_intervals if i.timedelta >= min_interval]
+            return new_intervals
+
+        # Repeat the agglomeration for every group
+        new_groups = []
+        for g in self.groups:
+            new_groups.append(Timeline.Group(_agglomerate(g.intervals, min_interval, max_delta), name=g.name))
+
+        # Return a new Timeline with the agglomerated groups
+        return Timeline(*new_groups, name=f"{self.name} (agglomerated)")
+
+
     EXTENSION = '.timeline'
 
     def save(self, save_to: str):
         # Check extension
         if not save_to.endswith(Timeline.EXTENSION):
-            save_to += Biosignal.EXTENSION
+            save_to += Timeline.EXTENSION
         # Write
         from _pickle import dump
         with open(save_to, 'wb') as f:
