@@ -56,14 +56,17 @@ for code in subject_codes:
             all_sensors = {}
             if all_at_once:
                 sensor_name = article_sensor_names[modality]
-                all_sensors = {sensor_name: biosignal}
+                all_sensors[sensor_name] = biosignal
             else:
                 for channel_name, _ in biosignal:
                     sensor_name = article_sensor_names[modality+':'+channel_name]
-                    all_sensors = {sensor_name: biosignal[channel_name]}
+                    all_sensors[sensor_name] = biosignal[channel_name]
 
             # Compute scores by sensor ...
             for sensor_name in all_sensors:
+                if sensor_name == "S3 EDA":
+                    continue
+
                 sensor = all_sensors[sensor_name]
                 sensor._Biosignal__source = correct_sources[sensor_name]  # Get correct source, if wrong
 

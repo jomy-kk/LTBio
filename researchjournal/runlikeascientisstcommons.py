@@ -26,7 +26,7 @@ compact_keyword = 'COMPACT'
 
 #modality_keywords = ('ecg', 'temp', 'acc_chest', 'acc_e4', 'eda', 'emg', 'ppg')
 #modality_keywords = ('ecg', 'temp', 'acc_e4', 'eda', 'emg', 'ppg')
-modality_keywords = ('ppg', )
+modality_keywords = ('eda', )
 
 filters = {
     modalities.ECG: (FrequencyDomainFilter(FrequencyResponse.FIR, BandType.BANDPASS, (1., 40.), 50), ),
@@ -63,6 +63,18 @@ article_sensor_names = {'temp:temp': 'S10 TEMP',
                 'ppg:Left Wrist': 'S6 PPG',
                 'ecg:dry': 'S2 ECG',
                 'ecg:gel': 'S1 ECG',
+                }
+
+article_sensor_names_extended = {'S10 TEMP': 'S10 TEMP',
+                'S7 ACC': 'S7 ACC (Chest)',
+                'S8 ACC': 'S8 ACC (Wrist)',
+                'S3 EDA': 'S3 EDA (Gel)',
+                'S4 EDA': 'S4 EDA (Dry)',
+                'S9 EMG': 'S9 EMG',
+                'S5 PPG': 'S5 PPG (Gold standard)',
+                'S6 PPG': 'S6 PPG (Wearable)',
+                'S2 ECG': 'S2 ECG (Dry)',
+                'S1 ECG': 'S1 ECG (Gel)',
                 }
 
 article_sensor_order = ('S1 ECG', 'S2 ECG', 'S3 EDA', 'S4 EDA', 'S5 PPG', 'S6 PPG', 'S7 ACC', 'S8 ACC', 'S9 EMG', 'S10 TEMP')
