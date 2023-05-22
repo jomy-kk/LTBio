@@ -1328,22 +1328,23 @@ class Biosignal(ABC):
 
         return cls(channels, name=name)
 
-    def acquisition_scores(self):
-        print(f"Acquisition scores for '{self.name}'")
+    def acquisition_scores(self, verbose: bool = True, show=False, save_to=None) -> tuple[float, float, float]:
         completness_score = self.completeness_score()
-        print("Completness Score = " + ("%.2f" % (completness_score*100) if completness_score else "n.d.") + "%")
-        onbody_score = self.onbody_score()
-        print("On-body Score = " + ("%.2f" % (onbody_score*100) if onbody_score else "n.d.") + "%")
-        quality_score = self.quality_score(_onbody_duration=onbody_score*self.duration)
-        print("Quality Score = " + ("%.2f" % (quality_score*100) if quality_score else "n.d.") + "%")
+        onbody_score, onbody = self.onbody_score(show=show, save_to=save_to)
+        quality_score, _ = self.quality_score(show=show, save_to=save_to, _onbody=onbody)
+        if verbose:
+            print(f"Acquisition scores for '{self.name}'")
+            print("Completness Score = " + ("%.2f" % (completness_score * 100) if completness_score else "n.d.") + "%")
+            print("On-body Score = " + ("%.2f" % (onbody_score * 100) if onbody_score else "n.d.") + "%")
+            print("Quality Score = " + ("%.2f" % (quality_score * 100) if quality_score else "n.d.") + "%")
         return completness_score, onbody_score, quality_score
 
-    def completeness_score(self):
+    def completeness_score(self) -> float:
         recorded_duration = self.duration
         expected_duration = self.final_datetime - self.initial_datetime
         return recorded_duration / expected_duration
 
-    def onbody_score(self, show=False, save_to=None):
+    def onbody_score(self, show=False, save_to=None) -> [float, Timeline]:
         if hasattr(self.source, 'onbody'):  # if the BiosignalSource defines an 'onbody' method, then this score exists, it's computed and returned
             # Find Timeline
             onbody = self.source.onbody(self)
@@ -1353,28 +1354,32 @@ class Biosignal(ABC):
                 onbody.plot(show=show, save_to=save_to)
 
             # Compute ratio
-            return onbody.duration / self.duration
+            return onbody.duration / self.duration, onbody
 
-    def quality_score(self, show=False, save_to=None, _onbody_duration=None):
+    def quality_score(self, show=False, save_to=None, _onbody: Timeline = None) -> [float, Timeline]:
         if hasattr(self, 'acceptable_quality'):  # if the Biosignal modality defines an 'acceptable_quality' method, then this score exists, it's computed and returned
-            # Find Timeline
-            try:
-                acceptable_quality = self.acceptable_quality()
-                # Plot?
-                if show or save_to is not None:
-                    acceptable_quality.plot(show=show, save_to=save_to)
 
-                # Compute ratio
-                if _onbody_duration:
-                    return acceptable_quality.duration / _onbody_duration if _onbody_duration != timedelta(seconds=0) else 0
+            if _onbody is None:  # If no _onbody is given, then try to compute it
+                if hasattr(self.source, 'onbody'):
+                    _onbody = self.source.onbody(self)
+
+            if _onbody is not None:  # If it was given or computed, then
+                _onbody = _onbody.agglomerate(min_interval=timedelta(seconds=3), max_delta=timedelta(seconds=0.5))  # Agglomerate to avoid small gaps
+                if _onbody.duration.total_seconds() == 0:
+                    return 0, _onbody  # if onbody is 0%, quality is the same, by definition
                 else:
-                    if hasattr(self.source, 'onbody'):
-                        _onbody_duration = self.source.onbody(self).duration
-                        return acceptable_quality.duration / _onbody_duration if _onbody_duration != timedelta(seconds=0) else 0
-                    else:
-                        return acceptable_quality.duration / self.duration
+                    x = self[_onbody]  # Gets part of the Biosignal correctly acquired
+            else:
+                x = self
+
+            try:  # Try to find acceptable quality Timeline
+                acceptable_quality = x.acceptable_quality()
+                if show or save_to is not None:  # Plot?
+                    acceptable_quality.plot(show=show, save_to=save_to)
+                return acceptable_quality.duration / x.duration, acceptable_quality
+
             except RuntimeError as e:
-                RuntimeError("Could not compute acceptable quality, because: " + str(e))
+                raise RuntimeError("Could not compute acceptable quality, because: " + str(e))
 
     # ===================================
     # SERIALIZATION
