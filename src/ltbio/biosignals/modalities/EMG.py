@@ -173,11 +173,13 @@ class EMG(Biosignal):
             contraction_periods_with_acceptable_quality = contraction_periods.when(lambda x: window_quality(x, rest=False) > 1.2 - 0.2, window=timedelta(seconds=0.3))
 
         # Merge rest and contraction periods with acceptable quality
-        if rest_periods_with_acceptable_quality is not None and contraction_periods_with_acceptable_quality is not None:
+        if rest_periods_with_acceptable_quality is not None and not rest_periods_with_acceptable_quality.is_empty and contraction_periods_with_acceptable_quality is not None and not contraction_periods_with_acceptable_quality.is_empty:
             res = Timeline.union(rest_periods_with_acceptable_quality, contraction_periods_with_acceptable_quality)
-        elif rest_periods_with_acceptable_quality is not None:
+        elif rest_periods_with_acceptable_quality is not None and not rest_periods_with_acceptable_quality.is_empty:
             res = rest_periods_with_acceptable_quality
-        elif contraction_periods_with_acceptable_quality is not None:
+        elif contraction_periods_with_acceptable_quality is not None and not contraction_periods_with_acceptable_quality.is_empty:
+            res = contraction_periods_with_acceptable_quality
+        else:
             res = contraction_periods_with_acceptable_quality
 
         res.name = "Intervals of acceptable quality of " + self.name
