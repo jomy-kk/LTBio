@@ -539,9 +539,12 @@ class ECG(Biosignal):
         heuristic fusion and fuzzy comprehensive evaluation, Frontiers in Physiology, 9, 727.
         """
         def aux(x, fs):
-            peaks1 = self.__biosppy_r_indices(x, fs, hamilton_segmenter)
-            peaks2 = self.__biosppy_r_indices(x, fs, christov_segmenter)
-            return ZZ2018(x, peaks1, peaks2, fs=fs, mode='fuzzy')
+            if len(x) >= 30:
+                peaks1 = self.__biosppy_r_indices(x, fs, hamilton_segmenter)
+                peaks2 = self.__biosppy_r_indices(x, fs, christov_segmenter)
+                return ZZ2018(x, peaks1, peaks2, fs=fs, mode='fuzzy')
+            else:
+                return "Unnaceptable"
 
         return self.when(lambda x: aux(x, self.sampling_frequency) == 'Excellent', window=timedelta(seconds=10))
 
