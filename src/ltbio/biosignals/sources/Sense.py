@@ -536,7 +536,6 @@ class Sense(BiosignalSource):
                 print("-----")
             return decision
 
-        # ECG and EMG
         if isinstance(biosignal, modalities.ECG):
 
             # Anywhere at the Chest
@@ -549,23 +548,23 @@ class Sense(BiosignalSource):
                 if len(units) > 1:
                     raise ValueError(f"All channels must be on the same units. Found {units}. Please convert them all to mV or raw.")
 
-                # Only allowed mV or raw
+                # Parameters for raw values:
+                # For derivatives
+                FLATLINE_THRESHOLD = 400
+                BASELINE_FLATLINE_THRESHOLD = 150
+                DISCREPEANCY_THRESHOLD = 2000
+                # For amplitudes
+                LOW_SATURATION_THRESHOLD = 500
+                HIGH_SATURATION_THRESHOLD = 3500
+
+                # If not raw
                 unit = units.pop()
-                if unit == Volt(Multiplier.m):
-                    FLATLINE_THRESHOLD = 0.1
-                elif unit is None:  # raw
-                    # For derivatives
-                    FLATLINE_THRESHOLD = 400
-                    BASELINE_FLATLINE_THRESHOLD = 150
-                    DISCREPEANCY_THRESHOLD = 2000
-                    # For amplitudes
-                    LOW_SATURATION_THRESHOLD = 500
-                    HIGH_SATURATION_THRESHOLD = 3500
-
-                else:
-                    raise ValueError(
-                            f"All channels are in {unit}. Please convert them all to mV or raw.")
-
+                if unit is not None:
+                    FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.ECG)(FLATLINE_THRESHOLD)
+                    BASELINE_FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.ECG)(BASELINE_FLATLINE_THRESHOLD)
+                    DISCREPEANCY_THRESHOLD = Sense._transfer(unit, modalities.ECG)(DISCREPEANCY_THRESHOLD)
+                    LOW_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.ECG)(LOW_SATURATION_THRESHOLD)
+                    HIGH_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.ECG)(HIGH_SATURATION_THRESHOLD)
 
                 not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=50))
                 not_baseline_saturated = biosignal.when(lambda x: not baseline_saturation(x), timedelta(milliseconds=800))
@@ -580,22 +579,23 @@ class Sense(BiosignalSource):
                     raise ValueError(
                         f"All channels must be on the same units. Found {units}. Please convert them all to mV or raw.")
 
-                # Only allowed mV or raw
-                unit = units.pop()
-                if unit == Volt(Multiplier.m):
-                    pass
-                elif unit is None:  # raw
-                    # For derivatives
-                    FLATLINE_THRESHOLD = 400
-                    BASELINE_FLATLINE_THRESHOLD = 10  # if muscle is at rest, the sensor is high-quality hardware, skin is well prepared and electrodes are well placed, the signal can look flat, so this threshold should be really low
-                    DISCREPEANCY_THRESHOLD = 2000
-                    # For amplitudes
-                    LOW_SATURATION_THRESHOLD = 500
-                    HIGH_SATURATION_THRESHOLD = 3500
+                # Parameters for raw values:
+                # For derivatives
+                FLATLINE_THRESHOLD = 400
+                BASELINE_FLATLINE_THRESHOLD = 10  # if muscle is at rest, the sensor is high-quality hardware, skin is well prepared and electrodes are well placed, the signal can look flat, so this threshold should be really low
+                DISCREPEANCY_THRESHOLD = 2000
+                # For amplitudes
+                LOW_SATURATION_THRESHOLD = 500
+                HIGH_SATURATION_THRESHOLD = 3500
 
-                else:
-                    raise ValueError(
-                        f"All channels are in {unit}. Please convert them all to mV or raw.")
+                # If not raw
+                unit = units.pop()
+                if unit is not None:
+                    FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.EMG)(FLATLINE_THRESHOLD)
+                    BASELINE_FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.EMG)(BASELINE_FLATLINE_THRESHOLD)
+                    DISCREPEANCY_THRESHOLD = Sense._transfer(unit, modalities.EMG)(DISCREPEANCY_THRESHOLD)
+                    LOW_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.EMG)(LOW_SATURATION_THRESHOLD)
+                    HIGH_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.EMG)(HIGH_SATURATION_THRESHOLD)
 
                 not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=50))
                 not_baseline_saturated = biosignal.when(lambda x: not baseline_saturation(x),
@@ -612,24 +612,29 @@ class Sense(BiosignalSource):
                 raise ValueError(
                     f"All channels must be on the same units. Found {units}. Please convert them all to mV or raw.")
 
-            # Only allowed mV or raw
+            # Parameters for raw values:
+            # For derivatives
+            FLATLINE_THRESHOLD = 20  # guess adjusted value for PPG
+            BASELINE_FLATLINE_THRESHOLD = 10  # evidence-based adjusted value for PPG
+            DISCREPEANCY_THRESHOLD = 200
+            # For amplitudes
+            LOW_SATURATION_THRESHOLD = 200
+            HIGH_SATURATION_THRESHOLD = 3000
+
+            # If not raw
             unit = units.pop()
-            if unit == Volt(Multiplier.m):
-                FLATLINE_THRESHOLD = 0.1
-            elif unit is None:  # raw
-                # For derivatives
-                FLATLINE_THRESHOLD = 20  # guess adjusted value for PPG
-                BASELINE_FLATLINE_THRESHOLD = 10  # evidence-based adjusted value for PPG
-                DISCREPEANCY_THRESHOLD = 200
-                # For amplitudes
-                LOW_SATURATION_THRESHOLD = 200
-                HIGH_SATURATION_THRESHOLD = 3000
+            if unit is not None:
+                FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.PPG)(FLATLINE_THRESHOLD)
+                BASELINE_FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.PPG)(BASELINE_FLATLINE_THRESHOLD)
+                DISCREPEANCY_THRESHOLD = Sense._transfer(unit, modalities.PPG)(DISCREPEANCY_THRESHOLD)
+                LOW_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.PPG)(LOW_SATURATION_THRESHOLD)
+                HIGH_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.PPG)(HIGH_SATURATION_THRESHOLD)
 
-                not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=40))
-                not_baseline_saturated = biosignal.when(lambda x: not baseline_saturation(x), timedelta(milliseconds=800))
+            not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=40))
+            not_baseline_saturated = biosignal.when(lambda x: not baseline_saturation(x), timedelta(milliseconds=800))
 
-                onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
-                # onbody = not_baseline_saturated
+            onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
+            # onbody = not_baseline_saturated
 
         elif biosignal.type is modalities.EDA:
             # Check if all channels are on the same units (only allowed mV or raw)
@@ -638,24 +643,29 @@ class Sense(BiosignalSource):
                 raise ValueError(
                     f"All channels must be on the same units. Found {units}. Please convert them all to uS or raw.")
 
-            # Only allowed mV or raw
+            # Parameters for raw values:
+            # For derivatives
+            FLATLINE_THRESHOLD = 35
+            BASELINE_FLATLINE_THRESHOLD = 0.5  # EDA is a very low frequency signal, so this threshold should be really low
+            DISCREPEANCY_THRESHOLD = 100  # Same here, a discrepancy higher than 150 is very unlikely
+            # For amplitudes
+            LOW_SATURATION_THRESHOLD = 50
+            HIGH_SATURATION_THRESHOLD = 4096-50
+
+            # If not raw
             unit = units.pop()
-            if unit == Siemens(Multiplier.u):
-                pass
-            elif unit is None:
-                # For derivatives
-                FLATLINE_THRESHOLD = 35
-                BASELINE_FLATLINE_THRESHOLD = 0.5  # EDA is a very low frequency signal, so this threshold should be really low
-                DISCREPEANCY_THRESHOLD = 100  # Same here, a discrepancy higher than 150 is very unlikely
-                # For amplitudes
-                LOW_SATURATION_THRESHOLD = 50
-                HIGH_SATURATION_THRESHOLD = 4096-50
+            if unit is not None:
+                FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.EDA)(FLATLINE_THRESHOLD)
+                BASELINE_FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.EDA)(BASELINE_FLATLINE_THRESHOLD)
+                DISCREPEANCY_THRESHOLD = Sense._transfer(unit, modalities.EDA)(DISCREPEANCY_THRESHOLD)
+                LOW_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.EDA)(LOW_SATURATION_THRESHOLD)
+                HIGH_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.EDA)(HIGH_SATURATION_THRESHOLD)
 
-                not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=30))
-                not_baseline_saturated = biosignal.when(lambda x: not baseline_saturation(x),
-                                                        timedelta(seconds=10))
+            not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=30))
+            not_baseline_saturated = biosignal.when(lambda x: not baseline_saturation(x),
+                                                    timedelta(seconds=10))
 
-                onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
+            onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
 
         elif biosignal.type is modalities.ACC:
             biosignal = biosignal['x'] + biosignal['y'] + biosignal['z']  # sum sample-by-sample the 3 axes
@@ -664,13 +674,14 @@ class Sense(BiosignalSource):
                 if asleep:
                     raise NotImplementedError("Onbody detection for chest ACC when asleep not yet implemented.")
                 else:
-                    # Only allowed g or raw
+                    # Parameters for raw values
+                    NO_MOVEMENT_THRESHOLD = 100
+                    WINDOW = timedelta(seconds=5)
+
+                    # If not raw
                     unit = biosignal._get_single_channel()[1].units
-                    if unit == G():
-                        pass
-                    elif unit is None:
-                        NO_MOVEMENT_THRESHOLD = 100
-                        WINDOW = timedelta(seconds=5)
+                    if unit is not None:
+                        NO_MOVEMENT_THRESHOLD = Sense._transfer(unit, modalities.ACC)(NO_MOVEMENT_THRESHOLD)
 
                     onbody = biosignal.when(lambda x: not total_flatline(x, NO_MOVEMENT_THRESHOLD), WINDOW)
             else:

@@ -47,6 +47,9 @@ class Unit(ABC):
     def __eq__(self, other):
         return type(self) == type(other) and self.__multiplier == other.multiplier
 
+    def __hash__(self):
+        return hash((type(self), self.__multiplier))
+
     @property
     def multiplier(self) -> Multiplier:
         return self.__multiplier
