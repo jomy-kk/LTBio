@@ -382,7 +382,7 @@ class Biosignal(ABC):
                 res.name += f" indexed by '{item.name}'"
                 return res
             else:
-                return IndexError("This Timeline cannot serve as index, because it contains multiple groups of intervals or points.")
+                raise IndexError("This Timeline cannot serve as index.")
 
         raise IndexError("Index types not supported. Give a datetime (can be in string format), a slice or a tuple of those.")
 
