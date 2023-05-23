@@ -22,6 +22,17 @@ subject_codes = ('3B8D', '03FH', '3RFH', '4JF9', '93DK', '93JD', 'AP3H', 'F408',
 
 devices = ('chest', 'arm', 'wrist')
 
+sensor_groups = {'chest': ('S1 ECG', 'S2 ECG', 'S7 ACC'),
+                 'arm': ('S3 EDA', 'S5 PPG', 'S9 EMG'),
+                 'wrist': ('S4 EDA', 'S6 PPG', 'S8 ACC', 'S10 TEMP')
+                 }
+
+def find_sensor_group(sensor):
+    for group, sensors in sensor_groups.items():
+        if sensor in sensors:
+            return group
+    return None
+
 compact_keyword = 'COMPACT'
 
 #modality_keywords = ('ecg', 'temp', 'acc_chest', 'acc_e4', 'eda', 'emg', 'ppg')
@@ -99,3 +110,25 @@ article_activity_names = {
 }
 
 article_activity_order = ('Baseline', 'Lift', 'Greetings', 'Gesticulate', 'Jumps', 'Walk-Before', 'Run', 'Walk-After')
+
+activities_not_executed_by_subject = {
+    '3B8D': ('Jumps', ),
+    '03FH': ('Lift', 'Greetings', 'Gesticulate', 'Jumps', 'Walk-Before'),
+    '3RFH': (),
+    '4JF9': ('Jumps', 'Walk-After'),
+    '93DK': ('Gesticulate', 'Walk-After'),
+    '93JD': ('Jumps', ),
+    'AP3H': ('Jumps', ),
+    'F408': ('Jumps', ),
+    'H39D': ('Greetings', 'Gesticulate', 'Jumps'),
+    'JD3K': ('Jumps', ),
+    'K2Q2': ('Jumps', 'Gesticulate'),
+    'KF93': ('Jumps', ),
+    'KS03': ('Jumps', 'Run', 'Walk-After'),
+    'LAS2': ('Baseline', 'Walk-After'),
+    'LDM5': ('Jumps', ),
+    'LK27': ('Jumps', ),
+    'ME93': ('Baseline', 'Lift', 'Greetings', 'Gesticulate', 'Jumps', 'Walk-Before', 'Walk-After')
+}
+
+
