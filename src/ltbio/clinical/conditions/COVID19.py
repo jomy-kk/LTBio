@@ -22,3 +22,6 @@ class COVID19(MedicalCondition):
 
     def __str__(self):
         return "COVID-19 (Infection by SARS-CoV-2)"
+
+    def __repr__(self):
+        return str(self) + f": Diagnosed {self.years_since_diagnosis} years ago."
