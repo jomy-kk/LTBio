@@ -11,6 +11,8 @@ global_df = pd.read_csv(global_scores_path)
 # Filter only Run activity
 global_df = global_df[global_df['activity'] == 'Run']
 
+global_df['completeness'] = global_df['completeness'] * 100
+
 # Drop correctness and quality columns
 global_df = global_df.drop(columns=['correctness', 'quality'])
 
