@@ -1,11 +1,10 @@
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from numpy import allclose
 
-from ltbio.biosignals.modalities.ECG import ECG
-from ltbio.biosignals.sources.MITDB import MITDB
-from ltbio.biosignals.timeseries.Timeseries import OverlappingTimeseries
+from ltbio.biosignals.modalities._ECG import ECG
+from ltbio.biosignals.sources._MITDB import MITDB
 from ltbio.processing.formaters.Normalizer import Normalizer
 
 

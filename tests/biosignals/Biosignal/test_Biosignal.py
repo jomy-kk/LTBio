@@ -1,14 +1,13 @@
 import unittest
-from datetime import datetime, timedelta
 from os import remove
 
-from ltbio.biosignals.timeseries.Unit import *
-from ltbio.biosignals.modalities.Biosignal import *
-from ltbio.biosignals.modalities.ECG import ECG
-from ltbio.biosignals.modalities.EDA import EDA
-from ltbio.biosignals.sources.HSM import HSM
+from ltbio.biosignals.units import *
+from ltbio.biosignals._Biosignal import *
+from ltbio.biosignals.modalities._ECG import ECG
+from ltbio.biosignals.modalities._EDA import EDA
+from ltbio.biosignals.sources._HSM import HSM
 from ltbio.biosignals.timeseries.Frequency import Frequency
-from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.biosignals._Timeseries import Timeseries
 from ltbio.clinical.conditions.Epilepsy import Epilepsy
 from ltbio.clinical.BodyLocation import BodyLocation
 from ltbio.clinical.Patient import Patient, Sex
@@ -229,8 +228,8 @@ class BiosignalTestCase(unittest.TestCase):
         cls.assertEqual(ecg3["c"][initial2], cls.samples3[0])
         cls.assertEqual(ecg3["b"][cls.initial1], cls.samples2[0])
         cls.assertEqual(ecg3["d"][initial2], cls.samples1[0])
-        cls.assertEqual(ecg3.initial_datetime, cls.initial1)
-        cls.assertEqual(ecg3.final_datetime, cls.ts3.final_datetime+timedelta(days=1))
+        cls.assertEqual(ecg3.start, cls.initial1)
+        cls.assertEqual(ecg3.end, cls.ts3.end + timedelta(days=1))
 
         # This should not work
         with cls.assertRaises(TypeError): # different types; e.g. ecg + eda

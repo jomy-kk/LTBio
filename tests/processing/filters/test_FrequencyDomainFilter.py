@@ -4,8 +4,8 @@ from os import remove
 
 from numpy import array, allclose
 
-from ltbio.biosignals.modalities.ECG import ECG
-from ltbio.biosignals.sources.HEM import HEM
+from ltbio.biosignals.modalities._ECG import ECG
+from ltbio.biosignals.sources._HEM import HEM
 from ltbio.processing.filters.FrequencyDomainFilter import FrequencyDomainFilter, FrequencyResponse, BandType
 
 
