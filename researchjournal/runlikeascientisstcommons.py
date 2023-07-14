@@ -10,6 +10,7 @@ acquisitions_path = '/Users/saraiva/Library/CloudStorage/OneDrive-Universidadede
 scores_path = '/Users/saraiva/Library/CloudStorage/OneDrive-UniversidadedeLisboa/11º e 12º Semestres/Tese/Aquisições/to_article/scores'
 dataset_biosignal_path = '/Users/saraiva/Library/CloudStorage/OneDrive-UniversidadedeLisboa/11º e 12º Semestres/Tese/Aquisições/to_article/biosignal'
 dataset_csv_path = '/Users/saraiva/Library/CloudStorage/OneDrive-UniversidadedeLisboa/11º e 12º Semestres/Tese/Aquisições/to_article/csv'
+dataset_edf_path = '/Users/saraiva/Library/CloudStorage/OneDrive-UniversidadedeLisboa/11º e 12º Semestres/Tese/Aquisições/to_article/edf'
 
 global_scores_path = join(scores_path, 'all_scores.csv')
 
@@ -35,9 +36,9 @@ def find_sensor_group(sensor):
 
 compact_keyword = 'COMPACT'
 
-#modality_keywords = ('ecg', 'temp', 'acc_chest', 'acc_e4', 'eda', 'emg', 'ppg')
+modality_keywords = ('ecg', 'temp', 'acc_chest', 'acc_e4', 'eda', 'emg', 'ppg')
 #modality_keywords = ('ecg', 'temp', 'acc_e4', 'eda', 'emg', 'ppg')
-modality_keywords = ('eda', )
+#modality_keywords = ('emg', )
 
 filters = {
     modalities.ECG: (FrequencyDomainFilter(FrequencyResponse.FIR, BandType.BANDPASS, (1., 40.), 50), ),
