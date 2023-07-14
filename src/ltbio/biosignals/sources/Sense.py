@@ -69,6 +69,12 @@ class Sense(BiosignalSource):
     EMG_LOW_SATURATION_THRESHOLD = 20
     EMG_TYPICAL_REST_RMS = (1291 + 1586) / 2  # two examples, one with rhythmic activity (lifting a chair), one with intense activity (running)
 
+    def __hash__(self):
+        return hash(self.__device_id) * hash(self.__defaults_path)
+
+    def __eq__(self, other):
+        return type(other) == Sense
+
 
     def __init__(self, device_id:str, defaults_path:str=None):
         super().__init__()

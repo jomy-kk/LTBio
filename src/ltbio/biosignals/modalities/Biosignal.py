@@ -53,6 +53,8 @@ class Biosignal(ABC):
 
     __SERIALVERSION: int = 2
 
+    MAX_NAME_LENGTH: int = 100
+
     def __init__(self, timeseries: Dict[str|BodyLocation, timeseries.Timeseries] | str | Tuple[datetime], source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, **options):
 
         # Save BiosignalSource, if given
@@ -409,7 +411,7 @@ class Biosignal(ABC):
     @property
     def patient_conditions(self) -> Set[MedicalCondition]:
         '''Returns the set of medical conditions of the associated Patient, or None if no Patient was associated.'''
-        return self.__patient.conditions if self.__patient != None else set()
+        return self.__patient.conditions if self.__patient is not None else set()
 
     @property
     def acquisition_location(self):
@@ -420,6 +422,13 @@ class Biosignal(ABC):
     def source(self) -> BiosignalSource:
         '''Returns the BiosignalSource from where the data was read, or None if was not specified.'''
         return self.__source
+
+    @property
+    def _source_as_class_string(self) -> str:
+        if isinstance(self.__source, BiosignalSource):
+            return self.__source.__class__.__name__
+        else:
+            return self.__source.__name__
 
     @property
     def type(self) -> ClassVar:
@@ -460,6 +469,10 @@ class Biosignal(ABC):
             return tuple(self.__timeseries.values())[0].subdomains
         else:
             raise NotImplementedError()
+
+    @property
+    def are_channel_domains_equal(self) -> bool:
+        return all([ts.domain == self.domain for ts in self.__timeseries.values()])
 
     def _vblock(self, i: int):
         """

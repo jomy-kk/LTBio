@@ -90,6 +90,12 @@ class Patient():
         for procedure in self.__procedures:
             procedure.date += delta
 
+    def __eq__(self, other):
+        return self.code == other.code
+
+    def __hash__(self):
+        return hash(self.__code) * hash(self.__name) * hash(self.__age) * hash(self.__sex)
+
     def __getstate__(self):
         """
         1: code

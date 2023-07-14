@@ -688,8 +688,8 @@ class Timeseries():
             A symbolic name for the Timeseries. It is mentioned in plots, reports, error messages, etc.
         """
 
-        if len(segments_by_time) < 2:
-            raise TypeError("Use the regular initializer to instantiate a Timeseries with 1 contiguous segment.")
+        #if len(segments_by_time) < 2:
+        #    raise TypeError("Use the regular initializer to instantiate a Timeseries with 1 contiguous segment.")
 
         # Sort the segments
         ordered_arrays = sorted(segments_by_time.items())  # E.g. [ (datetime, array), (.., ..), .. ]
