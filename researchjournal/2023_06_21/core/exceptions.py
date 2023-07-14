@@ -3,6 +3,9 @@
 # ScientISST LTBio | Long-Term Biosignals
 from datetimerange import DateTimeRange
 
+from ltbio.biosignals.timeseries import Timeline
+
+
 #from ltbio.biosignals._Timeline import Timeline
 #from ltbio.biosignals._Timeseries import Timeseries
 #from ltbio.biosignals.units import Unit, Frequency
@@ -69,6 +72,12 @@ class TimeError(Exception):
 class ChannelsWithDifferentStartTimepointsError(TimeError):
     def __init__(self, first_name, first_start, second_name, second_start, additional: str = ''):
         super().__init__(f"{first_name} starts at {first_start} and {second_name} starts at {second_start}. " + additional)
+
+class ChannelsWithDifferentDomainsError(TimeError):
+    def __init__(self, domains_by_channel_name: dict[str, Timeline], additional: str = ''):
+        super().__init__(f"The channels of this Biosignal do not have the same domain. "
+                         + additional + "\n"
+                         + "\n".join([f"{channel_name}: {domain}" for channel_name, domain in domains_by_channel_name.items()]))
 
 
 class OverlappingError(TimeError):

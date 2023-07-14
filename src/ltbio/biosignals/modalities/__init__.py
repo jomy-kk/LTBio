@@ -8,3 +8,4 @@ from ltbio.biosignals.modalities.HR import HR
 from ltbio.biosignals.modalities.PPG import PPG, IBI
 from ltbio.biosignals.modalities.RESP import RESP
 from ltbio.biosignals.modalities.TEMP import TEMP
+from ltbio.biosignals.modalities.MultimodalBiosignal import MultimodalBiosignal
