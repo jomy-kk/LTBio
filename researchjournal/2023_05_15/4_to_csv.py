@@ -45,7 +45,7 @@ for code in subject_codes:
         'temp:temp': 'temp'
     }
     for old_name in correct_column_names.keys():
-        if old_name in x:
+        if old_name in x._Biosignal__timeseries:
             x.set_channel_name(old_name, correct_column_names[old_name])
 
     # To DataFrame
