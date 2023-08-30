@@ -21,12 +21,12 @@ from .segments import *
 # You can use these variables to assert the metadata of the Timeseries objects.
 
 # Sampling frequencies
-sf_low = 2.
-sf_high = 4.
+sf_low: float = 2.
+sf_high: float = 4.
 
 # Units
-units_volt = Volt(Multiplier.m)
-units_siemens = Siemens(Multiplier.u)
+units_volt: Unit = Volt(Multiplier.m)
+units_siemens: Unit = Siemens(Multiplier.u)
 
 # Start timepoints
 start_a = datetime(2000, 1, 1, 0, 0, 0)

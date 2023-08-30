@@ -16,9 +16,10 @@
 # ===================================
 
 from datetime import datetime, timedelta
+from os import remove
 from os.path import join
 from tempfile import mkstemp
-from typing import Callable, Sequence, Any
+from typing import Callable, Sequence, Any, Union
 
 import numpy as np
 from multimethod import multimethod
@@ -53,20 +54,25 @@ class Segment():
         self.__samples = np.array(samples, dtype=float)
 
     # ===================================
+    # BUILT-INS (Basics)
+    def __copy__(self):
+        return Segment(self.__samples)
+
+    def __str__(self) -> str:
+        return f"Segment ({len(self)})"
+
+    def __repr__(self) -> str:
+        return str(self)
+
+    def __len__(self) -> int:
+        return len(self.__samples)
+
+    # ===================================
     # Properties (Getters)
 
     @property
     def samples(self) -> ndarray:
         return self.__samples.view()
-
-    # ===================================
-    # Built-ins (Basics)
-
-    def __len__(self):
-        return len(self.__samples)
-
-    def __copy__(self):
-        return Segment(self.__samples.copy())
 
     # ===================================
     # Built-ins (Joining Segments)
@@ -129,14 +135,14 @@ class Segment():
         return self._unary_operation(self, (lambda x: x - other))
 
     @multimethod
-    def __mul__(self, other: 'Segment'):
+    def __mul__(self: 'Segment', other: 'Segment'):
         """Multiplies two Segments, sample by sample."""
         return self._binary_operation((lambda x, y: x * y), self, other)
 
     @multimethod
-    def __mul__(self, other: float):
+    def __mul__(self: 'Segment', other: Union[int, float]):
         """Multiplies the Segment by a constant (contraction)."""
-        return self._unary_operation(self, (lambda x: x * other))
+        return Segment(self.samples * other)
 
     @multimethod
     def __truediv__(self, other: 'Segment'):
@@ -164,7 +170,16 @@ class Segment():
         """
         The built-in slicing and indexing (segment[x:y]) operations.
         """
-        return self.__samples[index]
+        try:
+            if isinstance(index, tuple):
+                return tuple([self[ix] for ix in index])
+            elif isinstance(index, slice | int):
+                res = self.__samples[index]
+                return Segment(res) if isinstance(res, np.ndarray) else res
+            else:
+                raise TypeError(f"Indexing type {type(index)} not supported.")
+        except IndexError as e:
+            raise IndexError(f"Index {index} out of bounds for Segment of length {len(self)}")
 
     def __iter__(self) -> iter:
         return iter(self.__samples)
@@ -181,11 +196,21 @@ class Segment():
     # ===================================
     # Binary Logic
 
-    def __eq__(self, other):
-        return self.__samples == other.samples
+    @multimethod
+    def __eq__(self, other: 'Segment') -> bool:
+        return all(self.__samples == other.samples)
 
-    def __ne__(self, other):
-        return self.__samples != other.samples
+    @multimethod
+    def __eq__(self, other: Union[int, float]) -> bool:
+        return all(self.__samples == other)
+
+    @multimethod
+    def __ne__(self, other: 'Segment') -> bool:
+        return all(self.__samples != other.samples)
+
+    @multimethod
+    def __ne__(self, other: Union[int, float]) -> bool:
+        return all(self.__samples != other)
 
     # ===================================
     # PROCESSING
@@ -210,30 +235,40 @@ class Segment():
     # ===================================
     # SERIALIZATION
 
+    @property
+    def __is_memory_mapped(self):
+        return isinstance(self.__samples, memmap)
+
+    @property
+    def __is_temp_memory_mapped(self):
+        return hasattr(self, '_Segment__memory_map')
+
     def _memory_map(self, path):
-        if not isinstance(self.__samples, memmap):  # Create a memory map for the array
+        if not self.__is_memory_mapped and not self.__is_temp_memory_mapped:  # Create a memory map for the array
             _, file_name = mkstemp(dir=path, suffix='.segment')
             filepath = join(path, file_name)
             self.__memory_map = memmap(filepath, dtype='float32', mode='r+', shape=self.__samples.shape)
             self.__memory_map[:] = self.__samples[:]
             self.__memory_map.flush()  # release memory in RAM; don't know if this is actually helping
 
-    def __hash__(self):
-        return hash(self.__initial_datetime) * hash(self.__final_datetime) * hash(self.__samples)
+    def __del__(self):
+        if self.__is_temp_memory_mapped:
+            self.__memory_map._mmap.close()
+            remove(self.__memory_map.filename)
 
-    __SERIALVERSION: int = 2
+    __SERIALVERSION: int = 3
 
     def __getstate__(self):
         """
-        1: __initial_datetime (datetime)
-        2: __samples (ndarray)
+        Version 3:
+        1: __samples (ndarray)
         """
-        if isinstance(self.__samples, memmap):  # Case: has been saved as .biosignal before
-            return (Segment._Segment__SERIALVERSION, self.__initial_datetime, self.__samples)
-        elif hasattr(self, '_Segment__memory_map'):  # Case: being saved as .biosignal for the first time
-            return (Segment._Segment__SERIALVERSION, self.__initial_datetime, self.__memory_map)
+        if self.__is_memory_mapped:  # Case: has been saved as .biosignal before
+            return (Segment._Segment__SERIALVERSION, self.__samples)
+        elif self.__is_temp_memory_mapped:  # Case: being saved as .biosignal for the first time
+            return (Segment._Segment__SERIALVERSION, self.__memory_map)
         else:  # Case: being called by deepcopy
-            return (Segment._Segment__SERIALVERSION, self.__initial_datetime, self.__samples)
+            return (Segment._Segment__SERIALVERSION, self.__samples)
 
     def __setstate__(self, state):
         """
@@ -241,12 +276,16 @@ class Segment():
         1: __initial_datetime (datetime)
         2: __samples (ndarray)
         3: __sampling_frequency (Frequency)
+        Version 3:
+        1: __samples (ndarray)
         """
         if state[0] == 1 or state[0] == 2:
-            self.__initial_datetime, self.__samples, self.__sampling_frequency = state[1], state[2], state[3]
+            self.__samples = state[1]
             self.__final_datetime = self.initial_datetime + timedelta(seconds=len(self.__samples) / self.__sampling_frequency)
             self.__is_filtered = False
             self.__raw_samples = self.__samples
+        elif state[0] == 3:
+            self.__samples = state[1]
         else:
             raise IOError(
                 f'Version of Segment object not supported. Serialized version: {state[0]}; '

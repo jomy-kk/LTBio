@@ -668,12 +668,12 @@ class Timeseries():
     def apply(self, operator: Operator, inplace: bool = True, **kwargs):
         ...
 
-    @multimethod(Operation)
-    def undo(self, operation) -> None:
+    @multimethod
+    def undo(self, operation: Operation) -> None:
         ...
 
-    @multimethod(int)
-    def undo(self, operation) -> None:
+    @multimethod
+    def undo(self, operation: int) -> None:
         ...
 
     def _apply_operation(self, operation, **kwargs):

@@ -6,7 +6,7 @@ from ._BiosignalSource import BiosignalSource
 from ._Event import Event
 from ._Timeline import Timeline
 from ._Timeseries import Timeseries
-
+from ._Segment import Segment
 
 def plot_comparison(*biosignals: Biosignal, show: bool = True, save_to: str = None):
 

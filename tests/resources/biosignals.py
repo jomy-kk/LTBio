@@ -49,7 +49,7 @@ class NoModalityBiosignal(Biosignal):
     ...
 
 
-def get_biosignal(channels: tuple[tuple[str, int, bool, float, str]], patient, location):
+def get_biosignal(*channels_properties: tuple[str, int, bool, str, str], patient, location, source=None, name=None):
     """
     Use get_biosignal to get a new Biosignal object populated for testing purposes.
 
@@ -71,57 +71,51 @@ def get_biosignal(channels: tuple[tuple[str, int, bool, float, str]], patient, l
     if location == 'wrist':
         location = location_W
 
-    name = get_biosignal_name(channels[0][1])  # use the group of the first channel
+    if name is None:
+        name = get_biosignal_name(channels_properties[0][1])  # use the group of the first channel
 
-    channel_names = (channel_name_a, channel_name_b, channel_name_c, channel_name_d)
-    timeseries = {}
+    if source is None:
+        source = source
 
-    for channel_name, instructions in zip(channel_names, channels):
-        length, group, discontiguous, sf, units = instructions
-        timeseries[channel_name] = get_timeseries(length, group, discontiguous, sf, units)
+    channel_names = (channel_name_a, channel_name_b, channel_name_c, channel_name_d)[:len(channels_properties)]
+    channel_properties_with_names = {channel_name: properties for channel_name, properties in zip(channel_names, channels_properties)}
 
+    return _get_biosignal(channel_properties_with_names, patient=patient, location=location, source=source, name=name)
+
+
+def _get_biosignal(channels_properties: dict[dict], patient, location, source, name):
+    channel_names = (channel_name_a, channel_name_b, channel_name_c, channel_name_d)[:len(channels_properties)]
+    timeseries = {channel_name: get_timeseries(**instructions) for channel_name, instructions in zip(channel_names, channels_properties)}
     return NoModalityBiosignal(timeseries, source, patient, location, name)
 
 
 # CLASSIC EXAMPLES
 
-def get_biosignal_alpha():
-    """
-    1 channel with group 1 small contiguous timeseries, 2 Hz, mV, associated with patient_M and location_C
-    """
-    length, group = 'small', 1
-    return NoModalityBiosignal({channel_name_a: get_timeseries(length, group, False, sf_low, units_volt)},
-                               source, patient_M, location_C, get_biosignal_name(1))
+# Alpha
+# 1 channel with group 1 small contiguous timeseries, 2 Hz, mV, associated with patient_M and location_C
+biosignal_alpha_timeseries_properties = {channel_name_a: {'length': 'small', 'group': 1, 'discontiguous': False, 'sf': sf_low, 'units': units_volt}}
+biosignal_alpha_properties = {'patient': patient_M, 'location': location_C, 'name': get_biosignal_name(1), source: source}
+#biosignal_alpha_times = {'start': start_a, 'end': end_a
+get_biosignal_alpha = lambda: _get_biosignal(biosignal_alpha_timeseries_properties, **biosignal_alpha_properties)
 
+# Beta
+# 1 channel with group 1 discontiguous medium timeseries, 2 Hz, mV, associated with patient_M and location_C
+biosignal_beta_timeseries_properties = {channel_name_a: {'length': 'medium', 'group': 1, 'discontiguous': True, 'sf': sf_low, 'units': units_volt}}
+biosignal_beta_properties = {'patient': patient_M, 'location': location_C, 'name': get_biosignal_name(1), source: source}
+get_biosignal_beta = lambda: _get_biosignal(biosignal_beta_timeseries_properties, **biosignal_beta_properties)
 
-def get_biosignal_beta():
-    """
-    1 channel with group 1 discontiguous medium timeseries, 2 Hz, mV, associated with patient_M and location_C
-    """
-    length, group = 'medium', 1
-    return NoModalityBiosignal({channel_name_a: get_timeseries(length, group, True, sf_low, units_volt)},
-                               source, patient_M, location_C, get_biosignal_name(1))
+# Gamma
+# 3 channels with group 2 variable length contiguous timeseries, 4 Hz, uS, associated with patient_F and location_W
+biosignal_gamma_timeseries_properties = {channel_name_a: {'length': 'small', 'group': 2, 'discontiguous': False, 'sf': sf_high, 'units': units_siemens},
+                                         channel_name_b: {'length': 'medium', 'group': 2, 'discontiguous': False, 'sf': sf_high, 'units': units_siemens},
+                                         channel_name_c: {'length': 'large', 'group': 2, 'discontiguous': False, 'sf': sf_high, 'units': units_siemens}}
+biosignal_gamma_properties = {'patient': patient_F, 'location': location_W, 'name': get_biosignal_name(2), source: source}
+get_biosignal_gamma = lambda: _get_biosignal(biosignal_gamma_timeseries_properties, **biosignal_gamma_properties)
 
-
-def get_biosignal_gamma():
-    """
-    3 channels with group 2 variable length contiguous timeseries, 4 Hz, uS, associated with patient_F and location_W
-    """
-    length, group = None, 2
-    return NoModalityBiosignal({channel_name_a: get_timeseries('small', group, False, sf_high, units_siemens),
-                                channel_name_b: get_timeseries('medium', group, False, sf_high, units_siemens),
-                                channel_name_c: get_timeseries('large', group, False, sf_high, units_siemens),
-                                },
-                               source, patient_F, location_W, get_biosignal_name(group))
-
-
-def get_biosignal_delta():
-    """
-    2 channels with group 2 variable length discontiguous timeseries, 4 Hz, uS, associated with patient_F and location_W
-    """
-    length, group = None, 2
-    return NoModalityBiosignal({channel_name_a: get_timeseries('medium', group, True, sf_high, units_siemens),
-                                channel_name_b: get_timeseries('large', group, True, sf_high, units_siemens),
-                                },
-                               source, patient_F, location_W, get_biosignal_name(group))
+# Delta
+# 2 channels with group 2 variable length discontiguous timeseries, 4 Hz, uS, associated with patient_F and location_W
+biosignal_delta_timeseries_properties = {channel_name_a: {'length': 'medium', 'group': 2, 'discontiguous': True, 'sf': sf_high, 'units': units_siemens},
+                                            channel_name_b: {'length': 'large', 'group': 2, 'discontiguous': True, 'sf': sf_high, 'units': units_siemens}}
+biosignal_delta_properties = {'patient': patient_F, 'location': location_W, 'name': get_biosignal_name(2), source: source}
+get_biosignal_delta = lambda: _get_biosignal(biosignal_delta_timeseries_properties, **biosignal_delta_properties)
 
