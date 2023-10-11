@@ -51,8 +51,8 @@ class MultimodalBiosignal(Biosignal):
             name += f" '{biosignal.name}'," if biosignal.name != "No Name" else f" '{label}',"
 
             # Check if there are no incompatible events
-            # if any(e != events[e.name] for e in biosignal.events if e.name in events.keys()):
-            #   raise ValueError("There is an Event of one Biosignal with the same name of one of the others, but with different onsets/offsets.")
+            if any(e != events[e.name] for e in biosignal.events if e.name in events.keys()):
+               raise ValueError(f"There is an Event in Biosignal '{biosignal.name}' with the same name, but with different onset and/or offset, of one Event contained in the other Biosignals.")
 
             # Add new events
             remaining_events = set(biosignal.events) - set(events.values())
@@ -74,7 +74,7 @@ class MultimodalBiosignal(Biosignal):
             location = None
 
         x = MultimodalBiosignal(timeseries, source, patient, location, name[:-1])
-        # self.associate(events)
+        x.associate(events)
         x._MultimodalBiosignal__biosignals = biosignals
         return x
 
