@@ -29,7 +29,7 @@ from ltbio.clinical.Patient import Sex, Patient
 from ltbio.biosignals.modalities import *
 from ltbio.biosignals.sources import *
 
-_SEG_ANNOTATION = ':seg'
+_SEG_ANNOTATION_TEMPLATE = '$SEG_{}$'
 _LTBIO_MARK = 'LTBio'
 _REC_ADDITIONAL_TEMPLATE = '[' + _LTBIO_MARK + ' {modality}] {name}'
 _REC_ADDITIONAL_REGEX = r'\[' + _LTBIO_MARK + r' ([a-zA-Z]+)\] (.+)'
@@ -44,17 +44,20 @@ def save_to_edf(biosignal: Biosignal, filepath: str):
     Annotations = Events directly associated to the Biosignal and associated to the Patient (with second precision).
     Patient-related data = Code, Name, Gender, approx. Birthdate, Additional notes. Although, the age at the time of recording is lost.
     Equipment = BiosignalSource.
-    Recording Additional = Biosignal name and notes associated.
+    Recording Additional = Biosignal name
+
+    All sensors are NaN on interruptions.
 
     What information is lost?
     - Biosignal acquisition location.
     - Timeseries internal names.
-    - Precision in each channel start timepoint and start and end of interruptions.
+    - Super precision in each channel start timepoint and start and end of interruptions.
     - All other data associated to the Patient, such as medical conditions, medications, and procedures.
     - Processing history.
+    - Biosignal's notes.
 
     :param biosignal: The Biosignal to be written.
-    :param filepath: The path to where to save the file.
+    :param filepath: The path to where to save the EDF file.
     :return: None
     """
 
@@ -88,7 +91,7 @@ def save_to_edf(biosignal: Biosignal, filepath: str):
     # Channels
     channels_metadata = []
     channels_samples = []
-    for channel_name, channel in biosignal:
+    for i, (channel_name, channel) in enumerate(biosignal):
         if channel.initial_datetime != global_start:
             raise ChannelsWithDifferentStartTimepointsError(channel_name, channel.initial_datetime, 'global',
                                                             global_start,
@@ -107,11 +110,13 @@ def save_to_edf(biosignal: Biosignal, filepath: str):
         channels_samples.append(channel.to_array())  # interruptions as NaNs
 
         # Make annotations for the start and end of each segment
-        for i, segment in enumerate(channel):
-            writer.writeAnnotation(onset_in_seconds=(segment.initial_datetime - global_start).total_seconds(),
-                                   duration_in_seconds=((
-                                                                    segment.initial_datetime + segment.duration) - global_start).total_seconds(),
-                                   description=f'{channel_name}{_SEG_ANNOTATION}{i}')
+        if False:  # FIXME: ARTIGO DATASET
+            for j, segment in enumerate(channel):
+                writer.writeAnnotation(onset_in_seconds=(segment.initial_datetime - global_start).total_seconds(),
+                                       duration_in_seconds=((
+                                                                        segment.initial_datetime + segment.duration) - global_start).total_seconds(),
+                                       #description=f'{channel_name}{_SEG_ANNOTATION_TEMPLATE.format(j)}')
+                                       description=_SEG_ANNOTATION_TEMPLATE.format(j))  # FIXME: ARTIGO DATASET
 
     writer.setSignalHeaders(channels_metadata)
     writer.writeSamples(channels_samples)
@@ -122,7 +127,7 @@ def save_to_edf(biosignal: Biosignal, filepath: str):
         annotation = {
             'onset_in_seconds': (timepoint_to_mark - global_start).total_seconds(),
             'duration_in_seconds': event.duration.total_seconds() if event.has_onset and event.has_offset else 0,
-            'description': event.name + ' (offset)' if event.has_offset and not event.has_onset else '',
+            'description': event.name + (' (offset)' if event.has_offset and not event.has_onset else ''),
         }
         writer.writeAnnotation(**annotation)
 

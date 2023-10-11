@@ -1,9 +1,11 @@
+from os.path import join
 
-from os import mkdir
-from os.path import join, isfile, isdir
-from src.ltbio.biosignals.modalities.MultimodalBiosignal import MultimodalBiosignal
-from researchjournal.runlikeascientisstcommons import *
-from core.serializations.edf import load_from_edf
+import mne, pyedflib
 
-x = load_from_edf(join(dataset_edf_path, 'JD3K', 'scientisst_chest.edf'))
+from researchjournal.runlikeascientisstcommons import dataset_edf_path
 
+# open with mne
+raw = mne.io.read_raw_edf(join(dataset_edf_path, '3B8D', 'scientisst_chest.edf'), preload=False)
+
+# open with pyedflib
+f = pyedflib.EdfReader(join(dataset_edf_path, '3B8D', 'scientisst_chest.edf'))

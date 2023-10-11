@@ -15,11 +15,11 @@ dataset_edf_path = '/Users/saraiva/Library/CloudStorage/OneDrive-UniversidadedeL
 global_scores_path = join(scores_path, 'all_scores.csv')
 
 # todos
-subject_codes = ('3B8D', '03FH', '3RFH', '4JF9', '93DK', '93JD', 'AP3H', 'F408', 'H39D', 'JD3K', 'K2Q2', 'KF93', 'KS03',
-                 'LAS2', 'LDM5', 'LK27', 'ME93')
+#subject_codes = ('3B8D', '03FH', '3RFH', '4JF9', '93DK', '93JD', 'AP3H', 'F408', 'H39D', 'JD3K', 'K2Q2', 'KF93', 'KS03',
+#                 'LAS2', 'LDM5', 'LK27', 'ME93')
 
 # os que faltam acabar
-#subject_codes = ('JD3K', 'K2Q2', 'KF93', 'KS03', 'LAS2', 'LDM5', 'LK27', 'ME93')
+subject_codes = ('F408', )
 
 devices = ('chest', 'arm', 'wrist')
 
@@ -36,9 +36,9 @@ def find_sensor_group(sensor):
 
 compact_keyword = 'COMPACT'
 
-modality_keywords = ('ecg', 'temp', 'acc_chest', 'acc_e4', 'eda', 'emg', 'ppg')
+#modality_keywords = ('ecg', 'temp', 'acc_chest', 'acc_e4', 'eda', 'emg', 'ppg')
 #modality_keywords = ('ecg', 'temp', 'acc_e4', 'eda', 'emg', 'ppg')
-#modality_keywords = ('emg', )
+modality_keywords = ('ecg', 'temp', 'acc_chest', 'acc_e4', 'eda', 'ppg')
 
 filters = {
     modalities.ECG: (FrequencyDomainFilter(FrequencyResponse.FIR, BandType.BANDPASS, (1., 40.), 50), ),

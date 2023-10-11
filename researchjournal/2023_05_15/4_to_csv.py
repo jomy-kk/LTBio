@@ -35,7 +35,7 @@ for code in subject_codes:
 
     # ACC E4 and TEMP had to be resampled to 500 Hz, because to_dataframe() will not
 
-    x = MultimodalBiosignal(**all_biosignals)
+    x = MultimodalBiosignal.from_biosignals(**all_biosignals)
 
     # Prettier and non-redundant column names
     correct_column_names = {
@@ -56,3 +56,4 @@ for code in subject_codes:
 
     # Save to CSV
     df.to_csv(join(dataset_csv_path, f'{code}.csv'))
+

@@ -53,13 +53,13 @@ for code in subject_codes:
 
     final_biosignals = {}
     if len(scientisst_chest) > 0:
-        scientisst_chest = MultimodalBiosignal(**scientisst_chest)
+        scientisst_chest = MultimodalBiosignal.from_biosignals(**scientisst_chest)
         final_biosignals['scientisst_chest'] = scientisst_chest
     if len(scientisst_forearm) > 0:
-        scientisst_forearm = MultimodalBiosignal(**scientisst_forearm)
+        scientisst_forearm = MultimodalBiosignal.from_biosignals(**scientisst_forearm)
         final_biosignals['scientisst_forearm'] = scientisst_forearm
     if len(empatica) > 0:
-        empatica = MultimodalBiosignal(**empatica)
+        empatica = MultimodalBiosignal.from_biosignals(**empatica)
         final_biosignals['empatica'] = empatica
 
     # Prettier and non-redundant column names
@@ -75,8 +75,6 @@ for code in subject_codes:
             if old_name in x._Biosignal__timeseries:
                 x.set_channel_name(old_name, correct_column_names[old_name])
 
-        print(x.channel_names)
-
     # Save to EDF
     if not isdir(join(dataset_edf_path, code)):
         mkdir(join(dataset_edf_path, code))
@@ -90,3 +88,5 @@ for code in subject_codes:
             x._Biosignal__source = E4
         x.name = bioname
         save_to_edf(x, join(dataset_edf_path, code, f'{name}.edf'))
+
+

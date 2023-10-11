@@ -11,7 +11,7 @@ for code in subject_codes:
     subject_path = join(dataset_biosignal_path, code)
     print(code)
 
-    """
+
     modality = 'ecg'
     path = join(dataset_biosignal_path, code, modality + biosignal_file_suffix)
     if isfile(path):
@@ -73,6 +73,6 @@ for code in subject_codes:
         pass
         #x.preview.plot()
         x.save(path)
-    """
+
 
     #exit(0)
