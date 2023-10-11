@@ -406,7 +406,7 @@ class Biosignal(ABC):
     @property
     def patient_code(self):
         '''Returns the code of the associated Patient, or 'n.d.' if none was provided.'''
-        return self.__patient.code if self.__patient != None else 'n.d.'
+        return self.__patient.code if self.__patient is not None else 'n.d.'
 
     @property
     def patient_conditions(self) -> Set[MedicalCondition]:
@@ -672,7 +672,7 @@ class Biosignal(ABC):
                 elif event.has_offset:
                     end_ix = round((event.offset - self.initial_datetime).total_seconds() * max_sf)
                     start_ix = end_ix - 1
-                df.loc[df.index[start_ix:end_ix], 'Events'] = df.loc[df.index[start_ix:end_ix], 'Events'] + event.name + ','
+                df.loc[df.index[start_ix:end_ix], 'Events'] = df.loc[df.index[start_ix:end_ix], 'Events'] + event.name + '|'
 
         return df
 
