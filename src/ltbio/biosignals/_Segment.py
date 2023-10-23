@@ -25,7 +25,7 @@ import numpy as np
 from multimethod import multimethod
 from numpy import ndarray, memmap
 
-from ltbio._core.exceptions import DifferentLengthsError
+from ltbio._core.exceptions import DifferentLengthsError, NotASegmentError
 
 
 class Segment():
@@ -75,6 +75,23 @@ class Segment():
         return self.__samples.view()
 
     # ===================================
+    # Properties (Setters)
+
+    @classmethod
+    def __samples_valid(cls, samples) -> bool:
+        if isinstance(samples, ndarray):
+            return samples.dtype in (int, float)
+        elif isinstance(samples, Sequence):
+            return all([isinstance(sample, (int, float)) for sample in samples])
+        else:
+            return False
+
+    def __set_samples(self, samples=None):
+        if not self.__samples_valid(samples):
+            raise TypeError(f"Trying to set Segment' samples to a {type(samples)}. Must be a sequence of numbers.")
+        self.__samples = samples
+
+    # ===================================
     # Built-ins (Joining Segments)
 
     def append(self, samples: ndarray | Sequence[float]):
@@ -86,7 +103,9 @@ class Segment():
         samples: ndarray
             The samples to append.
         """
-        self.__samples = np.append(self.__samples, samples)
+        if not self.__samples_valid(samples):
+            raise TypeError(f"Trying to append to Segment a {type(samples)}. Must be a sequence of numbers.")
+        self.__set_samples(np.append(self.__samples, samples))
 
     @classmethod
     def concatenate(cls, *other: 'Segment') -> 'Segment':
@@ -94,6 +113,10 @@ class Segment():
         Concatenates the Segments in the given order.
         """
         # Get the samples
+        for o in other:
+            if not isinstance(o, Segment):
+                raise TypeError(f"Trying to concatenate a {type(o)}. Must be a Segment.")
+
         all_samples = np.concatenate([segment.samples for segment in other])
         return Segment(all_samples)
 
@@ -105,64 +128,66 @@ class Segment():
         if len(first) != len(second):
             raise DifferentLengthsError(len(first), len(second))
 
-    @classmethod
-    def _binary_operation(cls, operation: Callable, first: 'Segment', second: 'Segment') -> 'Segment':
-        Segment._check_length_compatibility(first, second)
-        return Segment(operation(first, second))
+    def __binary_arithmetics(self, other, operation: Callable, inplace=False):
+        if inplace:
+            if type(other) is Segment:
+                Segment._check_length_compatibility(self, other)
+                self.__set_samples(operation(self.samples, other.samples))
+            elif type(other) in (float, int):
+                self.__set_samples(operation(self.samples, other))
+            else:
+                raise TypeError(f"Arithmetic operation between Segment and {type(other)} not allowed. "
+                                f"Second operator should be a number or another Segment.")
+            return self
+        else:
+            if type(other) is Segment:
+                Segment._check_length_compatibility(self, other)
+                return Segment(operation(self.samples, other.samples))
+            elif type(other) in (float, int):
+                return Segment(operation(self.samples, other))
+            else:
+                raise TypeError(f"Arithmetic operation between Segment and {type(other)} not allowed. "
+                                f"Second operator should be a number or another Segment.")
 
-    @classmethod
-    def _unary_operation(cls, segment: 'Segment', operation: Callable) -> 'Segment':
-        return Segment(operation(segment))
+    def __add__(self, other):
+        """Adds two Segments, sample by sample, or translates the Segment by a constant."""
+        return self.__binary_arithmetics(other, np.add, inplace=False)
 
-    @multimethod
-    def __add__(self, other: 'Segment'):
-        """Adds two Segments, sample by sample."""
-        return self._binary_operation((lambda x, y: x + y), self, other)
+    def __iadd__(self, other):
+        """Adds two Segments, sample by sample, or translates the Segment by a constant, in-place."""
+        return self.__binary_arithmetics(other, np.add, inplace=True)
 
-    @multimethod
-    def __add__(self, other: float):
-        """Translates the Segment by a constant."""
-        return self._unary_operation(self, (lambda x: x + other))
-
-    @multimethod
     def __sub__(self, other):
         """Subtracts two Segments, sample by sample."""
-        return self._binary_operation((lambda x, y: x - y), self, other)
+        return self.__binary_arithmetics(other, np.subtract, inplace=False)
 
-    @multimethod
-    def __sub__(self, other: float):
+    def __isub__(self, other):
         """Translates the Segment by a constant."""
-        return self._unary_operation(self, (lambda x: x - other))
+        return self.__binary_arithmetics(other, np.subtract, inplace=True)
 
-    @multimethod
-    def __mul__(self: 'Segment', other: 'Segment'):
+    def __mul__(self, other):
         """Multiplies two Segments, sample by sample."""
-        return self._binary_operation((lambda x, y: x * y), self, other)
+        return self.__binary_arithmetics(other, np.multiply, inplace=False)
 
-    @multimethod
-    def __mul__(self: 'Segment', other: Union[int, float]):
+    def __imul__(self, other):
         """Multiplies the Segment by a constant (contraction)."""
-        return Segment(self.samples * other)
+        return self.__binary_arithmetics(other, np.multiply, inplace=True)
 
-    @multimethod
-    def __truediv__(self, other: 'Segment'):
+    def __truediv__(self, other):
         """Divides two Segments, sample by sample."""
-        return self._binary_operation((lambda x, y: x / y), self, other)
+        return self.__binary_arithmetics(other, np.true_divide, inplace=False)
 
-    @multimethod
-    def __truediv__(self, other: float):
+    def __itruediv__(self, other):
         """Divides the Segment by a constant (expansion)."""
-        return self._unary_operation(self, (lambda x: x / other))
+        return self.__binary_arithmetics(other, np.true_divide, inplace=True)
 
-    @multimethod
-    def __floordiv__(self, other: 'Segment'):
+    def __floordiv__(self, other):
         """Divides two Segments, sample by sample."""
-        return self._binary_operation((lambda x, y: x // y), self, other)
+        return self.__binary_arithmetics(other, np.floor_divide, inplace=False)
 
-    @multimethod
-    def __floordiv__(self, other: float):
+    def __ifloordiv__(self, other):
         """Divides the Segment by a constant (expansion)."""
-        return self._unary_operation(self, (lambda x: x // other))
+        return self.__binary_arithmetics(other, np.floor_divide, inplace=True)
 
     # ===================================
     # Built-ins (Indexing)
@@ -185,24 +210,50 @@ class Segment():
         return iter(self.__samples)
 
     # ===================================
-    # Amplitude methods
+    # Shortcut Statistics
 
-    def max(self):
-        return np.max(self.__samples)
+    def max(self) -> float:
+        return self.extract(lambda x: np.max(x))
 
-    def min(self):
-        return np.min(self.__samples)
+    def argmax(self) -> int:
+        return self.extract(lambda x: np.argmax(x))
+
+    def min(self) -> float:
+        return self.extract(lambda x: np.min(x))
+
+    def argmin(self) -> int:
+        return self.extract(lambda x: np.argmin(x))
+
+    def mean(self) -> float:
+        return self.extract(lambda x: np.mean(x))
+
+    def median(self) -> float:
+        return self.extract(lambda x: np.median(x))
+
+    def std(self) -> float:
+        return self.extract(lambda x: np.std(x))
+
+    def var(self) -> float:
+        return self.extract(lambda x: np.var(x))
+
+    def abs(self) -> 'Segment':
+        return self.extract(lambda x: np.abs(x))
+
+    def diff(self) -> 'Segment':
+        return self.extract(lambda x: np.diff(x))
 
     # ===================================
     # Binary Logic
 
     @multimethod
     def __eq__(self, other: 'Segment') -> bool:
-        return all(self.__samples == other.samples)
+        if len(self) != len(other):
+            return False
+        return np.equal(self.__samples, other.samples).all()
 
     @multimethod
     def __eq__(self, other: Union[int, float]) -> bool:
-        return all(self.__samples == other)
+        return np.equal(self.__samples, other).all()
 
     @multimethod
     def __ne__(self, other: 'Segment') -> bool:
@@ -221,12 +272,12 @@ class Segment():
         """
         processed_samples = operation(self.samples, **kwargs)
         if inplace:
-            self.__samples = processed_samples
-            return
+            self.__set_samples(processed_samples)
+            return self
         else:
             return Segment(processed_samples)
 
-    def apply_and_return(self, operation: Callable, **kwargs) -> Any:
+    def extract(self, operation: Callable, **kwargs) -> Any:
         """
         Applies a procedure to its samples and returns the output.
         """
