@@ -148,7 +148,7 @@ class Timeseries():
     # INITIALIZERS
     @multimethod
     def __init__(self, segments_by_time: dict[datetime, ndarray | Sequence[float] | Segment], sampling_frequency: float,
-                 units: Unit = None, name: str = None):
+                 unit: Unit = None, name: str = None):
         """
         Give one or multiple instantiated Segments.
         It also receives the sampling frequency of the samples.
@@ -165,7 +165,7 @@ class Timeseries():
         sampling_frequency: float | Frequency
             The frequency at which the samples where sampled.
 
-        units: Unit
+        unit: Unit
             The physical units of the variable measured.
 
         name: str
@@ -173,7 +173,7 @@ class Timeseries():
         """
         # Metadata
         self.__sampling_frequency = Frequency(sampling_frequency)
-        self.__units = units
+        self.__unit = unit
         self.__name = name
 
         # Segments

@@ -86,7 +86,7 @@ class Seer(BiosignalSource):
                 if len(segments) > 1:
                     new_timeseries = timeseries.Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=name, units=unit)
                 else:
-                    new_timeseries = timeseries.Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq, name=name, units=unit)
+                    new_timeseries = timeseries.Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq, name=name, unit=unit)
                 new_dict[dict_key] = new_timeseries
 
         return new_dict

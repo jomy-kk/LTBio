@@ -96,7 +96,7 @@ class MITDB(BiosignalSource):
             if len(segments) > 1:
                 new_timeseries = timeseries.Timeseries.withDiscontiguousSegments(segments, sampling_frequency=sfreq, name=channels[ch], units=unit)
             else:
-                new_timeseries = timeseries.Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq, name=channels[ch], units=unit)
+                new_timeseries = timeseries.Timeseries(tuple(segments.values())[0], tuple(segments.keys())[0], sfreq, name=channels[ch], unit=unit)
             new_dict[channels[ch]] = new_timeseries
 
         return new_dict
