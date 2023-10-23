@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-
+from collections import OrderedDict
 # ===================================
 
 # IT - LongTermBiosignals
@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 from math import ceil
 from os.path import join
 from tempfile import mkstemp
-from typing import List, Iterable, Collection, Dict, Tuple, Callable, Sequence
+from typing import List, Iterable, Collection, Dict, Tuple, Callable, Sequence, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -35,11 +35,11 @@ from ._Segment import Segment
 from ._Timeline import Timeline
 from .units import Unit, Frequency
 from .._core.exceptions import DifferentSamplingFrequenciesError, DifferentUnitsError, TimeseriesOverlappingError, \
-    DifferentDomainsError
+    DifferentDomainsError, EmptyTimeseriesError
 from .._core.operations import Operator, Operation
 
 
-#from ltbio.processing.filters.Filter import Filter
+# from ltbio.processing.filters.Filter import Filter
 
 class Timeseries():
     """
@@ -147,6 +147,36 @@ class Timeseries():
 
     # INITIALIZERS
     @multimethod
+    def __init__(self, segments_by_time=None, sampling_frequency=None, unit=None, name=None):
+        """
+        Type-checking and validation of the parameters.
+        """
+        # Segments
+        if segments_by_time is None:
+            raise EmptyTimeseriesError()
+        else:
+            if not isinstance(segments_by_time, dict):
+                raise ValueError(f"Invalid segments: {segments_by_time}")
+            if len(segments_by_time) == 0:
+                raise EmptyTimeseriesError()
+            for start, segment in segments_by_time.items():
+                if not isinstance(start, datetime):
+                    raise ValueError(f"Invalid start datetime: {start}")
+                if not isinstance(segment, Segment):
+                    raise ValueError(f"Invalid Segment: {segment}")
+        # Sampling frequency
+        if sampling_frequency is None:
+            raise ValueError("Sampling frequency is required.")
+        elif not isinstance(sampling_frequency, (float, int)):
+            raise ValueError(f"Invalid sampling frequency: {sampling_frequency}")
+        # Unit
+        if unit is not None and not isinstance(unit, Unit):
+            raise ValueError(f"Invalid unit: {unit}")
+        # Name
+        if name is not None and not isinstance(name, str):
+            raise ValueError(f"Invalid name: {name}")
+
+    @multimethod
     def __init__(self, segments_by_time: dict[datetime, ndarray | Sequence[float] | Segment], sampling_frequency: float,
                  unit: Unit = None, name: str = None):
         """
@@ -177,14 +207,22 @@ class Timeseries():
         self.__name = name
 
         # Segments
-        self.__segments = [Segment(samples, start) for start, samples in segments_by_time.items()]
-        self.__segments = sorted(self.__segments, key = lambda segment: segment.start)  # Sort by start datetime
+        if len(segments_by_time) == 0:
+            raise EmptyTimeseriesError()
+        self.__segments = OrderedDict()
+        for start, segment in segments_by_time.items():
+            if not isinstance(start, datetime): raise TypeError()
+            if not isinstance(segment, Segment):
+                if not isinstance(segment, (ndarray, Sequence[float])):
+                    raise TypeError()
+                segment = Segment(segment)
+            self.__segments[start] = segment
 
     # ===================================
     # Properties (Getters)
     @property
     def segments(self) -> tuple[Segment]:
-        return tuple(self.__segments)
+        return self.__segments
 
     @property
     def __samples(self) -> ndarray:
@@ -210,7 +248,7 @@ class Timeseries():
         return self.__segments[-1].end  # Is the final datetime of the last Segment
 
     def __segment_duration(self, segment: Segment) -> timedelta:
-        return timedelta(seconds = len(segment) / self.sampling_frequency)
+        return timedelta(seconds=len(segment) / self.sampling_frequency)
 
     def __segment_end(self, segment: Segment) -> datetime:
         return segment.start + self.__segment_duration(segment)
@@ -296,7 +334,8 @@ class Timeseries():
         end = to_datetime(end) if isinstance(end, str) else end
         # Get the samples
         return Timeseries(segments=self.__get_samples(start, end), sampling_frequency=self.sampling_frequency,
-                          units=self.unit, name=self.name)
+                          unit=self.unit, name=self.name)
+
     @multimethod
     def __getitem__(self, item: DateTimeRange):
         return self[item.start_datetime:item.end_datetime]
@@ -381,7 +420,7 @@ class Timeseries():
 
     @property
     def __sampling_period(self) -> timedelta:
-        return timedelta(seconds = 1 / self.sampling_frequency)
+        return timedelta(seconds=1 / self.sampling_frequency)
 
     @multimethod
     def append(self, other: ndarray | Sequence[float | int]):
@@ -416,20 +455,20 @@ class Timeseries():
     # BUILT-INS (Arithmetic)
     @classmethod
     def _binary_operation(cls, operation: Callable, operator_string: str,
-                                     first: 'Timeseries', second: 'Timeseries') -> 'Timeseries':
+                          first: 'Timeseries', second: 'Timeseries') -> 'Timeseries':
         # Check compatibility
         Timeseries._check_meta_compatibility(first, second)
         Timeseries._check_domain_compatibility(first, second)
         # Apply operation
         new_segments = [operation(x, y) for x, y in zip(first.segments, second.segments)]
-        return Timeseries(segments=new_segments, sampling_frequency=first.sampling_frequency, units=first.unit,
-                            name=first.name + ' ' + operator_string + ' ' + second.name)
+        return Timeseries(segments=new_segments, sampling_frequency=first.sampling_frequency, unit=first.unit,
+                          name=first.name + ' ' + operator_string + ' ' + second.name)
 
     @classmethod
     def _unary_operation(cls, timeseries: 'Timeseries', operation: Callable, operator_string: str) -> 'Timeseries':
         # Apply operation
         new_segments = [operation(x) for x in timeseries.segments]
-        return Timeseries(segments=new_segments, sampling_frequency=first.sampling_frequency, units=first.unit,
+        return Timeseries(segments=new_segments, sampling_frequency=first.sampling_frequency, unit=first.unit,
                           name=timeseries.name + ' ' + operator_string)
 
     @multimethod
@@ -526,14 +565,15 @@ class Timeseries():
         Returns a new Timeseries with the absolute value of all samples.
         """
         return Timeseries(segments=[seg.abs() for seg in self.__segments], sampling_frequency=self.__sampling_frequency,
-                          units=self.__units, name=f'Absolute of {self.__name})')
+                          unit=self.__units, name=f'Absolute of {self.__name})')
 
     def diff(self) -> 'Timeseries':
         """
         Returns a new Timeseries with the difference between consecutive samples, i.e. the discrete derivative.
         """
-        return Timeseries(segments=[seg.diff() for seg in self.__segments], sampling_frequency=self.__sampling_frequency,
-                          units=self.__units, name=f'Derivative of {self.__name})')
+        return Timeseries(segments=[seg.diff() for seg in self.__segments],
+                          sampling_frequency=self.__sampling_frequency,
+                          unit=self.__units, name=f'Derivative of {self.__name})')
 
     # ===================================
     # INTERNAL USAGE - Convert indexes <-> timepoints && Get Samples
@@ -560,8 +600,9 @@ class Timeseries():
                     res_segments.append(trimmed_segment)
                     return res_segments
                 else:
-                    if not initial_datetime == segment.end: # skip what would be an empty set
-                        trimmed_segment = segment[int((initial_datetime - segment.start).total_seconds() * self.sampling_frequency):]
+                    if not initial_datetime == segment.end:  # skip what would be an empty set
+                        trimmed_segment = segment[int((
+                                                              initial_datetime - segment.start).total_seconds() * self.sampling_frequency):]
                         res_segments.append(trimmed_segment)
                     for j in range(i + 1,
                                    len(self.__segments)):  # adding the remaining samples, until the last Segment is found
@@ -588,14 +629,16 @@ class Timeseries():
 
         elif isinstance(datetime_or_range, DateTimeRange):
             for subdomain in self.domain:
-                if subdomain.is_intersection(datetime_or_range) and datetime_or_range.start_datetime != subdomain.end_datetime:
+                if subdomain.is_intersection(
+                        datetime_or_range) and datetime_or_range.start_datetime != subdomain.end_datetime:
                     intersects = True
                     break
             if not intersects:
                 raise IndexError(
                     f"Interval given is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
 
-    def _indices_to_timepoints(self, indices: list[list[int]], by_segment=False) -> tuple[datetime] | tuple[list[datetime]]:
+    def _indices_to_timepoints(self, indices: list[list[int]], by_segment=False) -> tuple[datetime] | tuple[
+        list[datetime]]:
         all_timepoints = []
         for index, segment in zip(indices, self.__segments):
             timepoints = divide(index, self.__sampling_frequency)  # Transform to timepoints
@@ -634,7 +677,7 @@ class Timeseries():
             plt.plot(x, y, alpha=0.6, linewidth=0.5,
                      label='From {0} to {1}'.format(segment.start, segment.end))
 
-    def _plot(self, label:str = None):
+    def _plot(self, label: str = None):
         xticks, xticks_labels = [], []  # to store the initial and final ticks of each Segment
         SPACE = int(self.__sampling_frequency) * 2  # the empty space between each Segment
 
@@ -699,7 +742,8 @@ class Timeseries():
                 kwargs[iterate_along_segments_key] = item
                 new_segment = segment._apply_operation_and_return(operation, **kwargs)
                 res.append(new_segment)
-        elif isinstance(iterate_along_segments_key, list) and all(isinstance(x, str) for x in iterate_along_segments_key):
+        elif isinstance(iterate_along_segments_key, list) and all(
+                isinstance(x, str) for x in iterate_along_segments_key):
             items = [kwargs[it] for it in iterate_along_segments_key]
             for segment, item in zip(self, *items):
                 for it in iterate_along_segments_key:
@@ -730,7 +774,7 @@ class Timeseries():
             single_segment = Segment.concatenate(self.__segments)
             return Timeseries(single_segment, self.__sampling_frequency, self.unit, "Contiguous " + self.name)
 
-    def reshape(self, time_intervals:tuple[DateTimeRange]):
+    def reshape(self, time_intervals: tuple[DateTimeRange]):
         assert len(self.__segments) == 1
         samples = self.__segments[0]
         partitions = []
@@ -738,7 +782,7 @@ class Timeseries():
         for x in time_intervals:
             n_samples_required = ceil(x.timedelta.total_seconds() * self.__sampling_frequency)
             if n_samples_required > len(samples):
-                samples = tile(samples, ceil(n_samples_required/len(samples)))  # repeat
+                samples = tile(samples, ceil(n_samples_required / len(samples)))  # repeat
                 samples = samples[:n_samples_required]  # cut where it is enough
                 partitions.append(Timeseries.__Segment(samples, x.start_datetime, self.__sampling_frequency))
                 i = 0
@@ -777,7 +821,8 @@ class Timeseries():
         6: segments_state (list)
         """
         segments_state = [segment.__getstate__() for segment in self.__segments]
-        return (self.__SERIALVERSION, self.__name, self.__sampling_frequency, self._Units, self.__is_equally_segmented, self.__tags,
+        return (self.__SERIALVERSION, self.__name, self.__sampling_frequency, self._Units, self.__is_equally_segmented,
+                self.__tags,
                 segments_state)
 
     def __setstate__(self, state):

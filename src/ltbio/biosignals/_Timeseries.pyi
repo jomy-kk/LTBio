@@ -20,7 +20,6 @@ from typing import Tuple, Sequence
 
 from datetimerange import DateTimeRange
 from multimethod import multimethod
-from multipledispatch import dispatch
 from numpy import ndarray
 from pandas import DataFrame
 
