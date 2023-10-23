@@ -20,7 +20,7 @@ class SegmentLogicsTestCase(unittest.TestCase):
         self.assertFalse(self.small_segment_1_a == self.small_segment_2)
 
         # Edge case 1: one sample is slightly different
-        very_similar_samples = small_samples_1
+        very_similar_samples = small_samples_1.copy()
         very_similar_samples[1] += self.PRECISION
         very_similar_seg = Segment(very_similar_samples)
         self.assertFalse(self.small_segment_1_a == very_similar_seg)
@@ -46,7 +46,7 @@ class SegmentLogicsTestCase(unittest.TestCase):
         self.assertFalse(monotonic_seg == 1 - self.PRECISION)
 
         # Edge case 1: one sample is slightly different
-        very_similar_samples = monotonic_samples
+        very_similar_samples = monotonic_samples.copy()
         very_similar_samples[1] += self.PRECISION
         very_similar_seg = Segment(very_similar_samples)
         self.assertFalse(very_similar_seg == 1)
@@ -54,12 +54,12 @@ class SegmentLogicsTestCase(unittest.TestCase):
         # Edge case 2: one sample more
         longer_samples = monotonic_samples + [1, ]
         longer_seg = Segment(longer_samples)
-        self.assertFalse(longer_seg == 1)
+        self.assertTrue(longer_seg == 1)
 
         # Edge case 3: one sample less
         shorter_samples = monotonic_samples[:-1]
         shorter_seg = Segment(shorter_samples)
-        self.assertFalse(shorter_seg == 1)
+        self.assertTrue(shorter_seg == 1)
 
     def test_equals_with_invalid_type(self):
         for invalid_type in (None, 'a', list(), tuple(), dict(), set()):
