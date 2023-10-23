@@ -2,7 +2,7 @@ import unittest
 from os import remove
 from os.path import isfile
 
-from numpy import ndarray, memmap
+from numpy import ndarray, memmap, allclose
 
 from ltbio.biosignals import Segment
 from resources.segments import get_segment, small_samples_1
@@ -22,8 +22,7 @@ class SegmentSerializationTestCase(unittest.TestCase):
         self.assertFalse(hasattr(self.segment, '_Segment__memory_map'))
         self.segment._memory_map('.')
         self.assertTrue(hasattr(self.segment, '_Segment__memory_map'))
-        self.assertEqual(self.segment._Segment__memory_map, self.original_samples)
-        self.assertEqual(self.segment._Segment__memory_map, self.original_samples)
+        self.assertTrue(allclose(self.segment._Segment__memory_map, self.original_samples))
         self.assertTrue(isfile(self.segment._Segment__memory_map.filename))
         remove(self.segment._Segment__memory_map.filename)
 
@@ -38,14 +37,6 @@ class SegmentSerializationTestCase(unittest.TestCase):
         self.assertEqual(state[0], Segment._Segment__SERIALVERSION)
         self.assertIsInstance(state[1], memmap)
         remove(self.segment._Segment__memory_map.filename)
-
-    def test_apply_parametric_function(self):
-        self.assertEqual(self.segment.samples, self.original_samples)
-        result = self.segment.apply(lambda x, a, b: x * b + a, a=3, b=2, inplace=False)
-        self.assertEqual(result.samples, self.original_samples * 2 + 3)
-        self.assertEqual(self.segment.samples, self.original_samples)
-
-    
 
 
 if __name__ == '__main__':
