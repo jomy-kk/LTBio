@@ -1,6 +1,8 @@
 # -- encoding: utf-8 --
 # ===================================
 # ScientISST LTBio | Long-Term Biosignals
+from datetime import datetime
+
 from datetimerange import DateTimeRange
 
 #from ltbio.biosignals._Timeline import Timeline
@@ -17,6 +19,22 @@ from datetimerange import DateTimeRange
 # Created: 
 # Last Updated: 
 # ===================================
+
+
+class TimeseriesError(Exception):
+    def __init__(self, why: str):
+        super().__init__(why)
+
+
+class EmptyTimeseriesError(TimeseriesError):
+    def __init__(self):
+        super().__init__(f"Trying to create a Timeseries with no samples.")
+
+class OverlapingSegmentsError(TimeseriesError):
+    def __init__(self, first_start: datetime, first_end: datetime, second_start: datetime, second_end: datetime):
+        super().__init__(f"Trying to add two overlapping segments to a Timeseries. "
+                         f"First Segment starts at {first_start} and ends at {first_end}. "
+                         f"Second Segment starts at {second_start} and ends at {second_end}.")
 
 
 class IncompatibleTimeseriesError(Exception):
@@ -53,11 +71,27 @@ class DifferentPatientsError(IncompatibleTimeseriesError):
         super().__init__(f"at least two different patients were found: {first} and {second}. "
                          f"Try to drop the patients first.")
 
+class SegmentError(Exception):
+    def __intit__(self, description: str):
+        super().__init__(description)
+
+class NotASegmentError(SegmentError):
+    def __init__(self, segment, intend_use=""):
+        super().__init__(f"{type(segment)} is not a segment. {intend_use}")
+
+class SamplesNotValidError(SegmentError):
+    def __init__(self, samples, why):
+        super().__init__(f"Samples are not valid, because {why}.")
+
+class EmptySegmentError(SegmentError):
+    def __init__(self):
+        super().__init__(f"Trying to create a Segment with no samples.")
+
 class IncompatibleSegmentsError(Exception):
     def __init__(self, why: str):
         super().__init__(f"These Segments are incompatible because {why}")
 
-class DifferentLengthsError(Exception):
+class DifferentLengthsError(IncompatibleSegmentsError):
     def __init__(self, first: int, second: int):
         super().__init__(f"the first has length {first} and the second has length {second}.")
 
