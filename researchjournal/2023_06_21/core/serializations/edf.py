@@ -72,17 +72,19 @@ def save_to_edf(biosignal: Biosignal, filepath: str):
     gender = biosignal._Biosignal__patient._Patient__sex
     if gender is not None:
         writer.setGender(1 if gender is Sex.M else 0)
+    """
     age = biosignal._Biosignal__patient._Patient__age
     if age is not None:
         writer.setBirthdate(datetime.now() - relativedelta(years=age))
+    
     notes = biosignal._Biosignal__patient.notes
     if len(notes) > 0:
         writer.setPatientAdditional(str(notes))
+    """
 
     # Other metadata
-    writer.setEquipment(biosignal._source_as_class_string)
-    writer.setRecordingAdditional(_REC_ADDITIONAL_TEMPLATE.format(name=biosignal.name,
-                                                                  modality=type(biosignal).__name__))
+    writer.setEquipment(biosignal.source.__str__())
+    #writer.setRecordingAdditional(_REC_ADDITIONAL_TEMPLATE.format(name=biosignal.name, modality=type(biosignal).__name__))
 
     # Global start timepoint
     global_start = biosignal.initial_datetime

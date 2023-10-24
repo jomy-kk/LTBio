@@ -99,6 +99,10 @@ class Sense(BiosignalSource):
     def __repr__(self):
         return "ScientISST Sense"
 
+    @classmethod
+    def __str__(cls):
+        return "ScientISST Sense"
+
 
     @staticmethod
     def __aux_date(header):

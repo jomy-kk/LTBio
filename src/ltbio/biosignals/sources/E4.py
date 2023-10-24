@@ -38,7 +38,11 @@ class E4(BiosignalSource):
         super().__init__()
 
     def __repr__(self):
-        return "Empatica E4 - Epilepsy Wristband"
+        return "Empatica E4"
+
+    @classmethod
+    def __str__(cls):
+        return "Empatica E4"
 
     @staticmethod
     def _aux_date(date):
