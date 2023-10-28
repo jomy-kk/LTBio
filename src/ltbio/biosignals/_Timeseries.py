@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 from math import ceil
 from os.path import join
 from tempfile import mkstemp
-from typing import List, Iterable, Collection, Dict, Tuple, Callable, Sequence, Union
+from typing import List, Iterable, Collection, Dict, Tuple, Callable, Sequence, Union, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -35,7 +35,7 @@ from ._Segment import Segment
 from ._Timeline import Timeline
 from .units import Unit, Frequency
 from .._core.exceptions import DifferentSamplingFrequenciesError, DifferentUnitsError, TimeseriesOverlappingError, \
-    DifferentDomainsError, EmptyTimeseriesError
+    DifferentDomainsError, EmptyTimeseriesError, OverlappingSegmentsError
 from .._core.operations import Operator, Operation
 
 
@@ -145,39 +145,96 @@ class Timeseries():
     https://github.com/jomy-kk/IT-LongTermBiosignals/wiki/%5BClass%5D-Timeseries
     """
 
+    def __check_valid_segment(self, segment):
+        if not isinstance(segment, Segment):
+            raise TypeError(f"{segment} is not a Segment.")
+
+    def __check_valid_datetime(self, x):
+        if not isinstance(x, datetime):
+            raise TypeError(f"{x} is not a datetime.")
+
+    def __add_segment(self, start: datetime, segment: Segment):
+        self.__check_valid_datetime(start)
+        self.__check_valid_segment(segment)
+        if not hasattr(self, "_Timeseries__segments"):
+            self.__segments = OrderedDict()
+
+        # Check overlap
+        #if Timeline.overlap(self.domain, DateTimeRange(start, segment.end)):  # TODO; in the future should be like this
+        candidate_interval = self.__get_segment_domain(start, segment)
+        for s, S in self.__segments.items():
+            S_interval = self.__get_segment_domain(s, S)
+            if candidate_interval.is_intersection(S_interval) and candidate_interval.end_datetime != S_interval.start_datetime and candidate_interval.start_datetime != S_interval.end_datetime:
+                raise OverlappingSegmentsError(candidate_interval.start_datetime, candidate_interval.end_datetime,
+                                               S_interval.start_datetime, S_interval.end_datetime)
+
+        # Add segment
+        self.__segments[start] = segment
+
+    def __get_segment_end(self, start: datetime, segment: Segment) -> datetime:
+        return start + timedelta(seconds=len(segment) / self.sampling_frequency)
+
+    def __get_segment_domain(self, start: datetime, segment: Segment) -> DateTimeRange:
+        return DateTimeRange(start, self.__get_segment_end(start, segment))
+
+    def __check_valid_segments(self, segments_by_time):
+        """
+        Checks if:
+        - It's not None
+        - It's a dict
+        - It's not empty
+        - All keys are datetimes
+        - All values are Segments
+        """
+        if segments_by_time is None:
+            raise EmptyTimeseriesError()
+        if not isinstance(segments_by_time, dict):
+            raise TypeError(f"Invalid segments: {segments_by_time}. Must be a dictionary.")
+        if len(segments_by_time) == 0:
+            raise EmptyTimeseriesError()
+        for start, segment in segments_by_time.items():
+            self.__check_valid_datetime(start)
+            self.__check_valid_segment(segment)
+
+    def __check_valid_sampling_frequency(self, sampling_frequency):
+        if sampling_frequency is None:
+            raise ValueError("Sampling frequency is required.")
+        elif not isinstance(sampling_frequency, (float, int)):
+            raise TypeError(f"Invalid sampling frequency: {sampling_frequency}")
+
+    def __check_valid_unit(self, unit):
+        if unit is not None and not isinstance(unit, Unit):
+            raise TypeError(f"Invalid unit: {unit}")
+
+    def __check_valid_name(self, name):
+        if name is not None and not isinstance(name, str):
+            raise TypeError(f"Invalid name: {name}")
+
+    def __set_sampling_frequency(self, sampling_frequency: float):
+        self.__check_valid_sampling_frequency(sampling_frequency)
+        self.__sampling_frequency = sampling_frequency if isinstance(sampling_frequency, Frequency) else Frequency(sampling_frequency)
+
+    def __set_unit(self, unit: Unit):
+        self.__check_valid_unit(unit)
+        self.__unit = unit
+
+    def __set_name(self, name: str):
+        self.__check_valid_name(name)
+        self.__name = name
+
     # INITIALIZERS
     @multimethod
     def __init__(self, segments_by_time=None, sampling_frequency=None, unit=None, name=None):
         """
-        Type-checking and validation of the parameters.
+        Type-checking and validation of the parameters, in case multimethod dispatching fails.
         """
-        # Segments
-        if segments_by_time is None:
-            raise EmptyTimeseriesError()
-        else:
-            if not isinstance(segments_by_time, dict):
-                raise ValueError(f"Invalid segments: {segments_by_time}")
-            if len(segments_by_time) == 0:
-                raise EmptyTimeseriesError()
-            for start, segment in segments_by_time.items():
-                if not isinstance(start, datetime):
-                    raise ValueError(f"Invalid start datetime: {start}")
-                if not isinstance(segment, Segment):
-                    raise ValueError(f"Invalid Segment: {segment}")
-        # Sampling frequency
-        if sampling_frequency is None:
-            raise ValueError("Sampling frequency is required.")
-        elif not isinstance(sampling_frequency, (float, int)):
-            raise ValueError(f"Invalid sampling frequency: {sampling_frequency}")
-        # Unit
-        if unit is not None and not isinstance(unit, Unit):
-            raise ValueError(f"Invalid unit: {unit}")
-        # Name
-        if name is not None and not isinstance(name, str):
-            raise ValueError(f"Invalid name: {name}")
+        self.__check_valid_segments(segments_by_time)
+        self.__check_valid_sampling_frequency(sampling_frequency)
+        self.__check_valid_unit(unit)
+        self.__check_valid_name(name)
 
     @multimethod
-    def __init__(self, segments_by_time: dict[datetime, ndarray | Sequence[float] | Segment], sampling_frequency: float,
+    def __init__(self, segments_by_time: dict[datetime, Segment | ndarray | Sequence], sampling_frequency: float,
                  unit: Unit = None, name: str = None):
         """
         Give one or multiple instantiated Segments.
@@ -201,28 +258,26 @@ class Timeseries():
         name: str
             A symbolic name for the Timeseries. It is mentioned in plots, reports, error messages, etc.
         """
+
         # Metadata
-        self.__sampling_frequency = Frequency(sampling_frequency)
-        self.__unit = unit
-        self.__name = name
+        self.__set_sampling_frequency(sampling_frequency)
+        self.__set_unit(unit)
+        self.__set_name(name)
+
+        # Sequences of floats -> Convert to Segments (optional)
+        if all([isinstance(seg, (Sequence, ndarray)) for seg in segments_by_time.values()]):
+            segments_by_time = {start: Segment(samples=seg) for start, seg in segments_by_time.items()}
 
         # Segments
-        if len(segments_by_time) == 0:
-            raise EmptyTimeseriesError()
-        self.__segments = OrderedDict()
+        self.__check_valid_segments(segments_by_time)
         for start, segment in segments_by_time.items():
-            if not isinstance(start, datetime): raise TypeError()
-            if not isinstance(segment, Segment):
-                if not isinstance(segment, (ndarray, Sequence[float])):
-                    raise TypeError()
-                segment = Segment(segment)
-            self.__segments[start] = segment
+            self.__add_segment(start, segment)
 
     # ===================================
     # Properties (Getters)
     @property
     def segments(self) -> tuple[Segment]:
-        return self.__segments
+        return tuple(self.__segments.values())
 
     @property
     def __samples(self) -> ndarray:
@@ -237,36 +292,40 @@ class Timeseries():
         """The frequency at which the samples were acquired, in Hz."""
         return float(self.__sampling_frequency)
 
-    @property
-    def start(self) -> datetime:
-        """The date and time of the first sample."""
-        return self.__segments[0].start  # Is the initial datetime of the first Segment
+    def __segment_duration(self, i: int) -> timedelta:
+        return timedelta(seconds=len(self.segments[i]) / self.sampling_frequency)
 
-    @property
-    def end(self) -> datetime:
-        """The date and time of the last sample."""
-        return self.__segments[-1].end  # Is the final datetime of the last Segment
+    def __segment_start(self, i: int) -> datetime:
+        return tuple(self.__segments.keys())[i]
 
-    def __segment_duration(self, segment: Segment) -> timedelta:
-        return timedelta(seconds=len(segment) / self.sampling_frequency)
-
-    def __segment_end(self, segment: Segment) -> datetime:
-        return segment.start + self.__segment_duration(segment)
+    def __segment_end(self, i: int) -> datetime:
+        start = tuple(self.__segments.keys())[i]
+        return start + self.__segment_duration(i)
 
     @property
     def duration(self) -> timedelta:
         """The actual recorded time without interruptions."""
-        return sum(self.__segment_duration(segment) for segment in self.__segments)
+        return sum((self.__segment_duration(i) for i in range(self.n_segments)), timedelta())
+
+    @property
+    def start(self) -> datetime:
+        """The date and time of the first sample."""
+        return self.__segment_start(0)  # Is the initial datetime of the first Segment
+
+    @property
+    def end(self) -> datetime:
+        """The date and time of the last sample."""
+        return self.__segment_end(-1)  # Is the final datetime of the last Segment
 
     @property
     def domain(self) -> Timeline:
-        intervals = [DateTimeRange(segment.start, segment.end) for segment in self.__segments]
-        return Timeline(Timeline.Group(intervals=intervals), f"{self.name} Domain")
+        intervals = [DateTimeRange(self.__segment_start(i), self.__segment_end(i)) for i in range(self.n_segments)]
+        return Timeline(Timeline.Group(intervals=intervals), name=f"{self.name} Domain")
 
     @property
     def unit(self) -> Unit:
         """The physical unit at which the samples should be interpreted."""
-        return self.__units
+        return self.__unit
 
     @property
     def name(self) -> str:
@@ -285,7 +344,7 @@ class Timeseries():
     @property
     def is_contiguous(self) -> bool:
         """States if there are no interruptions in time."""
-        return len(self.__segments) == 1
+        return self.n_segments == 1
 
     # ===================================
     # BUILT-INS (Basics)
@@ -294,7 +353,7 @@ class Timeseries():
                           self.__units.__copy__(), self.__name.__copy__())
 
     def __len__(self) -> int:
-        return sum([len(seg) for seg in self.__segments])
+        return sum([len(seg) for seg in self.segments])
 
     def __iter__(self) -> iter:
         for segment in self.__segments:

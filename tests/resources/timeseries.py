@@ -50,11 +50,11 @@ def get_timeseries_end(length: str, discontiguous: bool, sf: str) -> datetime:
             return start_c + timedelta(seconds=get_segment_length('large') / sf)
 
 def get_timeseries_duration(length: str, discontiguous: bool, sf: str) -> timedelta:
+    if sf == 'low':
+        sf = sf_low
+    if sf == 'high':
+        sf = sf_high
     if not discontiguous:
-        if sf == 'low':
-            sf = sf_low
-        if sf == 'high':
-            sf = sf_high
         return timedelta(seconds=get_segment_length(length)/sf)
     else:
         if length == 'medium':

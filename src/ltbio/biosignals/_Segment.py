@@ -51,7 +51,7 @@ class Segment():
         """
 
         # Save samples
-        self.__samples = np.array(samples, dtype=float)
+        self.__set_samples(np.array(samples, dtype=float))
 
     # ===================================
     # BUILT-INS (Basics)

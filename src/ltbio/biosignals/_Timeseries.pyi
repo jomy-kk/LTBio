@@ -33,13 +33,12 @@ class Timeseries():
 
     # INITIALIZERS
     @multimethod
-    def __init__(self, segments_by_time: dict[datetime, ndarray[float] | Sequence[float] | Segment], sampling_frequency: float,
+    def __init__(self, segments_by_time: dict[datetime, Segment | ndarray | Sequence], sampling_frequency: float,
                  units: Unit = None, name: str = None): ...
 
     # GETTERS
     @property
     def segments(self) -> tuple[Segment]: ...
-
     @property
     def n_segments(self) -> int: ...
     @property

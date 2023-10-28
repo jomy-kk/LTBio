@@ -1,12 +1,12 @@
 import unittest
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import numpy as np
 from numpy import ndarray
 
-from ltbio._core.exceptions import EmptyTimeseriesError, OverlapingSegmentsError
+from ltbio._core.exceptions import EmptyTimeseriesError, OverlappingSegmentsError
 from ltbio.biosignals import Timeseries
-from resources.segments import get_segment
+from resources.segments import get_segment, get_segment_length
 from resources.timeseries import start_a, start_b, start_c, sf_low, units_volt
 
 
@@ -73,10 +73,9 @@ class TimeseriesInitializersTestCase(unittest.TestCase):
             segments = timeseries._Timeseries__segments
             self.assertEqual(len(segments), 1)
             start, seg = list(segments.items())[0]
-            self.assertTrue(seg is self.seg1)  # same pointer
             self.assertIsInstance(seg.samples, ndarray)  # type
             self.assertEqual(seg.samples.dtype, float)  # dtype
-            self.assertTrue(all(seg.samples == self.seg1.samples))  # content
+            self.assertTrue(all(seg.samples == sequence))  # content
             self.assertEqual(start, self.start1)  # start timepoint
 
             # Assert sampling frequency
@@ -98,14 +97,14 @@ class TimeseriesInitializersTestCase(unittest.TestCase):
         with self.assertRaises(EmptyTimeseriesError):
             Timeseries()
 
-    def test_initialize_timeseries_with_no_sequence_samples_raises_error(self):
-        for seg in (1, 1.0, 1+1j, {}, set(), None):
-            with self.assertRaises(ValueError):
+    def test_initialize_timeseries_with_not_sequence_samples_raises_error(self):
+        for seg in (1, 1.0, 1+1j, {}, set()):
+            with self.assertRaises(TypeError):
                 Timeseries({self.start1: seg}, self.sf)
 
-    def test_initialize_timeseries_with_no_dates_raises_error(self):
+    def test_initialize_timeseries_with_not_dates_raises_error(self):
         for date in ('2023-01-01', 2023, 2023.0, 2023+1j, None):
-            with self.assertRaises(ValueError):
+            with self.assertRaises(TypeError):
                 Timeseries({date: self.seg1}, self.sf)
 
     def test_initialize_timeseries_with_no_sampling_frequency_raises_error(self):
@@ -113,33 +112,42 @@ class TimeseriesInitializersTestCase(unittest.TestCase):
             Timeseries({self.start1: self.seg1})
 
     def test_initialize_timeseries_with_not_number_sf_raises_error(self):
-        for sf in ("", "a", [], (), {}, set(), None):
-            with self.assertRaises(ValueError):
+        for sf in ("", "a", [], (), {}, set()):
+            with self.assertRaises(TypeError):
                 Timeseries({self.start1: self.seg1}, sf)
 
     def test_initialize_timeseries_with_not_Unit_unit_raises_error(self):
         for unit in (1, 1.0, 1+1j, [], (), {}, set(), "volt"):
-            with self.assertRaises(ValueError):
+            with self.assertRaises(TypeError):
                 Timeseries({self.start1: self.seg1}, self.sf, unit=unit)
 
     def test_initialize_timeseries_with_not_string_name_raises_error(self):
         for name in (1, 1.0, 1+1j, [], (), {}, set()):
-            with self.assertRaises(ValueError):
+            with self.assertRaises(TypeError):
                 Timeseries({self.start1: self.seg1}, self.sf, name=name)
 
     def test_initialize_timeseries_with_overlapping_segments_raises_error(self):
-        # Start at the same timepoint
-        with self.assertRaises(OverlapingSegmentsError):
-            Timeseries({self.start1: self.seg1, self.start1: self.seg2}, self.sf)
+        # Second one ends exactly at the start of the first one
+        first_start = datetime(2023, 1, 1, 12, 0, 0)  # 12:00:00.0
+        second_start = first_start - timedelta(seconds=get_segment_length('medium') / self.sf)  # 11:59:54.0
+        # Seg1: [12:00:00.0, 12:00:03.0[  ||  Seg2: [11:59:54.0, 12:00:00.0[
+        Timeseries({first_start: self.seg1, second_start: self.seg2}, self.sf)  # no error here
+        with self.assertRaises(OverlappingSegmentsError):
+            second_start += timedelta(microseconds=1)  # one microsecond (10e-6s) after the start of the second segment
+            # Seg1: [12:00:00.0, 12:00:03.0[  ||  Seg2: [11:59:54.000001, 12:00:00.000001[
+            Timeseries({first_start: self.seg1, second_start: self.seg2}, self.sf)
+
         # Second one starts in the middle of the first one
-        with self.assertRaises(OverlapingSegmentsError):
+        with self.assertRaises(OverlappingSegmentsError):
             Timeseries({self.start1: self.seg1, self.start1+timedelta(seconds=1): self.seg2}, self.sf)
+
         # Second one starts exactly at the end of the first one
-        second_start = self.start1 + timedelta(seconds=len(self.seg1.samples) / self.sf / 2)
-        Timeseries({self.start1: self.seg1, second_start: self.seg2}, self.sf)  # no error here
-        with self.assertRaises(OverlapingSegmentsError):
+        first_start = datetime(2023, 1, 1, 12, 0, 0)  # 12:00:00.0
+        second_start = first_start + timedelta(seconds=get_segment_length('small') / self.sf)  # 12:00:03.0
+        Timeseries({first_start: self.seg1, second_start: self.seg2}, self.sf)  # no error here
+        with self.assertRaises(OverlappingSegmentsError):
             second_start -= timedelta(microseconds=1)  # one microsecond (10e-6s) before the end of the first segment
-            Timeseries({self.start1: self.seg1, second_start: self.seg2}, self.sf)
+            Timeseries({first_start: self.seg1, second_start: self.seg2}, self.sf)
 
 
 if __name__ == '__main__':

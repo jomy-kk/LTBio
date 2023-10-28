@@ -30,11 +30,7 @@ class EmptyTimeseriesError(TimeseriesError):
     def __init__(self):
         super().__init__(f"Trying to create a Timeseries with no samples.")
 
-class OverlapingSegmentsError(TimeseriesError):
-    def __init__(self, first_start: datetime, first_end: datetime, second_start: datetime, second_end: datetime):
-        super().__init__(f"Trying to add two overlapping segments to a Timeseries. "
-                         f"First Segment starts at {first_start} and ends at {first_end}. "
-                         f"Second Segment starts at {second_start} and ends at {second_end}.")
+
 
 
 class IncompatibleTimeseriesError(Exception):
@@ -109,6 +105,12 @@ class OverlappingError(TimeError):
     def __init__(self, what: str):
         super().__init__(f"There is an overlap between {what}")
 
+
+class OverlappingSegmentsError(TimeseriesError, OverlappingError):
+    def __init__(self, first_start: datetime, first_end: datetime, second_start: datetime, second_end: datetime):
+        super().__init__(f"two segments to be added to the Timeseries. "
+                         f"First Segment starts at {first_start} and ends at {first_end}. "
+                         f"Second Segment starts at {second_start} and ends at {second_end}.")
 
 class TimeseriesOverlappingError(OverlappingError):
     def __init__(self, first, second, *overlap: DateTimeRange):
