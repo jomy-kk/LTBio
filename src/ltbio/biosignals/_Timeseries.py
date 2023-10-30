@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+import operator
 from collections import OrderedDict
 # ===================================
 
@@ -302,6 +303,9 @@ class Timeseries():
         start = tuple(self.__segments.keys())[i]
         return start + self.__segment_duration(i)
 
+    def __set_segment(self, i: int, segment: Segment):
+        self.__segments[i] = segment
+
     @property
     def duration(self) -> timedelta:
         """The actual recorded time without interruptions."""
@@ -349,15 +353,17 @@ class Timeseries():
     # ===================================
     # BUILT-INS (Basics)
     def __copy__(self) -> 'Timeseries':
-        return Timeseries([seg.__copy__() for seg in self.__segments], self.sampling_frequency.__copy__(),
-                          self.__units.__copy__(), self.__name.__copy__())
+        return Timeseries({start: seg.__copy__() for start, seg in self.__segments.items()},
+                          self.sampling_frequency, self.__unit, self.__name)
+
+    def __str__(self) -> str:
+        return f"Timeseries ({len(self)})"
 
     def __len__(self) -> int:
         return sum([len(seg) for seg in self.segments])
 
     def __iter__(self) -> iter:
-        for segment in self.__segments:
-            yield from segment
+        return iter(self.__segments.items())  # Use default iterator
 
     @multimethod
     def __contains__(self, item: datetime | DateTimeRange) -> bool:
@@ -530,6 +536,33 @@ class Timeseries():
         return Timeseries(segments=new_segments, sampling_frequency=first.sampling_frequency, unit=first.unit,
                           name=timeseries.name + ' ' + operator_string)
 
+    def __binary_arithmetics(self, other, operation: Callable, inplace=False):
+        if inplace:
+            if type(other) is Timeseries:
+                Timeseries._check_meta_compatibility(self, other)
+                Timeseries._check_domain_compatibility(self, other)
+                for i in range(self.n_segments):
+                    self.__set_segment(i, operation(self.segments[i], other.segments[i]))
+            elif type(other) in (float, int):
+                for i in range(self.n_segments):
+                    self.__set_segment(i, operation(self.segments[i], other))
+            else:
+                raise TypeError(f"Arithmetic operation between Timeseries and {type(other)} not allowed. "
+                                f"Second operator should be a number or another Timeseries.")
+            return self
+        else:
+            if type(other) is Timeseries:
+                Timeseries._check_meta_compatibility(self, other)
+                Timeseries._check_domain_compatibility(self, other)
+                return Timeseries({start: operation(self.segments[i], other.segments[i]) for i, start in enumerate(self.__segments.keys())},
+                                  self.sampling_frequency, self.unit, self.name)
+            elif type(other) in (float, int):
+                return Timeseries({start: operation(self.segments[i], other) for i, start in enumerate(self.__segments.keys())},
+                                  self.sampling_frequency, self.unit, self.name)
+            else:
+                raise TypeError(f"Arithmetic operation between Timeseries and {type(other)} not allowed. "
+                                f"Second operator should be a number or another Timeseries.")
+
     @multimethod
     def __add__(self, other: 'Timeseries') -> 'Timeseries':
         return Timeseries._binary_operation(lambda x, y: x + y, '+', self, other)
@@ -546,13 +579,8 @@ class Timeseries():
     def __sub__(self, other: float) -> 'Timeseries':
         return Timeseries._unary_operation(self, lambda x: x - other, f'- {other}')
 
-    @multimethod
-    def __mul__(self, other: 'Timeseries') -> 'Timeseries':
-        return Timeseries._binary_operation(lambda x, y: x * y, '*', self, other)
-
-    @multimethod
-    def __mul__(self, other: float) -> 'Timeseries':
-        return Timeseries._unary_operation(self, lambda x: x * other, f'* {other}')
+    def __mul__(self, other) -> 'Timeseries':
+        return self.__binary_arithmetics(other, operator.mul, inplace=False)
 
     @multimethod
     def __truediv__(self, other: 'Timeseries') -> 'Timeseries':

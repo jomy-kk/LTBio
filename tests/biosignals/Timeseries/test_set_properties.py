@@ -1,9 +1,7 @@
 import unittest
 
-from numpy import allclose
-
 from ltbio.biosignals.units import Siemens
-from resources.segments import small_samples_1, small_samples_2
+from resources.segments import small_samples_1
 from resources.timeseries import get_timeseries, get_timeseries_name
 
 
