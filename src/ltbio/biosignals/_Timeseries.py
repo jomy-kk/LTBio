@@ -30,6 +30,7 @@ from dateutil.parser import parse as to_datetime
 from multimethod import multimethod
 from numpy import array, append, ndarray, divide, concatenate, tile, memmap
 from scipy.signal import resample
+from re import match
 
 from ._Event import Event
 from ._Segment import Segment
@@ -376,40 +377,100 @@ class Timeseries():
     # BUILT-INS (Indexing)
     @multimethod
     def __getitem__(self, item: int) -> Segment:
-        ...
+        lengths = [len(seg) for seg in self.segments]
+        if item >= 0:
+            for i, length in enumerate(lengths):
+                if item < length:
+                    return self.segments[i][item]
+                else:
+                    item -= length
+            raise IndexError("Index out of range")
+        else:
+            for i, length in enumerate(reversed(lengths)):
+                if -item <= length:
+                    return self.segments[-i - 1][item]
+                else:
+                    item += length
+            raise IndexError("Index out of range")
 
     @multimethod
     def __getitem__(self, item: datetime) -> float:
-        return self.__get_samples(item).samples[0]
+        return self.__get_sample(item)
+
+    @property
+    def __in_single_day(self) -> bool:
+        """States if the Timeseries is self-contained in the day."""
+        return self.start.date() == self.end.date()
 
     @multimethod
     def __getitem__(self, item: str):
-        return self[to_datetime(item)]
+        time_pattern = r'\d{2}:\d{2}:\d{2}'  # HH:MM:SS format
+        day_time_pattern = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}'  # YYYY-MM-DD HH:MM:SS format
+
+        # If contains time:
+        if match(time_pattern, item):  # Has time?
+            if match(day_time_pattern, item):  # Has date?
+                pass
+            else:
+                if self.__in_single_day:
+                    item = f"{self.start.strftime('%Y-%m-%d')} {item}"
+                else:
+                    raise ValueError(f"Invalid timestamp ({item}) without date. Absence of date is only allowed for "
+                                     f"Timeseries that start and end on the same day. "
+                                     f"Must be in the format YYYY-MM-DD HH:MM:SS or HH:MM:SS.")
+        else:
+            raise ValueError(f"Invalid timestamp ({item}) without time. "
+                             f"Must be in the format YYYY-MM-DD HH:MM:SS or HH:MM:SS.")
+
+        # Convert to datetime
+        try:
+            item = to_datetime(item)
+        except Exception:
+            raise ValueError(f"Invalid timestamp ({item}). Must be in the format YYYY-MM-DD HH:MM:SS or HH:MM:SS.")
+
+        # Call __getitem__(datetime)
+        return self[item]
 
     @multimethod
     def __getitem__(self, item: slice):
         # Discard step
         if item.step is not None:
             raise IndexError("Indexing with step is not allowed for Timeseries. Try downsample it first.")
+
         # Get start and end
         start = item.start if item.start is not None else self.start
         end = item.stop if item.stop is not None else self.end
-        # Convert to datetime, if needed
-        start = to_datetime(start) if isinstance(start, str) else start
-        end = to_datetime(end) if isinstance(end, str) else end
-        # Get the samples
-        return Timeseries(segments=self.__get_samples(start, end), sampling_frequency=self.sampling_frequency,
-                          unit=self.unit, name=self.name)
+
+        # Int
+        if isinstance(start, int) and isinstance(end, int):
+            segments = self.__get_samples(start, end)
+
+        # Datetime
+        elif isinstance(start, datetime) and isinstance(end, datetime):
+            segments = self.__get_samples(start, end)
+
+        # Str timestamps
+        elif isinstance(start, str) and isinstance(end, str):
+            start = to_datetime(start)
+            end = to_datetime(end)
+            segments = self.__get_samples(start, end)
+
+        else:
+            raise TypeError(f"Invalid slice: {item}. Must be a pair of integers, datetimes or string timestamps.")
+
+        return Timeseries(segments=segments, sampling_frequency=self.sampling_frequency, unit=self.unit, name=self.name)
 
     @multimethod
     def __getitem__(self, item: DateTimeRange):
         return self[item.start_datetime:item.end_datetime]
 
+    """
     @multimethod
     def __getitem__(self, item: tuple):
         # Get each result individually
         sub_timeseries = [self[ix] for ix in item]
         return Timeseries.concatenate(sub_timeseries)
+    """
 
     @multimethod
     def __getitem__(self, item: Timeline):
@@ -666,63 +727,68 @@ class Timeseries():
     # INTERNAL USAGE - Convert indexes <-> timepoints && Get Samples
 
     def __get_sample(self, datetime: datetime) -> float:
-        self.__check_boundaries(datetime)
-        for segment in self.__segments:  # finding the first Segment
-            if datetime in segment:
-                return segment[int((datetime - segment.start).total_seconds() * self.sampling_frequency)]
-        raise IndexError("Datetime given is in not defined in this Timeseries.")
+        segment_ix = self.__check_boundaries(datetime)
+        segment = self.segments[segment_ix]
+        start_datetime = self.__segment_start(segment_ix)
+        return segment[int((datetime - start_datetime).total_seconds() * self.sampling_frequency)]
 
+    @multimethod
     def __get_samples(self, initial_datetime: datetime, final_datetime: datetime) -> List[Segment]:
         '''Returns the samples between the given initial and end datetimes.'''
-        self.__check_boundaries(initial_datetime)
-        self.__check_boundaries(final_datetime)
+        #self.__check_boundaries(initial_datetime)
+        #self.__check_boundaries(final_datetime)
         res_segments = []
-        for i in range(len(self.__segments)):  # finding the first Segment
-            segment = self.__segments[i]
-            if segment.start <= initial_datetime <= segment.end:
-                if final_datetime <= segment.end:
+        for i in range(self.n_segments):  # finding the first Segment
+            segment = self.segments[i]
+            start, end = self.__segment_start(i), self.__segment_end(i)
+            if start <= initial_datetime <= end:
+                if final_datetime <= end:
                     trimmed_segment = segment[int((
-                                                          initial_datetime - segment.start).total_seconds() * self.sampling_frequency):int(
-                        (final_datetime - segment.start).total_seconds() * self.sampling_frequency)]
+                                                          initial_datetime - start).total_seconds() * self.sampling_frequency):int(
+                        (final_datetime - start).total_seconds() * self.sampling_frequency)]
                     res_segments.append(trimmed_segment)
                     return res_segments
                 else:
-                    if not initial_datetime == segment.end:  # skip what would be an empty set
+                    if not initial_datetime == end:  # skip what would be an empty set
                         trimmed_segment = segment[int((
-                                                              initial_datetime - segment.start).total_seconds() * self.sampling_frequency):]
+                                                              initial_datetime - start).total_seconds() * self.sampling_frequency):]
                         res_segments.append(trimmed_segment)
-                    for j in range(i + 1,
-                                   len(self.__segments)):  # adding the remaining samples, until the last Segment is found
-                        segment = self.__segments[j]
-                        if final_datetime <= segment.end:
+                    for j in range(i + 1, self.n_segments):  # adding the remaining samples, until the last Segment is found
+                        segment = self.segments[j]
+                        start, end = self.__segment_start(j), self.__segment_end(j)
+                        if final_datetime <= end:
                             trimmed_segment = segment[:int(
-                                (final_datetime - segment.start).total_seconds() * self.sampling_frequency)]
+                                (final_datetime - start).total_seconds() * self.sampling_frequency)]
                             res_segments.append(trimmed_segment)
                             return res_segments
                         else:
                             trimmed_segment = segment[:]
                             res_segments.append(trimmed_segment)
 
-    def __check_boundaries(self, datetime_or_range: datetime | DateTimeRange) -> None:
-        intersects = False
+    @multimethod
+    def __get_samples(self, start: int, end: int) -> dict[datetime, Segment]:
+        lengths = [len(seg) for seg in self.segments]
+        result = {}
+        for i, length in enumerate(lengths):
+            seg_slice = slice(max(0, start), min(length, end))
+            if seg_slice.start is not None and seg_slice.stop is not None:
+                result[self.__segment_start(i) + timedelta(seconds=seg_slice.start/self.sampling_frequency)] = self.segments[i][seg_slice]
+        return result
+
+    def __check_boundaries(self, datetime_or_range: datetime | DateTimeRange) -> int | None:
+        domain = self.domain.single_group.intervals
+
         if isinstance(datetime_or_range, datetime):
-            for subdomain in self.domain:
-                if datetime_or_range in subdomain:
-                    intersects = True
-                    break
-            if not intersects:
-                raise IndexError(
-                    f"Datetime given is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
+            for i, interval in enumerate(domain):
+                if datetime_or_range in interval:  # then it is inside the interval
+                    return i  # Return the Segment index
+            raise IndexError(f"Datetime given is outside of Timeseries domain.")
 
         elif isinstance(datetime_or_range, DateTimeRange):
-            for subdomain in self.domain:
-                if subdomain.is_intersection(
-                        datetime_or_range) and datetime_or_range.start_datetime != subdomain.end_datetime:
-                    intersects = True
-                    break
-            if not intersects:
-                raise IndexError(
-                    f"Interval given is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
+            for i, interval in enumerate(domain):
+                if interval.is_intersection(datetime_or_range) and datetime_or_range.start_datetime != interval.end_datetime:
+                    return i  # Return the Segment index
+            raise IndexError(f"Interval given is outside of Timeseries domain.")
 
     def _indices_to_timepoints(self, indices: list[list[int]], by_segment=False) -> tuple[datetime] | tuple[
         list[datetime]]:
