@@ -1,7 +1,7 @@
 # Enrich your Biosignals
 
 You have noticed by now that ``Biosignal`` objects gather all information about a biosignal in an holistic way, and not just the data
-samples. But ``Biosignal`` objects will only hold the information you give or that their `BiosignalSource` deducted.
+samples. But ``Biosignal`` objects will only hold the information you give or that their `__BiosignalSource` deducted.
 
 ## Print to see me
 
@@ -145,7 +145,7 @@ You can **get** any of the following properties of a `Biosignal`:
 * `channel_names` returns a set with the channel labels (in `string` or `BodyLocation`).
 * `sampling_frequency` returns the the sampling frequency of every channel, if equal (in `float`).
 * `acquisition_location` returns the body location where the biosignal was acquired (in `BodyLocation`).
-* `source` returns the source where the Biosignal was acquired: hospital, device, etc. (in `BiosignalSource`).
+* `source` returns the source where the Biosignal was acquired: hospital, device, etc. (in `__BiosignalSource`).
 * `patient_code` returns the code of the patient whose the biosignal belongs (in `int` or `string`).
 * `type` returns the biosignal modality (in any `Biosignal` subclass).
 * `initial_datetime` returns the initial datetime of the channel that starts the earliest (in `datetime`).

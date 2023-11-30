@@ -20,7 +20,7 @@ from typing import Sequence
 
 from .. import BodyLocation, Semiology
 from .MedicalCondition import MedicalCondition
-from ...biosignals.timeseries.Event import Event
+from ...biosignals._Event import Event
 
 @unique
 class SeizureOnset(Enum):

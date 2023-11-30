@@ -1,17 +1,14 @@
-from typing import Collection
-
 from matplotlib import pyplot as plt
-from scipy.signal import correlate
+from numpy import correlate
 
-from .modalities.Biosignal import Biosignal
-from .timeseries import Timeseries, OverlappingTimeseries, Event
-from .timeseries.Unit import Unitless
+from ._Biosignal import Biosignal
+from ._BiosignalSource import BiosignalSource
+from ._Event import Event
+from ._Timeline import Timeline
+from ._Timeseries import Timeseries
+from ._Segment import Segment
 
-
-def plot_comparison(biosignals: Collection[Biosignal], show: bool = True, save_to: str = None):
-    # Check parameters
-    if not isinstance(biosignals, Collection):
-        raise TypeError("Parameter 'biosignals' should be a collection of Biosignal objects.")
+def plot_comparison(*biosignals: Biosignal, show: bool = True, save_to: str = None):
 
     channel_names = None
     for item in biosignals:
@@ -22,7 +19,6 @@ def plot_comparison(biosignals: Collection[Biosignal], show: bool = True, save_t
         else:
             if item.channel_names != channel_names:
                 raise AssertionError("The set of channel names of all Biosignals must be the same for comparison.")
-
 
     fig = plt.figure(figsize=(13, 6))
 
@@ -58,7 +54,6 @@ def plot_comparison(biosignals: Collection[Biosignal], show: bool = True, save_t
         fig.savefig(save_to)
     plt.show() if show else plt.close()
 
-
 def cross_correlation(biosignal1: Biosignal, biosignal2: Biosignal):
     # Check parameters
     if not isinstance(biosignal1, Biosignal) or len(biosignal1) != 1:
@@ -74,7 +69,7 @@ def cross_correlation(biosignal1: Biosignal, biosignal2: Biosignal):
     ts1: Timeseries = biosignal1._get_channel(biosignal1.channel_names.pop())
     ts2: Timeseries = biosignal2._get_channel(biosignal2.channel_names.pop())
 
-    #correlations = correlate(ts1.samples, ts2.samples, mode='full', method='direct')
+    # correlations = correlate(ts1.samples, ts2.samples, mode='full', method='direct')
     if ts1.is_contiguous:
         iterate_over_each_segment_key = None
     else:
@@ -83,6 +78,6 @@ def cross_correlation(biosignal1: Biosignal, biosignal2: Biosignal):
     correlation = ts1._apply_operation_and_new(correlate, units=Unitless(),
                                                name=f'Cross-Correlation between {biosignal1.name} and {biosignal2.name}',
                                                in2=ts2.samples, iterate_over_each_segment_key=iterate_over_each_segment_key,
-                                               )#mode='full', method='direct')
+                                               )  # mode='full', method='direct')
 
     return correlation

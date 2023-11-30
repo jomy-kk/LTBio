@@ -79,11 +79,10 @@ _Released: 31-05-2022 | Created: 01-02-2022 | **Not Public**_
 
 ### Added
 
-* Abstract classes `Biosignal` and `BiosignalSource`, and some concrete implementations in the sub-packages
+* Abstract classes `Biosignal` and `__BiosignalSource`, and some concrete implementations in the sub-packages
 `modalities` and `sources`, respectively.
 * Classes `Timeseries`, `Segment`, `Unit`, `Event`.
 * Packages `clinical`: classes `Patient`, `BodyLocation`, `MedicalCondition`, `Medication`, and `SurgicalProcedure`.
 * Package `processing`: classes `Segmenter` and `Filter`.
 * Package `features`: classes `FeatureExtractor` and `FeatureSelector`.
 * Package `ml`: classes `SupervisedModel`, `SupervisedTrainConditions`, `SurpervisingTrainer`, `SupervisedTrainResults`.
-

@@ -5,7 +5,7 @@ from typing import Dict
 
 from numpy import ndarray
 
-from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.biosignals._Timeseries import Timeseries
 from ltbio.features.FeatureSelector import FeatureSelector
 
 

@@ -83,6 +83,21 @@ class Patient():
             return
         """
 
+    @staticmethod
+    def generate_random_code(length: int = 4, letters: bool = False, numbers: bool = False) -> str | int:
+        """
+        Generates a random code 4 figure alphanumeric code.
+        """
+        import random
+        import string
+        if letters and numbers:
+            return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
+        elif letters:
+            return ''.join(random.choices(string.ascii_uppercase, k=length))
+        elif numbers:
+            return int(''.join(random.choices(string.digits, k=length)))
+
+
     def __getstate__(self):
         """
         1: code

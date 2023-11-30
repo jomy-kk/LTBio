@@ -16,7 +16,7 @@
 
 from abc import ABC, abstractmethod
 
-from ltbio.biosignals.timeseries.Unit import Unit
+from ltbio.biosignals.units import Unit
 
 
 class Medication(ABC):

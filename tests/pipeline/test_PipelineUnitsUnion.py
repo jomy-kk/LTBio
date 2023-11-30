@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime, timedelta
 
-from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.biosignals._Timeseries import Timeseries
 from ltbio.features.FeatureExtractor import FeatureExtractor
 from ltbio.features.FeatureSelector import FeatureSelector
 from ltbio.features.Features import TimeFeatures

@@ -8,7 +8,7 @@ Below you can check the current and past versions of the .biosignal files (first
 +------------------------------+------------+------------+------------+---------------------+
 | :code:`Biosignal`            | 1          | 1          | 1          | **2**               |
 +------------------------------+------------+------------+------------+---------------------+
-| :code:`BiosignalSource`      | 1          | 1          | 1          | 1                   |
+| :code:`__BiosignalSource`      | 1          | 1          | 1          | 1                   |
 +------------------------------+------------+------------+------------+---------------------+
 | :code:`Timeseries`           | 1          | **2**      | 2          | 2                   |
 +------------------------------+------------+------------+------------+---------------------+
@@ -37,7 +37,7 @@ Any Biosignal and associated objects are stateful, so that they can be serialize
    :maxdepth: 1
 
    Biosignal
-   BiosignalSource
+   __BiosignalSource
 
 .. tip::
    How this structure is created can be inspected in more detail in the methods :code:`__getstate__` and :code:`__setstate__` of each of these class.

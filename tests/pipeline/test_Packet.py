@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from ltbio.biosignals.timeseries.Timeseries import Timeseries
+from ltbio.biosignals._Timeseries import Timeseries
 from ltbio.pipeline.Packet import Packet
 
 
