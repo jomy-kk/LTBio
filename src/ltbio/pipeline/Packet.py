@@ -17,7 +17,7 @@
 from inspect import stack
 from typing import Collection, Dict
 
-from ltbio.biosignals import Timeseries
+from ltbio.biosignals import timeseries as ts
 
 
 class Packet():
@@ -28,9 +28,9 @@ class Packet():
         self.__load = load
 
         if Packet.TIMESERIES_LABEL in self.__load:
-            assert ((isinstance(self.__load[Packet.TIMESERIES_LABEL], Timeseries)) or (isinstance(self.__load[Packet.TIMESERIES_LABEL], dict) and all(isinstance(x, Timeseries) for x in self.__load[Packet.TIMESERIES_LABEL].values())) or (isinstance(self.__load[Packet.TIMESERIES_LABEL], Collection) and all(isinstance(x, Timeseries) for x in self.__load[Packet.TIMESERIES_LABEL])))
+            assert ((isinstance(self.__load[Packet.TIMESERIES_LABEL], ts.Timeseries)) or (isinstance(self.__load[Packet.TIMESERIES_LABEL], dict) and all(isinstance(x, ts.Timeseries) for x in self.__load[Packet.TIMESERIES_LABEL].values())) or (isinstance(self.__load[Packet.TIMESERIES_LABEL], Collection) and all(isinstance(x, ts.Timeseries) for x in self.__load[Packet.TIMESERIES_LABEL])))
             # if a collection of Timeseries is given and it is not in a dictionary format, then it will be converted to one:
-            if not isinstance(self.__load[Packet.TIMESERIES_LABEL], Timeseries) and isinstance(self.__load[Packet.TIMESERIES_LABEL], Collection) and not isinstance(self.__load[Packet.TIMESERIES_LABEL], dict):
+            if not isinstance(self.__load[Packet.TIMESERIES_LABEL], ts.Timeseries) and isinstance(self.__load[Packet.TIMESERIES_LABEL], Collection) and not isinstance(self.__load[Packet.TIMESERIES_LABEL], dict):
                 self.__load[Packet.TIMESERIES_LABEL] = {str(i): ts for i, ts in enumerate(self.__load[Packet.TIMESERIES_LABEL])}
 
         self.__who_packed = stack()[1][3]  # FIX ME: this gets the function name that called this one; we want the object pointer
@@ -77,13 +77,13 @@ class Packet():
         """
         return self.has_timeseries and \
                (
-                    isinstance(self.__timeseries, Timeseries)  # could be alone ...
+                    isinstance(self.__timeseries, ts.Timeseries)  # could be alone ...
                     or
                     (isinstance(self.__timeseries, dict) and len(self.__timeseries) == 1)  # or be the only one in dict
                )
 
     @property
-    def timeseries(self) -> Timeseries | Dict[str, Timeseries]:
+    def timeseries(self) -> ts.Timeseries | Dict[str, ts.Timeseries]:
         """
         Get (all) Timeseries as they were packed, either alone or in collection.
         """
@@ -119,7 +119,7 @@ class Packet():
     def _to_dict(self):
         return self.__load.copy()
 
-    def _ungroup_timeseries(self, packet_labels:tuple[str]) -> tuple[tuple[Timeseries]]:
+    def _ungroup_timeseries(self, packet_labels:tuple[str]) -> tuple[tuple[ts.Timeseries]]:
         res = []
         all_not_timeseries = []
 
@@ -133,7 +133,7 @@ class Packet():
                         all_not_timeseries.append(ts)
                 # Seach on load
                 if label in self.__load:
-                    if isinstance(self.__load[label], Timeseries):
+                    if isinstance(self.__load[label], ts.Timeseries):
                         found.append(self.__load[label])
                         all_not_timeseries.append(self.__load[label])
                     elif isinstance(self.__load[label], dict):

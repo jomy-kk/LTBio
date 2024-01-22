@@ -16,7 +16,7 @@
 
 from typing import Collection, Dict, Callable
 
-from ltbio.biosignals import Timeseries
+import ltbio.biosignals.timeseries as ts
 from ltbio.biosignals.timeseries.Unit import Unitless
 from ltbio.pipeline.PipelineUnit import SinglePipelineUnit
 
@@ -31,7 +31,7 @@ class FeatureExtractor(SinglePipelineUnit):
         super().__init__(name)
         self.__feature_functions = feature_functions
 
-    def apply(self, timeseries:Timeseries) -> Dict[str, Timeseries]:
+    def apply(self, timeseries: ts.Timeseries) -> Dict[str, ts.Timeseries]:
 
         if not timeseries.is_equally_segmented:  # we're assuming all Segments have the same duration
             raise AssertionError("Given Timeseries is not equally segmented.")

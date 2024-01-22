@@ -18,7 +18,7 @@ from typing import Callable, Dict
 
 from numpy import ndarray
 
-from ltbio.biosignals import Timeseries
+from ltbio.biosignals import timeseries as ts
 from ltbio.pipeline.PipelineUnit import SinglePipelineUnit
 
 
@@ -32,7 +32,7 @@ class FeatureSelector(SinglePipelineUnit):
         super().__init__(name)
         self.__selection_function = selection_function
 
-    def apply(self, features:Dict[str, Timeseries]) -> Dict[str, Timeseries]:
+    def apply(self, features:Dict[str, ts.Timeseries]) -> Dict[str, ts.Timeseries]:
         assert isinstance(features, dict)
         selected_features = {}
         for feature_name in features:
