@@ -6,6 +6,7 @@ from array import array
 
 from numpy import average
 
+from ltbio.biosignals.modalities import ECG
 # ===================================
 
 # IT - LongTermBiosignals
@@ -21,9 +22,15 @@ from numpy import average
 # ===================================
 
 from ltbio.biosignals.modalities.Biosignal import Biosignal
+from ltbio.biosignals.timeseries import Timeline
 from ltbio.biosignals.timeseries.Unit import Volt, Multiplier
 from ltbio.clinical import BodyLocation
 from ltbio.features.Features import HjorthParameters, ConnectivityFeatures
+
+from biosppy.signals.tools import _filter_signal, power_spectrum
+
+from ltbio.processing.PSD import PSD
+from ltbio.processing.filters.TimeDomainFilter import *
 
 
 class EEG(Biosignal):
@@ -219,3 +226,82 @@ class EEG(Biosignal):
             return res
         else:
             return average(res, weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), self.domain)))
+
+
+    def acceptable_quality(self, ecg: ECG = None):
+        """
+        Returns the Timeline of acceptable (good) EEG quality.
+        Good EEG periods are absent of noise and noise contamination depends on a variety of factors,
+        such as electrode placement, skin preparation, subject movements and surrounding electrical noise.
+
+        Here 5 SQIs are evaluated:
+        - Baseline wander (BW)
+          Possible causes of high BW: Electrodermal noise, slow lateral eye movements, cardiobalistic artifacts, eye blinks, etc.
+        - High-frequency noise (HFN):
+          Possible causes of high HFN: Myogenic noise, hypoglossal and cheweing artifacts, bruxisms, electrode noise, etc.
+        - Noisy Rhythmic Activity (RA):
+          Possible causes of high RA: Head rubbing, chest tapping, etc.
+        - Burst Drifts (BD):
+          Possible causes of high BD: Eyes opening, closing and blinking; electrode pops, etc.
+        - Opposing polarities slow waves (OPSW):
+          Possible causes of high OPSW: Lateral eye movement (in frontal electrodes), head shaking (in back electrodes), etc.
+        - Cardiac Artifacts (CA): [only applicable if 'ecg' is given]
+          Possible causes of high CA: Peaks synchronised with the R wave of the ECG, etc.
+
+        The lower, the better, for all SQIs.
+        It is advisable to normalise the signal before computing the SQIs. See 'Normalizer'.
+        """
+
+        sf = self.sampling_frequency
+
+        # Baseline wander (BW)  FIXME
+        # Apply low-pass filter of 1.5 Hz
+        #filter_design = TimeDomainFilter(ConvolutionOperation.MEDIAN, window_length=timedelta(seconds=5), overlap_length=timedelta(seconds=2.5))
+        #baseline = self.__copy__()
+        #baseline.filter(filter_design)
+        # When the peak-to-peak amplitude of the baseline is greater than 0.2, it is considered high BW.
+        #bw_good = baseline.when(lambda x: max(x) - min(x) < 0.2, window=timedelta(seconds=2))
+
+        # High-frequency noise (HFN)
+        def __hfn(x):  # for each window
+            freqs, power = power_spectrum(x, sampling_rate=sf)  # Get power spectral density
+            hf = np.sum(power[freqs >= 49])  # Sum power in the [49, +inf[ Hz range
+            total = np.sum(power)
+            return hf / total
+        # When the high-frequency components dominate (>50% of spectrum), it is considered high HFN.
+        hfn_good = self.when(lambda x: __hfn(x) < 0.5, window=timedelta(seconds=2))
+
+        # Noisy Rhythmic Activity (RA)
+        ra_good = self.domain  # TODO
+
+        # Burst Drifts (BD)
+        def __channel_std(x: np.ndarray):
+            # Get all standard deviations of the whole channel, with a sliding window of 2 seconds
+            res = []
+            for i in range(0, len(x), int(sf * 2)):
+                res.append(np.std(x[i:i + int(sf * 2)]))
+            return res
+        # Compute the standard deviations per channel
+        all_stds = self.apply_operation_and_return(lambda x: __channel_std(x))
+        # Get the median of the standard deviations per channel
+        median_std = []
+        for v in all_stds.values():
+            for p in v:
+                median_std.extend(p)
+        median_std = np.median(median_std)
+
+        # When the standard deviation of a channel is less than 2 median standard deviations, it is considered high BD.
+        bd_good = self.when(lambda x: np.std(x) < 2*median_std, window=timedelta(seconds=2))
+
+        # Opposing polarities slow waves (OPSW)
+        opsw_good = self.domain  # TODO
+
+        # Cardiac Artifacts (CA)
+        if ecg is not None:
+            ca_good = self.domain  # TODO
+        else:
+            ca_good = self.domain
+
+        # Make unique timeline
+        good = Timeline.union(bw_good, hfn_good, bd_good)
+        return good

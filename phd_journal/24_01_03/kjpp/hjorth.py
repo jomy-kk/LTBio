@@ -10,8 +10,8 @@ from ltbio.biosignals.modalities import EEG
 from ltbio.biosignals.timeseries import Timeline
 from ltbio.processing.formaters import Segmenter, Normalizer
 
-common_path = '/Users/saraiva/Datasets/KJPP/INSIGHT/EEG/autopreprocessed'
-out_common_path = '/Users/saraiva/Datasets/DZNE/INSIGHT/EEG/features'
+common_path = '/Volumes/MMIS-Saraiv/Datasets/KJPP/autopreprocessed_biosignal/1'
+out_common_path = '/Volumes/MMIS-Saraiv/Datasets/KJPP/features/1'
 
 # Get recursively all .biosignal files in common_path
 all_files = glob(join(common_path, '**/*.biosignal'), recursive=True)
@@ -22,7 +22,7 @@ normalizer = Normalizer(method='minmax')
 segmenter = Segmenter(timedelta(seconds=5))
 
 for filepath in all_files:
-    filename = filepath.split('/')[-1][:-14]
+    filename = filepath.split('/')[-1].split('.')[0]
     print(filename)
 
     # Load
@@ -71,4 +71,5 @@ for filepath in all_files:
     pickle.dump(all_activity, open(join(subject_out_path, 'hjorth_activity.pickle'), 'wb'))
     pickle.dump(all_mobility, open(join(subject_out_path, 'hjorth_mobility.pickle'), 'wb'))
     pickle.dump(all_complexity, open(join(subject_out_path, 'hjorth_complexity.pickle'), 'wb'))
+
 

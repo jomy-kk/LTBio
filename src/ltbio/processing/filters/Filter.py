@@ -19,7 +19,7 @@ from abc import ABC, abstractmethod
 from numpy import array
 
 import ltbio.pipeline
-from ltbio.biosignals import Timeseries
+import ltbio.biosignals.timeseries as ts
 
 class Filter(ltbio.pipeline.PipelineUnit.SinglePipelineUnit, ABC):
     """
@@ -51,7 +51,7 @@ class Filter(ltbio.pipeline.PipelineUnit.SinglePipelineUnit, ABC):
         """
         pass
 
-    def apply(self, timeseries: Timeseries):
+    def apply(self, timeseries: ts.Timeseries):
         timeseries._accept_filtering(self)
         return timeseries
 

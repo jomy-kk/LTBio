@@ -3,10 +3,10 @@ import csv
 import glob
 import os
 from datetime import timedelta, datetime
-from os import path
-from os.path import join
+from os.path import join, exists
 
 import numpy as np
+from pandas import read_csv
 from scipy.io import loadmat
 
 from .. import Timeseries
@@ -15,12 +15,11 @@ from ..sources.BiosignalSource import BiosignalSource
 from ..timeseries.Unit import Volt, Multiplier
 from ...clinical import Patient, BodyLocation
 from ...clinical.Patient import Sex
-from ...clinical.conditions.SMC import SMC
 
 
 class KJPP(BiosignalSource):
-    """This class represents the source of KJPP Database (in SET or MAT format) and includes methods to read and write
-    biosignal files provided by them."""
+    """This class represents the source of KJPP EEG files and includes methods to read and write
+    biosignal files provided by them after denoised by the team with EEGLAB (SET files)."""
 
     DELTA_BETWEEN_SEGMENTS = 1  # seconds
     BOUNDARIES_FILENAME = "_asr_boundaries.txt"  # as produced by EEGLAB after cleaning artifacts
@@ -30,7 +29,7 @@ class KJPP(BiosignalSource):
         KJPP.demographic_csv = demographic_csv
 
     def __repr__(self):
-        return "INSIGHT Study"
+        return "KJPP Klinik"
 
     @staticmethod
     def __read_set_file(filepath, metadata=False):
@@ -71,15 +70,18 @@ class KJPP(BiosignalSource):
     @staticmethod
     def _timeseries(path, type=EEG, **options):
         """
-        Reads all EDF files below the given path and makes discontiguous Timeseries with all of them, according to the
+        Reads all SET files below the given path and makes discontiguous Timeseries with all of them, according to the
            numeric specified in each file name. Returns a dictionary with one Timeseries per channel name.
         Args:
-            path (str): Path to the EDF files
+            path (str): Path to the SET files
             type (Biosignal): Type of biosignal to extract. Only EEG allowed.
         """
 
         filepaths = glob.glob(join(path, '**/*.set'), recursive=True)
-        filepaths = tuple(sorted(filepaths))
+        filepaths = tuple(sorted(filepaths, key=lambda x: int(x.split('/')[-2])))  # sort by session number
+
+        if len(filepaths) == 0:
+            raise FileNotFoundError(f"No SET files found in '{path}'.")
 
         timeseries = {}
         for filepath in filepaths:
@@ -87,8 +89,8 @@ class KJPP(BiosignalSource):
             units = Volt(Multiplier.u)  # micro-volts
 
             # Get interruptions, if any
-            boundaries_filepath = path.join(*path.split(filepath)[:-1], KJPP.BOUNDARIES_FILENAME)
-            interruptions_exist = path.exists(boundaries_filepath)
+            boundaries_filepath = join(*path.split(filepath)[:-1], KJPP.BOUNDARIES_FILENAME)
+            interruptions_exist = exists(boundaries_filepath)
             if interruptions_exist:
                 interruptions_ixs = np.array(KJPP.__read_boundaries_file(boundaries_filepath))
                 # Convert indexes to seconds
@@ -138,30 +140,36 @@ class KJPP(BiosignalSource):
         return timeseries
 
     @staticmethod
-    def __find_sex_age(patient_code) -> tuple[Sex, int]:
-        with open(KJPP.demographic_csv) as csv_file:
-            reader = csv.DictReader(csv_file)
-            for row in reader:
-                if row['CODE'] == patient_code:
-                    return Sex.M if row['SEX'] == 'M' else Sex.F, row['AGE']
-        raise ValueError(f"Patient code {patient_code} not found in demographics file '{demographic_csv}'.")
+    def __find_code_sex_age(session_code) -> tuple[str, str, Sex, int]:
+        metadata = read_csv(KJPP.demographic_csv, sep=';')
+        row = metadata[metadata['EEG_GUID'] == session_code].iloc[0]  # try to find the session code in the demographics file
+        if row is not None:
+            """ # For future, when the demographics file is updated
+            sex = Sex.M if row['SEX'] == 'Male' else Sex.F if row['SEX'] == 'Female' else Sex._
+            return (row['PATIENT CODE'], row['PATIENT CODE (short)'], sex, row['AGE']*12)  # age was in months
+            """
+            # Get value in "Gender" column of that row
+            sex = Sex.M if row['Gender'] == 'Male' else Sex.F if row['Gender'] == 'Female' else Sex._
+            return (row['PatientGUID'], row['PatientGUID'], sex, row['AgeMonthEEG'] * 12)  # age was in months
+        else:
+            raise LookupError(f"Session code {session_code} not found in demographics file '{KJPP.demographic_csv}'.")
 
     @staticmethod
     def _patient(path, **options):
         """
-        Gets:
-        - patient code from the filepath
+        With the:
+        - session code from the filepath
+        Gets the:
+        - patient code from the demographics file
+        - short patient code from the demographics file
         - age from the demographics file
         - gender from the demographics file
-        and adds SMC diagnosis.
         """
 
-        filename = os.path.split(path)[-1]
-        patient_code, _ = filename.split('_')
-        sex, age = KJPP.__find_sex_age(patient_code)
-        smc = SMC()
+        session_code = os.path.split(path)[-1]
+        patient_code, patient_code_short, sex, age = KJPP.__find_code_sex_age(session_code)
 
-        return Patient(patient_code, age=age, sex=sex, conditions=(smc, ))
+        return Patient(code=patient_code_short, age=age, sex=sex, name=patient_code)  # keep the long patient code as name for backwards compatibility
 
     @staticmethod
     def _acquisition_location(path, type, **options):
@@ -170,12 +178,18 @@ class KJPP(BiosignalSource):
     @staticmethod
     def _name(path, type, **options):
         """
-        Gets the trial number from the filepath.
+        Gets the short session code from the demographics file.
         """
-        filename = os.path.split(path)[-1]
-        _, trial = filename.split('_')
-        trial = trial.split('.')[0]
-        return f"Trial {trial}"
+        session_code = os.path.split(path)[-1]
+        """ # For future, when the demographics file is updated
+        #with open(KJPP.demographic_csv) as csv_file:
+            reader = csv.DictReader(csv_file)
+            for row in reader:
+                if row['SESSION CODE'] == session_code:
+                    return row['SESSION CODE (short)']
+        raise ValueError(f"Session code {session_code} not found in demographics file '{KJPP.demographic_csv}'.")
+        """
+        return session_code
 
     @staticmethod
     def _write(path:str, timeseries: dict):
