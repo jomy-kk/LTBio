@@ -100,8 +100,8 @@ mdit-py-plugins==0.3.3
 mdurl==0.1.2
 micawber==0.5.4
 mistune==0.8.4
-mne==1.0.2
-mne-connectivity==0.6.0
+mne
+mne-connectivity
 mne-qt-browser==0.6.1
 monotonic==1.6
 multimethod==1.9.1
