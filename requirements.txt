@@ -83,7 +83,6 @@ jupyterlab-widgets==1.1.1
 keyring==23.7.0
 kiwisolver==1.4.2
 lazy-object-proxy==1.7.1
--e git+https://github.com/jomy-kk/IT-LongTermBiosignals.git@0a92a7fe0196e060c455fc073282e841df427158#egg=LongTermBiosignals
 lxml==4.9.1
 markdown-it-py==2.1.0
 MarkupSafe==2.1.1
