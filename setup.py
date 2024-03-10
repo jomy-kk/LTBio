@@ -6,6 +6,8 @@ with open("README.md", "r", encoding = "utf-8") as fh:
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
+print("Installing dependencies...\n", requirements)
+
 setup(
     name='LongTermBiosignals',
     version='1.0.1',
