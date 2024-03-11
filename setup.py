@@ -244,7 +244,7 @@ requirements = [
 
 setup(
     name='LongTermBiosignals',
-    version='2.0.1',
+    version='2.0.2',
     packages=find_packages(where="src"),
     package_dir={'': 'src'},
     install_requires=requirements,
