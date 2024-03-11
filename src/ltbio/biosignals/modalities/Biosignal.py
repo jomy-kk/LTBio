@@ -1006,7 +1006,7 @@ class Biosignal(ABC):
             ax.margins(x=0)
             ax.set_xlabel(xlabel, fontsize=8, rotation=0, loc="right")
             ax.set_ylabel(ylabel, fontsize=8, rotation=90, loc="top")
-            plt.xticks(fontsize=9)
+            plt.xticks(fontsize=9, rotation=60)
             plt.yticks(fontsize=9)
             if grid_on:
                 ax.grid()
