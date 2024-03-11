@@ -486,7 +486,7 @@ class Biosignal(ABC):
             if i < N:
                 return np.vstack([channel[i] for channel in self.__timeseries.values()])
             else:
-                IndexError(f"This Biosignal as only {N} blocks.")
+                IndexError(f"This Biosignal has only {N} blocks.")
         else:
             raise AssertionError("Not all channels are segmented in the same way, hence blocks cannot be created.")
 
@@ -599,7 +599,7 @@ class Biosignal(ABC):
     def _to_dict(self) -> Dict[str|BodyLocation, timeseries.Timeseries]:
         return deepcopy(self.__timeseries)
 
-    def to_array(self) -> np.ndarray:
+    def to_array(self, channel_order: tuple[str | BodyLocation] = None) -> np.ndarray:
         """
         Converts Biosignal to a numpy array.
         The initial datetime is that of the earliest channel. The final datetime is that of the latest channel.
@@ -622,13 +622,20 @@ class Biosignal(ABC):
         # Get the maximum sampling frequency of the Biosignal
         max_sf = max(channel.sampling_frequency for _, channel in self)
 
+        # Define a channel order?
+        if channel_order is None:
+            channel_names = [ch_name for ch_name, _ in self]
+        else:
+            channel_names = channel_order
+
         # Get the arrays of all channels
         channels_as_arrays = []
-        for i, (_, channel) in enumerate(self):
+        for channel_name in channel_names:
+            channel = self._get_channel(channel_name)
             if channel.sampling_frequency != max_sf:  # Resample the channel, if necessary
                 channel._resample(max_sf)
             # Convert channel to array
-            channels_as_arrays.append(channel.samples)
+            channels_as_arrays.append(channel.to_array())
 
         # Get the length of the samples axes
         n_samples = ceil((self.final_datetime - self.initial_datetime).total_seconds() * max_sf)
@@ -637,10 +644,11 @@ class Biosignal(ABC):
         res = np.full((len(self), n_samples), np.nan)
 
         # Fill the array
-        for i, ((_,channel), channel_as_array) in enumerate(zip(self, channels_as_arrays)):
+        for i, (channel_name, channel_as_array) in enumerate(zip(channel_names, channels_as_arrays)):
+            channel = self._get_channel(channel_name)
             # Get the index of the first position of this channel in the array
             initial_ix = round((channel.initial_datetime - self.initial_datetime).total_seconds() * max_sf)
-            # Broadcat samples to the array
+            # Broadcast samples to the array
             res[i, initial_ix: initial_ix + len(channel_as_array)] = channel_as_array
 
         return res
