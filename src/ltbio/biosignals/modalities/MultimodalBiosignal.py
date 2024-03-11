@@ -94,8 +94,8 @@ class MultimodalBiosignal(Biosignal):
 
     @property
     def acquisition_location(self) -> Set[BodyLocation]:
-        if self.__acquision_location is not None:
-            return self.__acquision_location
+        if super().acquisition_location is not None:
+            return super().acquisition_location
         else:
             return {biosignal.acquisition_location for biosignal in self.__biosignals.values()}
 
@@ -114,7 +114,7 @@ class MultimodalBiosignal(Biosignal):
     def __contains__(self, item):
         if isinstance(item, Biosignal) and item in self.__biosignals.values():
             return True
-        super().__contains__(item)
+        return super().__contains__(item)
 
     def __str__(self):
         '''Returns a textual description of the MultimodalBiosignal.'''

@@ -59,7 +59,7 @@ class ConversionsTestCase(unittest.TestCase):
 
     def test_single_channel_biosignal_to_array(self):
         biosignal = ECG({'ch1': self.ch1})
-        expected = np.array([[0, 1, 2, 3, 4], ])
+        expected = np.array([[0, 1, 2, 3, 4, np.nan], ])
         converted = biosignal.to_array()
         self.assertEqual(converted.shape, expected.shape)
         assert_array_equal(converted, expected)

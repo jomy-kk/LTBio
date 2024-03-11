@@ -45,8 +45,8 @@ class FeatureSelectorTestCase(unittest.TestCase):
         self.assertEqual(len(selected_features), 2)
         self.assertTrue('variance' in selected_features)
         self.assertTrue('deviation' in selected_features)
-        self.assertTrue(all(selected_features['variance'].to_array()[0] == self.samples[1]))
-        self.assertTrue(all(selected_features['deviation'].to_array()[0] == self.samples[2]))
+        self.assertTrue(all(selected_features['variance'].samples == self.samples[1]))
+        self.assertTrue(all(selected_features['deviation'].samples == self.samples[2]))
 
 
 

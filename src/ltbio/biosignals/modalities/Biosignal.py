@@ -628,7 +628,7 @@ class Biosignal(ABC):
             if channel.sampling_frequency != max_sf:  # Resample the channel, if necessary
                 channel._resample(max_sf)
             # Convert channel to array
-            channels_as_arrays.append(channel.to_array())
+            channels_as_arrays.append(channel.samples)
 
         # Get the length of the samples axes
         n_samples = ceil((self.final_datetime - self.initial_datetime).total_seconds() * max_sf)
