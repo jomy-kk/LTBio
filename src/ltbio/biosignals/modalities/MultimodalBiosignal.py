@@ -15,62 +15,89 @@
 
 from typing import Set
 
+from multimethod import multimethod
+
 from ltbio.biosignals.modalities.Biosignal import Biosignal
 from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
+from ltbio.biosignals.timeseries import Timeseries
+from ltbio.clinical import Patient
 from ltbio.clinical.BodyLocation import BodyLocation
 
 
 class MultimodalBiosignal(Biosignal):
 
-    def __init__(self, **biosignals):
+    def __init__(self, timeseries: dict[str | BodyLocation, Timeseries], source=None, patient=None, acquisition_location=None, name=None):
+        super(MultimodalBiosignal, self).__init__(timeseries, source, patient, acquisition_location, name)
+        self.__biosignals = None
 
+    @classmethod
+    def from_biosignals(cls, **biosignals: Biosignal):
         timeseries = {}
-        #sources = {}
-        patient = None
-        #locations = {}
+        source = []
+        patient = []
+        location = []
         name = "Union of"
         events = {}
 
         for label, biosignal in biosignals.items():
-            if patient is None:
-                patient = biosignal._Biosignal__patient
-            elif patient != biosignal._Biosignal__patient:
-                raise ValueError("When joining Biosignals, they all must be from the same Patient.")
 
             for channel_label, ts in biosignal._to_dict().items():
-                timeseries[label+':'+channel_label] = ts  # Join Timeseries in a single dictionary
+                timeseries[label + ':' + channel_label] = ts  # Join Timeseries in a single dictionary
 
-            #sources[label] = biosignal.source  # Join sources
-
-            #if biosignal.acquisition_location is not None:
-            #    locations[label] = biosignal.acquisition_location
+            source.append(biosignal.source)
+            patient.append(biosignal._Biosignal__patient)
+            location.append(biosignal.acquisition_location)
 
             name += f" '{biosignal.name}'," if biosignal.name != "No Name" else f" '{label}',"
 
-            for event in biosignal.events:
-                if event.name in events and events[event.name] != event:
-                    raise ValueError("There are two event names associated to different onsets/offsets in this set of Biosignals.")
-                else:
-                    events[event.name] = event
+            # Check if there are no incompatible events
+            if any(e != events[e.name] for e in biosignal.events if e.name in events.keys()):
+               raise ValueError(f"There is an Event in Biosignal '{biosignal.name}' with the same name, but with different onset and/or offset, of one Event contained in the other Biosignals.")
 
-        super(MultimodalBiosignal, self).__init__(timeseries, None, patient, None, name[:-1])
-        self.associate(events)
-        self.__biosignals = biosignals
+            # Add new events
+            remaining_events = set(biosignal.events) - set(events.values())
+            for e in remaining_events:
+                events[e.name] = e
 
-        if (len(self.type)) == 1:
-            raise TypeError("Cannot create Multimodal Biosignal of just 1 modality.")
+        # Check if all sources, patients and locations are equal
+        if len(set(source)) == 1:
+            source = source[0]
+        else:
+            source = None
+        if len(set(patient)) == 1:
+            patient = patient[0]
+        else:
+            patient = None
+        if len(set(location)) == 1:
+            location = location[0]
+        else:
+            location = None
+
+        x = MultimodalBiosignal(timeseries, source, patient, location, name[:-1])
+        x.associate(events)
+        x._MultimodalBiosignal__biosignals = biosignals
+        return x
+
+        # if (len(self.type)) == 1:
+        #    raise TypeError("Cannot create Multimodal Biosignal of just 1 modality.")
 
     @property
     def type(self):
         return {biosignal.type for biosignal in self.__biosignals.values()}
 
     @property
-    def source(self) -> Set[BiosignalSource]:
-        return {biosignal.source for biosignal in self.__biosignals.values()}
+    def source(self) -> BiosignalSource | Set[BiosignalSource]:
+        if super().source is not None:
+            return super().source
+        else:
+            return {biosignal.source for biosignal in self.__biosignals.values()}
 
     @property
     def acquisition_location(self) -> Set[BodyLocation]:
-        return {biosignal.acquisition_location for biosignal in self.__biosignals.values()}
+        if super().acquisition_location is not None:
+            return super().acquisition_location
+        else:
+            return {biosignal.acquisition_location for biosignal in self.__biosignals.values()}
 
     def __getitem__(self, item):
         if isinstance(item, tuple):
@@ -82,15 +109,12 @@ class MultimodalBiosignal(Biosignal):
             return self.__biosignals[item]
 
         raise IndexError("Indexing a Multimodal Biosignal should have two arguments, like 'multisignal['ecg'][V5],"
-                                 "where 'ecg' is the Biosignal to address and 'V5' is the channel to get.")
+                         "where 'ecg' is the Biosignal to address and 'V5' is the channel to get.")
 
     def __contains__(self, item):
-        if isinstance(item, str) and item in self.__biosignals.keys():
-            return True
         if isinstance(item, Biosignal) and item in self.__biosignals.values():
             return True
-
-        super(MultimodalBiosignal, self).__contains__(item)
+        return super().__contains__(item)
 
     def __str__(self):
         '''Returns a textual description of the MultimodalBiosignal.'''
@@ -101,4 +125,3 @@ class MultimodalBiosignal(Biosignal):
 
     def plot_summary(self, show: bool = True, save_to: str = None):
         raise TypeError("Functionality not available for Multimodal Biosignals.")
-

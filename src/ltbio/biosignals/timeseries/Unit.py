@@ -25,6 +25,7 @@ class Multiplier(Enum):
     """
     Common multipliers used when describing orders of magnitude.
     """
+    c = 1e-2  # centi
     m = 1e-3  # milli
     u = 1e-6  # micro
     n = 1e-9  # nano
@@ -45,6 +46,9 @@ class Unit(ABC):
 
     def __eq__(self, other):
         return type(self) == type(other) and self.__multiplier == other.multiplier
+
+    def __hash__(self):
+        return hash((type(self), self.__multiplier))
 
     @property
     def multiplier(self) -> Multiplier:
@@ -67,6 +71,9 @@ class Unit(ABC):
     def __str__(self):
        return str(self.prefix) + str(self.SHORT)
 
+    def __repr__(self):
+        return str(self)
+
     @abstractmethod
     def convert_to(self, unit:type) -> Callable[[array], array]:
         """
@@ -88,6 +95,31 @@ class Unit(ABC):
                 f'Version of {self.__class__.__name__} object not supported. Serialized version: {state[0]};'
                 f'Supported versions: 1.')
 
+    @classmethod
+    def from_str(cls, string: str) -> 'Unit':
+        if string == '':
+            return None
+
+        # Short
+        try:
+            multiplier = eval('Multiplier.' + string[0])
+            short = string[1]
+        except:
+            multiplier = Multiplier._
+            short = string[0]  # keep looking on the first char
+
+        # Unit
+        res = None
+        for unit in Unit.__subclasses__():
+            if short == unit.SHORT:  # try with second char
+                res = unit(multiplier)
+            elif multiplier == Multiplier._ and string == unit.SHORT:  # try with complete string
+                res = unit(multiplier)
+
+        if res is None:
+            raise ValueError(f"Cannot find unit that is commonly written as '{string}'.")
+        else:
+            return res
 
 
 class Unitless(Unit):
@@ -103,7 +135,7 @@ class G(Unit):
     def __init__(self, multiplier=Multiplier._):
         super().__init__(multiplier)
 
-    SHORT = "G"
+    SHORT = "g"
 
     def convert_to(self, unit):
        pass
@@ -170,4 +202,24 @@ class Second(Unit):
 
     def convert_to(self, unit):
         pass
+
+class Meter(Unit):
+    def __init__(self, multiplier=Multiplier._):
+        super().__init__(multiplier)
+
+    SHORT = "m"
+
+    def convert_to(self, unit):
+        pass
+
+class Percentage(Unit):
+    def __init__(self, multiplier=Multiplier._):
+        super().__init__(multiplier)
+
+    SHORT = "%"
+
+    def convert_to(self, unit):
+        pass
+
+
 

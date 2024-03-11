@@ -21,18 +21,25 @@ from datetime import timedelta
 from json import load
 from os import listdir, path, access, R_OK
 from os.path import getsize
+from typing import Callable
 from warnings import warn
 
 import numpy as np
 from dateutil.parser import parse as to_datetime
+from numpy import ndarray
+from scipy.stats import stats
 
 from .. import timeseries
 from .. import modalities
 from ..sources.BiosignalSource import BiosignalSource
 from ltbio.clinical.BodyLocation import BodyLocation
+from ..timeseries.Timeline import Timeline
+from ..timeseries.Unit import Volt, Multiplier, Siemens, Percentage, G, Unit, Unitless
 
 
 class Sense(BiosignalSource):
+
+    RESOLUTION = 12  # bits
 
     # Sense Defaults files use these keys:
     MODALITIES = 'modalities'
@@ -51,6 +58,23 @@ class Sense(BiosignalSource):
 
     # Flag to deal with badly-formatted CSV files
     BAD_FORMAT = False
+
+    # Regarding the device hardware and expected raw values
+    LOWEST_VALUE = 0
+    HIGHEST_VALUE = 4095
+
+    # Modality-specific thresholds
+    EMG_REST_STD_THRESHOLD = 100
+    EMG_HIGH_SATURATION_THRESHOLD = 4096-20
+    EMG_LOW_SATURATION_THRESHOLD = 20
+    EMG_TYPICAL_REST_RMS = (1291 + 1586) / 2  # two examples, one with rhythmic activity (lifting a chair), one with intense activity (running)
+
+    def __hash__(self):
+        return hash(self.__device_id) * hash(self.__defaults_path)
+
+    def __eq__(self, other):
+        return type(other) == Sense
+
 
     def __init__(self, device_id:str, defaults_path:str=None):
         super().__init__()
@@ -73,6 +97,10 @@ class Sense(BiosignalSource):
         Sense.BAD_FORMAT = False
 
     def __repr__(self):
+        return "ScientISST Sense"
+
+    @classmethod
+    def __str__(cls):
         return "ScientISST Sense"
 
 
@@ -383,6 +411,297 @@ class Sense(BiosignalSource):
         pass  # TODO
 
     @staticmethod
-    def _transfer(samples, to_unit):
-        pass
+    def _transfer(to_unit: Unit, type) -> Callable[[ndarray], ndarray]:
+        if isinstance(to_unit, Percentage):
+            if type is modalities.RESP:
+                # From Bitalino
+                return lambda x: ((x / (2**Sense.RESOLUTION)) - 0.5) * 100
+        elif isinstance(to_unit, Volt):
+            if type is modalities.ECG:
+                # From Sense2
+                VCC = 3.3
+                GAIN = 1100
+                y = lambda x: ((x / 2**Sense.RESOLUTION) - 0.5) * VCC / GAIN
+                if to_unit.multiplier is Multiplier._:
+                    return y
+                elif to_unit.multiplier is Multiplier.m:
+                    return lambda y: y / 1000
+            elif type is modalities.EMG:
+                # From Sense
+                VCC = 3.3
+                GAIN = 1000
+                y = lambda x: ((x / 2 ** Sense.RESOLUTION) - 0.5) * VCC / GAIN
+                if to_unit.multiplier is Multiplier._:
+                    return y
+                elif to_unit.multiplier is Multiplier.m:
+                    return lambda y: y / 1000
+        elif isinstance(to_unit, Siemens):
+            if type is modalities.EDA:
+                # From Bitalino: https://bitalino.com/storage/uploads/media/eda-sensor-datasheet-revb.pdf
+                VCC = 3.3
+                y = lambda x: (x / 2**Sense.RESOLUTION * VCC) / 0.132
+                if to_unit.multiplier is Multiplier.u:
+                    return y
+                elif to_unit.multiplier is Multiplier._:
+                    return lambda y: y * 10**(-6)
+        elif isinstance(to_unit, G):
+            if type is modalities.ACC:
+                # From Bitalino: https://bitalino.com/storage/uploads/media/revolution-acc-sensor-datasheet-revb.pdf
+                return lambda x: (x - Sense.LOWEST_VALUE) / (Sense.HIGHEST_VALUE - Sense.LOWEST_VALUE) * 2 - 1
+        elif isinstance(to_unit, Unitless):
+            if type is modalities.PPG:
+                return lambda x: x
+        else:
+            raise NotImplementedError(f"Conversion of {Sense} biosignals to {to_unit} is not implemented.")
 
+    @staticmethod
+    def onbody(biosignal, asleep:bool = False):
+
+        onbody = None
+        # Resample to 200 Hz, because the saturation thresholds are defined for 200 Hz.
+        biosignal = biosignal.__copy__()
+        biosignal.resample(200)
+
+        def total_flatline(x, threshold: float = None):
+            """All the segment must be flat."""
+            derivative = np.abs(np.diff(x))
+            if threshold is None:
+                threshold = FLATLINE_THRESHOLD
+            return np.all(derivative < threshold)
+
+        def partial_flatline(x):
+            """At least 1/3 of the segment must be flat."""
+            derivative = np.abs(np.diff(x))
+            return np.count_nonzero(derivative < FLATLINE_THRESHOLD) > 1 / 3 * len(derivative)
+
+        def discrepancy(x):
+            """
+            When there is at least one derivative point that is above the discrepancy threshold.
+            """
+            derivative = np.abs(np.diff(x))
+            return np.any(derivative > DISCREPEANCY_THRESHOLD)
+
+        def low_saturation_region(x):
+            """
+            All the segment must be below low saturation threshold.
+            Lowest saturation region is usually attained when - electrode loses contact.
+            """
+            return np.all(x < LOW_SATURATION_THRESHOLD) and total_flatline(x)  # Amplitude < 15 and flatline
+
+        def high_saturation_region(x):
+            """
+            All the segment must be above high saturation threshold.
+            Highest saturation region is usually attained when + electrode loses contact.
+            """
+            return np.all(x > HIGH_SATURATION_THRESHOLD) and total_flatline(x)  # Amplitude > 3600 and flatline
+
+        def low_high_saturation_transition(x):
+            """
+            Transition from low to high saturation region.
+            There must exist samples in the low and high saturation regions, and partial flatline in between.
+            """
+            return np.max(x) - np.min(x) > HIGH_SATURATION_THRESHOLD - LOW_SATURATION_THRESHOLD and discrepancy(x)
+
+        def electronic_noise(x):
+            """
+            Electronic noise is usually attained when the reference electrode is in place, but the + and - electrodes are not.
+            There is no flatline, but the signal is very noisy.
+            It can be modeled as gaussian noise ~ N(0, max-min).
+            """
+            return False
+
+        def baseline_saturation(x):
+            """
+            Baseline saturation is usually attained when both + and - electrodes plus reference/ground lose contact.
+            There is total flatline and the signal is saturated at the baseline for periods longer than usual heartbeats,
+            so this should be applied only to segments of a typical heartbeat length.
+            Since we are checking in a longer period, the derivative threshold is lower, to be more strict.
+            -----
+            E.g.: Using a window of 800 ms, the derivative threshold should be lower than 50 during all 800ms.
+            This would not be the case in a shorter window.
+            """
+            decision = total_flatline(x, BASELINE_FLATLINE_THRESHOLD)
+            if False:
+                print("DECISION 2: Baseline Saturated?", decision)
+                print("derivatives:", np.abs(np.diff(x)))
+                print("------")
+            return decision
+
+        def saturated(x):
+            a = low_saturation_region(x)
+            b = high_saturation_region(x)
+            c = low_high_saturation_transition(x)
+            decision = a or b or c
+            if False:
+                print("Mean:", np.mean(x), "Median:", np.median(x), "Max:", np.max(x), "Min:", np.min(x))
+                print("Any Below 20:", np.any(x < LOW_SATURATION_THRESHOLD))
+                print("Any Above 3900:", np.any(x > HIGH_SATURATION_THRESHOLD))
+                print("Derivative:", np.abs(np.diff(x - x.mean())),
+                      "Total flatline" if total_flatline(x) else "Partial flatline" if partial_flatline(
+                          x) else "No flatline detected")
+                print("Discrepancy:", discrepancy(x))
+                print("DECISION: Saturated?", decision)
+                print("\t\tBecause of:", f"low_saturation_region:{a} |", f"high_saturation_region:{b} |",
+                      f"low_high_saturation_transition:{c}")
+                print("-----")
+            return decision
+
+        if isinstance(biosignal, modalities.ECG):
+
+            # Anywhere at the Chest
+            if biosignal.acquisition_location in BodyLocation.CHEST:
+                """If the electrodes are not in contact with the skin, the signal is flat,
+                assuming all wires are correctly soldered and there is no electronic noise."""
+
+                # Check if all channels are on the same units (only allowed mV or raw)
+                units = set([channel.units for _, channel in biosignal])
+                if len(units) > 1:
+                    raise ValueError(f"All channels must be on the same units. Found {units}. Please convert them all to mV or raw.")
+
+                # Parameters for raw values:
+                # For derivatives
+                FLATLINE_THRESHOLD = 400
+                BASELINE_FLATLINE_THRESHOLD = 150
+                DISCREPEANCY_THRESHOLD = 2000
+                # For amplitudes
+                LOW_SATURATION_THRESHOLD = 500
+                HIGH_SATURATION_THRESHOLD = 3500
+
+                # If not raw
+                unit = units.pop()
+                if unit is not None:
+                    FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.ECG)(FLATLINE_THRESHOLD)
+                    BASELINE_FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.ECG)(BASELINE_FLATLINE_THRESHOLD)
+                    DISCREPEANCY_THRESHOLD = Sense._transfer(unit, modalities.ECG)(DISCREPEANCY_THRESHOLD)
+                    LOW_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.ECG)(LOW_SATURATION_THRESHOLD)
+                    HIGH_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.ECG)(HIGH_SATURATION_THRESHOLD)
+
+                not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=50))
+                not_baseline_saturated = biosignal.when(lambda x: not baseline_saturation(x), timedelta(milliseconds=800))
+
+                onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
+
+        elif biosignal.type is modalities.EMG:
+            if biosignal.acquisition_location in BodyLocation.ARM:
+                # Check if all channels are on the same units (only allowed mV or raw)
+                units = set([channel.units for _, channel in biosignal])
+                if len(units) > 1:
+                    raise ValueError(
+                        f"All channels must be on the same units. Found {units}. Please convert them all to mV or raw.")
+
+                # Parameters for raw values:
+                # For derivatives
+                FLATLINE_THRESHOLD = 400
+                BASELINE_FLATLINE_THRESHOLD = 10  # if muscle is at rest, the sensor is high-quality hardware, skin is well prepared and electrodes are well placed, the signal can look flat, so this threshold should be really low
+                DISCREPEANCY_THRESHOLD = 2000
+                # For amplitudes
+                LOW_SATURATION_THRESHOLD = 500
+                HIGH_SATURATION_THRESHOLD = 3500
+
+                # If not raw
+                unit = units.pop()
+                if unit is not None:
+                    FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.EMG)(FLATLINE_THRESHOLD)
+                    BASELINE_FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.EMG)(BASELINE_FLATLINE_THRESHOLD)
+                    DISCREPEANCY_THRESHOLD = Sense._transfer(unit, modalities.EMG)(DISCREPEANCY_THRESHOLD)
+                    LOW_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.EMG)(LOW_SATURATION_THRESHOLD)
+                    HIGH_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.EMG)(HIGH_SATURATION_THRESHOLD)
+
+                not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=50))
+                not_baseline_saturated = biosignal.when(lambda x: not baseline_saturation(x),
+                                                        timedelta(milliseconds=800))
+
+                onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
+
+        # PPG
+        elif biosignal.type is modalities.PPG:
+
+            # Check if all channels are on the same units (only allowed mV or raw)
+            units = set([channel.units for _, channel in biosignal])
+            if len(units) > 1:
+                raise ValueError(
+                    f"All channels must be on the same units. Found {units}. Please convert them all to mV or raw.")
+
+            # Parameters for raw values:
+            # For derivatives
+            FLATLINE_THRESHOLD = 20  # guess adjusted value for PPG
+            BASELINE_FLATLINE_THRESHOLD = 10  # evidence-based adjusted value for PPG
+            DISCREPEANCY_THRESHOLD = 200
+            # For amplitudes
+            LOW_SATURATION_THRESHOLD = 200
+            HIGH_SATURATION_THRESHOLD = 3000
+
+            # If not raw
+            unit = units.pop()
+            if unit is not None:
+                FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.PPG)(FLATLINE_THRESHOLD)
+                BASELINE_FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.PPG)(BASELINE_FLATLINE_THRESHOLD)
+                DISCREPEANCY_THRESHOLD = Sense._transfer(unit, modalities.PPG)(DISCREPEANCY_THRESHOLD)
+                LOW_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.PPG)(LOW_SATURATION_THRESHOLD)
+                HIGH_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.PPG)(HIGH_SATURATION_THRESHOLD)
+
+            not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=40))
+            not_baseline_saturated = biosignal.when(lambda x: not baseline_saturation(x), timedelta(milliseconds=800))
+
+            onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
+            # onbody = not_baseline_saturated
+
+        elif biosignal.type is modalities.EDA:
+            # Check if all channels are on the same units (only allowed mV or raw)
+            units = set([channel.units for _, channel in biosignal])
+            if len(units) > 1:
+                raise ValueError(
+                    f"All channels must be on the same units. Found {units}. Please convert them all to uS or raw.")
+
+            # Parameters for raw values:
+            # For derivatives
+            FLATLINE_THRESHOLD = 35
+            BASELINE_FLATLINE_THRESHOLD = 0.5  # EDA is a very low frequency signal, so this threshold should be really low
+            DISCREPEANCY_THRESHOLD = 100  # Same here, a discrepancy higher than 150 is very unlikely
+            # For amplitudes
+            LOW_SATURATION_THRESHOLD = 50
+            HIGH_SATURATION_THRESHOLD = 4096-50
+
+            # If not raw
+            unit = units.pop()
+            if unit is not None:
+                FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.EDA)(FLATLINE_THRESHOLD)
+                BASELINE_FLATLINE_THRESHOLD = Sense._transfer(unit, modalities.EDA)(BASELINE_FLATLINE_THRESHOLD)
+                DISCREPEANCY_THRESHOLD = Sense._transfer(unit, modalities.EDA)(DISCREPEANCY_THRESHOLD)
+                LOW_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.EDA)(LOW_SATURATION_THRESHOLD)
+                HIGH_SATURATION_THRESHOLD = Sense._transfer(unit, modalities.EDA)(HIGH_SATURATION_THRESHOLD)
+
+            not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=30))
+            not_baseline_saturated = biosignal.when(lambda x: not baseline_saturation(x),
+                                                    timedelta(seconds=10))
+
+            onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
+
+        elif biosignal.type is modalities.ACC:
+            biosignal = biosignal['x'] + biosignal['y'] + biosignal['z']  # sum sample-by-sample the 3 axes
+
+            if biosignal.acquisition_location in BodyLocation.CHEST:
+                if asleep:
+                    raise NotImplementedError("Onbody detection for chest ACC when asleep not yet implemented.")
+                else:
+                    # Parameters for raw values
+                    NO_MOVEMENT_THRESHOLD = 100
+                    WINDOW = timedelta(seconds=5)
+
+                    # If not raw
+                    unit = biosignal._get_single_channel()[1].units
+                    if unit is not None:
+                        NO_MOVEMENT_THRESHOLD = Sense._transfer(unit, modalities.ACC)(NO_MOVEMENT_THRESHOLD)
+
+                    onbody = biosignal.when(lambda x: not total_flatline(x, NO_MOVEMENT_THRESHOLD), WINDOW)
+            else:
+                raise NotImplementedError(f"Onbody detection for ACC outside of the chest not yet implemented.")
+
+        else:
+            raise NotImplementedError(f"Onbody detection for modality {biosignal.type} not yet implemented.")
+            # TODO: Not yet implemented for other modalities or locations
+
+        if onbody is not None:
+            onbody.name = biosignal.name + " when electrodes placed on-body"
+
+        return onbody

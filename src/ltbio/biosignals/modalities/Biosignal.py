@@ -21,23 +21,25 @@ from inspect import isclass
 from math import ceil
 from shutil import rmtree
 from tempfile import mkdtemp
-from typing import Dict, Tuple, Collection, Set, ClassVar
+from typing import Dict, Tuple, Collection, Set, ClassVar, Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime, ParserError
 from numpy import ndarray
+from pandas import DataFrame
 
 from ltbio.biosignals.sources.BiosignalSource import BiosignalSource
 from ltbio.biosignals.timeseries.Event import Event
-from ltbio.biosignals.timeseries.Unit import Unitless
+from ltbio.biosignals.timeseries.Unit import Unitless, Unit
 # from ...processing.filters.Filter import Filter
 from ltbio.clinical.BodyLocation import BodyLocation
-from ltbio.clinical.Patient import Patient
+from ltbio.clinical import Patient
 from ltbio.clinical.conditions.MedicalCondition import MedicalCondition
 from ltbio.processing.noises.Noise import Noise
 from .. import timeseries
+from ..timeseries.Timeline import Timeline
 
 
 class Biosignal(ABC):
@@ -50,6 +52,8 @@ class Biosignal(ABC):
     """
 
     __SERIALVERSION: int = 2
+
+    MAX_NAME_LENGTH: int = 100
 
     def __init__(self, timeseries: Dict[str|BodyLocation, timeseries.Timeseries] | str | Tuple[datetime], source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, **options):
 
@@ -119,7 +123,7 @@ class Biosignal(ABC):
         return type(self)({ts: self.__timeseries[ts].__copy__() for ts in self.__timeseries}, self.__source, self.__patient, self.__acquisition_location, str(self.__name))
 
     def _new(self, timeseries: Dict[str|BodyLocation, timeseries.Timeseries] | str | Tuple[datetime] = None, source:BiosignalSource.__subclasses__()=None, patient:Patient=None, acquisition_location:BodyLocation=None, name:str=None, events:Collection[Event]=None, added_noise=None):
-        timeseries = {ts: self.__timeseries[ts].__copy__() for ts in self.__timeseries} if timeseries is None else timeseries  # copy
+        timeseries = {ts: self.__timeseries[ts] for ts in self.__timeseries} if timeseries is None else timeseries  # copy
         source = self.__source if source is None else source  # no copy
         patient = self.__patient if patient is None else patient  # no copy
         acquisition_location = self.__acquisition_location if acquisition_location is None else acquisition_location  # no copy
@@ -153,8 +157,8 @@ class Biosignal(ABC):
         return self._new(new_channels, source=source, patient=patient, acquisition_location=acquisition_location,
                          name=name, events=events)
 
-    def _apply_operation_and_return(self, operation, **kwargs):
-        pass  # TODO
+    def apply_operation_and_return(self, operation, **kwargs):
+        return {channel_name: channel._apply_operation_and_return(operation, **kwargs) for channel_name, channel in self}
 
     @property
     def __has_single_channel(self) -> bool:
@@ -193,6 +197,10 @@ class Biosignal(ABC):
             return self[middle - timedelta(seconds=2) : middle + timedelta(seconds=3)]
         except IndexError:
             raise AssertionError(f"The middle segment of {self.name} from {self.patient_code} does not have at least 5 seconds to return a preview.")
+
+    def when(self, condition: Callable, window: timedelta = None):
+        return Timeline(*[Timeline.Group(channel._when(condition, window), name=channel_name) for channel_name, channel in self],
+                        name=self.name + " when '" + condition.__name__ + "' is True" + f" (in windows of {window})" if window else "")
 
     def __getitem__(self, item):
         '''The built-in slicing and indexing operations.'''
@@ -346,36 +354,37 @@ class Biosignal(ABC):
 
             return new
 
-
         if isinstance(item, tuple):
-            if len(self) == 1:
-                res = list()
-                for k in item:
-                    if isinstance(k, datetime):
-                        res.append(self.__timeseries[k])
-                    if isinstance(k, str):
-                        try:
-                            res.append(self.__timeseries[to_datetime(k)])
-                        except ParserError:
-                            raise IndexError("String datetimes must be in a correct format.")
-                    else:
-                        raise IndexError("Index types not supported. Give a tuple of datetimes (can be in string format).")
-                return tuple(res)
 
-            else:
+            # Structure-related: Channels
+            if all(isinstance(k, (str, BodyLocation)) and k in self.channel_names for k in item):
                 ts = {}
                 events = set()
                 for k in item:
-                    if isinstance(k, datetime):
-                        raise IndexError("This Biosignal has multiple channels. Index the channel before indexing the datetimes.")
-                    if isinstance(k, str) and (k not in self.channel_names):
-                        raise IndexError("'{}' is not a channel of this Biosignal.".format(k))
-                    if not isinstance(k, str):
-                        raise IndexError("Index types not supported. Give a tuple of channel names (in str).")
                     ts[k] = self.__timeseries[k]
                     events.update(set(self.__timeseries[k].events))
                 new = self._new(timeseries=ts, events=events)
                 return new
+
+            # Time-related: Slices, Datetimes, Events, ...
+            else:
+                res = None
+                for k in item:
+                    if res is None:
+                        res = self[item[0]]
+                    else:
+                        res = res >> self[k]
+
+                res.name = self.name
+                return res
+
+        if isinstance(item, Timeline):
+            if item.is_index:
+                res = self[item._as_index()]
+                res.name += f" indexed by '{item.name}'"
+                return res
+            else:
+                raise IndexError("This Timeline cannot serve as index.")
 
         raise IndexError("Index types not supported. Give a datetime (can be in string format), a slice or a tuple of those.")
 
@@ -397,12 +406,12 @@ class Biosignal(ABC):
     @property
     def patient_code(self):
         '''Returns the code of the associated Patient, or 'n.d.' if none was provided.'''
-        return self.__patient.code if self.__patient != None else 'n.d.'
+        return self.__patient.code if self.__patient is not None else 'n.d.'
 
     @property
     def patient_conditions(self) -> Set[MedicalCondition]:
         '''Returns the set of medical conditions of the associated Patient, or None if no Patient was associated.'''
-        return self.__patient.conditions if self.__patient != None else set()
+        return self.__patient.conditions if self.__patient is not None else set()
 
     @property
     def acquisition_location(self):
@@ -413,6 +422,13 @@ class Biosignal(ABC):
     def source(self) -> BiosignalSource:
         '''Returns the BiosignalSource from where the data was read, or None if was not specified.'''
         return self.__source
+
+    @property
+    def _source_as_class_string(self) -> str:
+        if isinstance(self.__source, BiosignalSource):
+            return self.__source.__class__.__name__
+        else:
+            return self.__source.__name__
 
     @property
     def type(self) -> ClassVar:
@@ -444,11 +460,19 @@ class Biosignal(ABC):
             return cumulative_intersection
 
     @property
+    def domain_timeline(self) -> Timeline:  # TODO: mmerge with domain
+        return Timeline(Timeline.Group(self.domain), name=self.name + ' Domain')
+
+    @property
     def subdomains(self) -> Tuple[DateTimeRange]:
         if len(self) == 1:
             return tuple(self.__timeseries.values())[0].subdomains
         else:
             raise NotImplementedError()
+
+    @property
+    def are_channel_domains_equal(self) -> bool:
+        return all([ts.domain == self.domain for ts in self.__timeseries.values()])
 
     def _vblock(self, i: int):
         """
@@ -493,12 +517,14 @@ class Biosignal(ABC):
             return n_segments
 
     @property
-    def duration(self):
-        common_duration = tuple(self.__timeseries.values())[0].duration
-        for _, channel in self:
-            if channel.duration != common_duration:
-                raise AssertionError("Not all channels have the same duration.")
-        return common_duration
+    def duration(self) -> timedelta:
+        """
+        Returns the total duration when at least one channel is active: the useful duration.
+        """
+        if self.__has_single_channel:
+            return self._get_single_channel()[1].duration
+        else:
+            return Timeline.union(*[self[channel_name].domain_timeline for channel_name, _ in self]).duration
 
     def __get_events_from_medical_conditions(self):
         res = {}
@@ -546,7 +572,7 @@ class Biosignal(ABC):
             len(self),
             ''.join([(x + ', ') for x in self.channel_names]),
             self.duration,
-            self.source.__str__(None) if isinstance(self.source, ABCMeta) else str(self.source))
+            self.source.__repr__(None) if isinstance(self.source, ABCMeta) else str(self.source))
 
         if len(self.__associated_events) != 0:
             res += "Events:\n"
@@ -559,17 +585,97 @@ class Biosignal(ABC):
                 res += f"- {key}:\n{event}\n"
         return res
 
+    def convert(self, to_unit: Unit):
+        for channel_name, channel in self:
+            if channel.units is None:  # raw data
+                transfer_function = self.__source._transfer(to_unit, self.type)  # get transfer function
+                if transfer_function is not None:
+                    channel.convert(to_unit, transfer_function)
+                else:
+                    raise ReferenceError(f"No transfer function to {to_unit} was found in {self.__source}.")
+            else:
+                channel.convert(to_unit)
+
     def _to_dict(self) -> Dict[str|BodyLocation, timeseries.Timeseries]:
         return deepcopy(self.__timeseries)
 
-    def _to_array(self) -> ndarray:
+    def to_array(self) -> np.ndarray:
         """
-        Converts Biosignal to a NumPy ndarray.
-        :return: A C x M x N array, where C is the number of channels, M the number of segments of each, and N their length.
-        :rtype: list[numpy.ndarray]
+        Converts Biosignal to a numpy array.
+        The initial datetime is that of the earliest channel. The final datetime is that of the latest channel.
+        When a channel is not defined, the value is NaN (e.g. interruptions, beginings, ends).
+        If the channels are not sampled at the same frequency, the highest sampling frequency is used, and the channels with lower sampling
+        frequency are resampled.
+        :return: A 2D numpy array each channel in each line.
+        :rtype: numpy.ndarray
+
+        Example:
+        Given a Biosignal with 3 channels sampled at 1.1 Hz:
+        Channel 1: 0, 1, 2, 3, 4 (starts at 10:00:02.500)
+        Channel 2: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 (starts at 10:00:04.200)
+        Channel 3: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 (starts at 10:00:00.000)
+        Result: [[np.nan, np.nan, 0, 1, 2, 3, 4, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+                    [np.nan, np.nan, np.nan, np.nan, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]]
         """
-        x = [channel._to_array() for channel in self.__timeseries.values()]
-        return np.stack(x)
+
+        # Get the maximum sampling frequency of the Biosignal
+        max_sf = max(channel.sampling_frequency for _, channel in self)
+
+        # Get the arrays of all channels
+        channels_as_arrays = []
+        for i, (_, channel) in enumerate(self):
+            if channel.sampling_frequency != max_sf:  # Resample the channel, if necessary
+                channel._resample(max_sf)
+            # Convert channel to array
+            channels_as_arrays.append(channel.samples)
+
+        # Get the length of the samples axes
+        n_samples = ceil((self.final_datetime - self.initial_datetime).total_seconds() * max_sf)
+
+        # Create the array full of NaNs
+        res = np.full((len(self), n_samples), np.nan)
+
+        # Fill the array
+        for i, ((_,channel), channel_as_array) in enumerate(zip(self, channels_as_arrays)):
+            # Get the index of the first position of this channel in the array
+            initial_ix = round((channel.initial_datetime - self.initial_datetime).total_seconds() * max_sf)
+            # Broadcat samples to the array
+            res[i, initial_ix: initial_ix + len(channel_as_array)] = channel_as_array
+
+        return res
+
+
+    def to_dataframe(self, with_events: bool = False) -> DataFrame:
+        """
+        Converts Biosignal to a pandas DataFrame.
+        If with_events is True, an events column is added to the DataFrame. In each row, the events that occur in that sample are listed, separated by commas.
+        :return: A pandas DataFrame with the channels as columns, and the samples as rows.
+        :rtype: pandas.DataFrame
+        """
+        samples = self.to_array().T  # to follow the standard of pandas
+        channel_names = [ch_name for ch_name, _ in self]  # to keep the order determined by to_array
+        max_sf = max(channel.sampling_frequency for _, channel in self)
+        time_axis = [self.initial_datetime + timedelta(seconds=i/max_sf) for i in range(len(samples))]
+
+        df = DataFrame(samples, columns=channel_names, index=time_axis)
+
+        if with_events:
+            df['Events'] = [''] * len(df)  # create a list of empty strings
+            for event in self.events:
+                if event.has_onset and event.has_offset:
+                    start_ix = round((event.onset - self.initial_datetime).total_seconds() * max_sf)
+                    end_ix = round((event.offset - self.initial_datetime).total_seconds() * max_sf)
+                elif event.has_onset:
+                    start_ix = round((event.onset - self.initial_datetime).total_seconds() * max_sf)
+                    end_ix = start_ix + 1
+                elif event.has_offset:
+                    end_ix = round((event.offset - self.initial_datetime).total_seconds() * max_sf)
+                    start_ix = end_ix - 1
+                df.loc[df.index[start_ix:end_ix], 'Events'] = df.loc[df.index[start_ix:end_ix], 'Events'] + event.name + '|'
+
+        return df
+
 
     def __iter__(self):
         return self.__timeseries.items().__iter__()
@@ -578,7 +684,7 @@ class Biosignal(ABC):
         if isinstance(item, str):
             if item in self.__timeseries.keys():  # if channel exists
                 return True
-            if item in self.__associated_events:  # if Event occurs
+            if item in self.__associated_events.keys():  # if Event occurs
                 return True
             events_from_consitions = self.__get_events_from_medical_conditions()
             for label, event in events_from_consitions:
@@ -600,6 +706,9 @@ class Biosignal(ABC):
 
     def __sub__(self, other):
         return self + (other * -1)
+
+    def __truediv__(self, other):
+        return self * (1 / other)
 
     def __neg__(self):
         return self * -1
@@ -632,7 +741,7 @@ class Biosignal(ABC):
                             return Biosignal.withAdditiveNoise(self, other)
                         else:
                             raise TypeError("Cannot add a {0} to a {1} if not as noise.".format(other.type.__name__, self.type.__name__))
-            if self.channel_names != other.channel_names:
+            if len(self) != len(other) != 1 and self.channel_names != other.channel_names:
                 raise ArithmeticError("Biosignals to add must have the same channel names.")
             if self.domain != other.domain:
                 raise ArithmeticError("Biosignals to add must have the same domains.")
@@ -654,8 +763,12 @@ class Biosignal(ABC):
 
             # Perform addition
             res_timeseries = {}
-            for channel_name in self.channel_names:
-                res_timeseries[channel_name] = self._to_dict()[channel_name] + other._to_dict()[channel_name]
+            if len(self) == len(other) == 1:
+                single_channel_name, single_channel = self._get_single_channel()
+                res_timeseries[single_channel_name] = single_channel + other._get_single_channel()[1]  # 0: name, 1: Timeseries
+            else:
+                for channel_name in self.channel_names:
+                    res_timeseries[channel_name] = self._get_channel(channel_name) + other._get_channel(channel_name)
 
             # Union of Events
             events = set(self.events).union(set(other.events))
@@ -688,10 +801,16 @@ class Biosignal(ABC):
         name = f"{self.name} and {other.name}"
         acquisition_location = self.acquisition_location if self.acquisition_location == other.acquisition_location else None
         patient = self.__patient if self.patient_code == other.patient_code else None
-        source = type(self.source) if ((isinstance(self.source, ABCMeta) and isinstance(other.source, ABCMeta)
-                                       and self.source == other.source) or
-                                       (type(self.source) == type(other.source))
-                                       ) else None
+        if isclass(self.source) and isclass(other.source):  # Un-instatiated sources
+            if self.source == other.source:
+                source = self.__source
+            else:
+                source = None
+        else:
+            if type(self.source) == type(other.source) and self.source == other.source:
+                source = self.__source
+            else:
+                source = None
 
         # Join channels
         res_timeseries = {}
@@ -730,10 +849,16 @@ class Biosignal(ABC):
         name = f"{self.name} >> {other.name}"
         acquisition_location = self.acquisition_location if self.acquisition_location == other.acquisition_location else None
         patient = self.__patient if self.patient_code == other.patient_code else None
-        source = type(self.source) if ((isinstance(self.source, ABCMeta) and isinstance(other.source, ABCMeta)
-                                        and self.source == other.source) or
-                                       (type(self.source) == type(other.source))
-                                       ) else None
+        if isclass(self.source) and isclass(other.source):  # Un-instatiated sources
+            if self.source == other.source:
+                source = self.__source
+            else:
+                source = None
+        else:
+            if type(self.source) == type(other.source) and self.source == other.source:
+                source = self.__source
+            else:
+                source = None
 
         # Perform concatenation
         res_timeseries = {}
@@ -741,11 +866,63 @@ class Biosignal(ABC):
             res_timeseries[channel_name] = self._to_dict()[channel_name] >> other._to_dict()[channel_name]
 
         # Union of Events
-        events = set(self.__associated_events).union(set(other._Biosignal__associated_events))
+        events = set(self.__associated_events.values()).union(set(other._Biosignal__associated_events.values()))
 
         return self._new(timeseries=res_timeseries, source=source, patient=patient, acquisition_location=acquisition_location, name=name,
                          events=events)
 
+    # ===================================
+    # Binary Logic using Time and Conditions
+
+    def __lt__(self, other):
+        if isinstance(other, Biosignal):
+            return self.final_datetime < other.initial_datetime
+        else:
+            res = self.when(lambda x: x < other)
+            res.name(self.name + ' < ' + str(other))
+            return res
+
+    def __le__(self, other):
+        if isinstance(other, Biosignal):
+            return self.final_datetime <= other.initial_datetime
+        else:
+            res = self.when(lambda x: x <= other)
+            res.name(self.name + ' >= ' + str(other))
+            return res
+
+    def __gt__(self, other):
+        if isinstance(other, Biosignal):
+            return self.initial_datetime > other.final_datetime
+        else:
+            res = self.when(lambda x: x > other)
+            res.name(self.name + ' >= ' + str(other))
+            return res
+
+    def __ge__(self, other):
+        if isinstance(other, Biosignal):
+            return self.initial_datetime >= other.final_datetime
+        else:
+            res = self.when(lambda x: x >= other)
+            res.name(self.name + ' >= ' + str(other))
+            return res
+
+    def __eq__(self, other):
+        if isinstance(other, Biosignal):
+            return self.initial_datetime == other.initial_datetime and self.final_datetime == other.final_datetime
+        else:
+            res = self.when(lambda x: x == other)
+            res.name(self.name + ' >= ' + str(other))
+            return res
+
+    def __ne__(self, other):
+        if isinstance(other, Biosignal):
+            return not self.__eq__(other)
+        else:
+            res = self.when(lambda x: x != other)
+            res.name(self.name + ' >= ' + str(other))
+            return res
+
+    ######## Events
 
     def set_channel_name(self, current:str|BodyLocation, new:str|BodyLocation):
         if current in self.__timeseries.keys():
@@ -894,15 +1071,15 @@ class Biosignal(ABC):
             else:
                 raise ValueError(f"Event '{event.name}' is outside of every channel's domain.")
 
-        if isinstance(events, Event):
-            __add_event(events)
-        elif isinstance(events, dict):
+        if isinstance(events, dict):
             for event_key in events:
                 event = events[event_key]
                 __add_event(Event(event_key, event._Event__onset, event._Event__offset))  # rename with given key
-        else:
+        elif isinstance(events, (tuple, set, list)):
             for event in events:
                 __add_event(event)
+        else:  # single Event
+            __add_event(events)
 
     def disassociate(self, event_name:str):
         '''
@@ -1082,6 +1259,18 @@ class Biosignal(ABC):
         else:
             NotImplementedError("Not yet implemented.")
 
+    def timeshift(self, delta: timedelta):
+        """
+        Shifts the time index of the Biosignal, forward or backwards.
+        Useful, for instance, to hide the true day of the acquisition.
+        :param delta: Positive or negative amount of time to shift the Biosignal.
+        """
+        for _, channel in self:
+            channel.timeshift(delta)
+        for event in self.events:
+            event.timeshift(delta)
+        self.__patient.timeshift(delta)
+
     def tag(self, tags: str | tuple[str]):
         """
         Mark all channels with a tag. Useful to mark machine learning targets.
@@ -1152,6 +1341,59 @@ class Biosignal(ABC):
 
         return cls(channels, name=name)
 
+    def acquisition_scores(self, verbose: bool = True, show=False, save_to=None) -> tuple[float, float, float]:
+        completness_score = self.completeness_score()
+        onbody_score, onbody = self.onbody_score(show=show, save_to=save_to)
+        quality_score, _ = self.quality_score(show=show, save_to=save_to, _onbody=onbody)
+        if verbose:
+            print(f"Acquisition scores for '{self.name}'")
+            print("Completness Score = " + ("%.2f" % (completness_score * 100) if completness_score else "n.d.") + "%")
+            print("On-body Score = " + ("%.2f" % (onbody_score * 100) if onbody_score else "n.d.") + "%")
+            print("Quality Score = " + ("%.2f" % (quality_score * 100) if quality_score else "n.d.") + "%")
+        return completness_score, onbody_score, quality_score
+
+    def completeness_score(self) -> float:
+        recorded_duration = self.duration
+        expected_duration = self.final_datetime - self.initial_datetime
+        return recorded_duration / expected_duration
+
+    def onbody_score(self, show=False, save_to=None) -> [float, Timeline]:
+        if hasattr(self.source, 'onbody'):  # if the BiosignalSource defines an 'onbody' method, then this score exists, it's computed and returned
+            # Find Timeline
+            onbody = self.source.onbody(self)
+
+            # Plot?
+            if show or save_to is not None:
+                onbody.plot(show=show, save_to=save_to)
+
+            # Compute ratio
+            return onbody.duration / self.duration, onbody
+
+    def quality_score(self, show=False, save_to=None, _onbody: Timeline = None) -> [float, Timeline]:
+        if hasattr(self, 'acceptable_quality'):  # if the Biosignal modality defines an 'acceptable_quality' method, then this score exists, it's computed and returned
+
+            if _onbody is None:  # If no _onbody is given, then try to compute it
+                if hasattr(self.source, 'onbody'):
+                    _onbody = self.source.onbody(self)
+
+            if _onbody is not None:  # If it was given or computed, then
+                _onbody = _onbody.agglomerate(min_interval=timedelta(seconds=3), max_delta=timedelta(seconds=0.5))  # Agglomerate to avoid small gaps
+                if _onbody.duration.total_seconds() == 0:
+                    return 0, _onbody  # if onbody is 0%, quality is the same, by definition
+                else:
+                    x = self[_onbody]  # Gets part of the Biosignal correctly acquired
+            else:
+                x = self
+
+            try:  # Try to find acceptable quality Timeline
+                acceptable_quality = x.acceptable_quality()
+                if show or save_to is not None:  # Plot?
+                    acceptable_quality.plot(show=show, save_to=save_to)
+                return acceptable_quality.duration / x.duration, acceptable_quality
+
+            except RuntimeError as e:
+                raise RuntimeError("Could not compute acceptable quality, because: " + str(e))
+
     # ===================================
     # SERIALIZATION
 
@@ -1191,9 +1433,8 @@ class Biosignal(ABC):
             channel._memory_map(temp_dir)
 
         # Write
-        from bz2 import BZ2File
         from _pickle import dump
-        with BZ2File(save_to, 'w') as f:
+        with open(save_to, 'wb') as f:
             dump(self, f)
 
         # Clean up memory maps
@@ -1205,11 +1446,20 @@ class Biosignal(ABC):
         if not filepath.endswith(Biosignal.EXTENSION):
             raise IOError("Only .biosignal files are allowed.")
 
-        # Read
-        from bz2 import BZ2File
         from _pickle import load
-        data = BZ2File(filepath, 'rb')
-        return load(data)
+        from _pickle import UnpicklingError
+
+        # Read
+        try:  # Versions >= 2023.0:
+            f = open(filepath, 'rb')
+            biosignal = load(f)
+        except UnpicklingError as e:  # Versions 2022.0, 2022.1 and 2022.2:
+            from bz2 import BZ2File
+            # print("Loading...\nNote: Loading a version older than 2023.0 takes significantly more time. It is suggested you save this Biosignal again, so you can have it in the newest fastest format.")
+            f = BZ2File(filepath, 'rb')
+            biosignal = load(f)
+        f.close()
+        return biosignal
 
 
 class DerivedBiosignal(Biosignal):

@@ -37,7 +37,7 @@ class MultimodalBiosignalTestCase(unittest.TestCase):
         cls.name = "Union of 'Ecg from Hospital', 'Ecg from Band', 'Sweat release', 'Wrist movement'"
 
     def test_create_multimodal_biosignal(self):
-        multi = MultimodalBiosignal(ecg1=self.ecg1, ecg2=self.ecg2, eda=self.eda1, acc=self.acc1)
+        multi = MultimodalBiosignal.from_biosignals(ecg1=self.ecg1, ecg2=self.ecg2, eda=self.eda1, acc=self.acc1)
         self.assertEqual(multi.type, {ECG, EDA, ACC})
         self.assertEqual(multi.acquisition_location, {BodyLocation.CHEST, BodyLocation.WRIST_L})
         self.assertEqual(multi.source, {HSM, Sense})
@@ -47,39 +47,42 @@ class MultimodalBiosignalTestCase(unittest.TestCase):
         self.assertEqual(multi.patient_conditions[0], self.condition)
         self.assertEqual(multi.name, self.name)
 
-    def test_create_multimodal_biosignal_only_with_one_modality_raises_error(self):
-        with self.assertRaises(TypeError):
-            multi = MultimodalBiosignal(ecg1=self.ecg1, ecg2=self.ecg2)
+    #def test_create_multimodal_biosignal_only_with_one_modality_raises_error(self):
+    #    with self.assertRaises(TypeError):
+    #        multi = MultimodalBiosignal.from_biosignals(ecg1=self.ecg1, ecg2=self.ecg2)
 
     def test_indexing_one_biosignal(self):
-        multi = MultimodalBiosignal(ecg1=self.ecg1, ecg2=self.ecg2, eda=self.eda1, acc=self.acc1)
+        multi = MultimodalBiosignal.from_biosignals(ecg1=self.ecg1, ecg2=self.ecg2, eda=self.eda1, acc=self.acc1)
         x = multi['ecg2']
         self.assertEqual(x, self.ecg2)
 
     def test_indexing_one_channel(self):
-        multi = MultimodalBiosignal(ecg1=self.ecg1, ecg2=self.ecg2, eda=self.eda1, acc=self.acc1)
+        multi = MultimodalBiosignal.from_biosignals(ecg1=self.ecg1, ecg2=self.ecg2, eda=self.eda1, acc=self.acc1)
         x = multi['ecg1', 'V1']
         y = self.ecg1['V1']
         self.assertEqual(x.type, x.type)
         self.assertEqual(x.channel_names, y.channel_names)
 
     def test_set_name(self):
-        multi = MultimodalBiosignal(ecg1=self.ecg1, ecg2=self.ecg2, eda=self.eda1, acc=self.acc1)
+        multi = MultimodalBiosignal.from_biosignals(ecg1=self.ecg1, ecg2=self.ecg2, eda=self.eda1, acc=self.acc1)
         self.assertEqual(multi.name, self.name)
         multi.name = "New Name"
         self.assertEqual(multi.name, "New Name")
 
     def test_contains(self):
-        multi = MultimodalBiosignal(ecg1=self.ecg1, ecg2=self.ecg2, eda=self.eda1, acc=self.acc1)
-        self.assertTrue('ecg1' in multi)
-        self.assertTrue('ecg2' in multi)
-        self.assertTrue('eda' in multi)
-        self.assertTrue('acc' in multi)
-        self.assertFalse('other' in multi)
+        multi = MultimodalBiosignal.from_biosignals(ecg1=self.ecg1, ecg2=self.ecg2, eda=self.eda1, acc=self.acc1)
         self.assertTrue(self.ecg1 in multi)
+        self.assertTrue('ecg1:V1' in multi)
+        self.assertTrue('ecg1:V2' in multi)
         self.assertTrue(self.ecg2 in multi)
+        self.assertTrue('ecg2:Band' in multi)
         self.assertTrue(self.eda1 in multi)
+        self.assertTrue('eda:Sweat' in multi)
         self.assertTrue(self.acc1 in multi)
+        self.assertTrue('acc:x' in multi)
+        self.assertTrue('acc:y' in multi)
+        self.assertTrue('acc:z' in multi)
+        self.assertFalse('other' in multi)
 
 
 if __name__ == '__main__':

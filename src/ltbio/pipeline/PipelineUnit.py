@@ -434,7 +434,7 @@ class ApplySeparately(PipelineUnitsUnion):
         return separate_outputs
 
     def _PipelineUnitsUnion__pack(self, previous_packet: Packet, current_output) -> Packet:
-        if Packet.TIMESERIES_LABEL in current_output and len(self.__original_ts_labels) == len(current_output[Packet.TIMESERIES_LABEL]):
+        if isinstance(current_output, dict) and Packet.TIMESERIES_LABEL in current_output and len(self.__original_ts_labels) == len(current_output[Packet.TIMESERIES_LABEL]):
             return PipelineUnit._pack_with_original_ts_labels(previous_packet, current_output, self.current_unit, self.__original_ts_labels)
         else:
             return PipelineUnit._pack_separate_outputs(previous_packet, current_output, self.current_unit, self.__original_ts_labels)

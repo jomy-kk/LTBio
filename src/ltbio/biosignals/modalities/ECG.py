@@ -81,9 +81,12 @@ class ECG(Biosignal):
         This procedures shall be passed to '_apply_operation_and_return'.
         """
         from biosppy.signals.ecg import correct_rpeaks
-        indices = algorithm_method(signal, sampling_rate, **kwargs)['rpeaks']  # Compute indices
-        corrected_indices = correct_rpeaks(signal, indices, sampling_rate)['rpeaks']  # Correct indices
-        return corrected_indices
+        try:
+            indices = algorithm_method(signal, sampling_rate, **kwargs)['rpeaks']  # Compute indices
+            corrected_indices = correct_rpeaks(signal, indices, sampling_rate)['rpeaks']  # Correct indices
+            return corrected_indices
+        except ValueError as e:
+            raise RuntimeError("Biosppy algorithm failed to find R peaks, because: " + str(e))
 
     def __r_indices(self, channel: _timeseries.Timeseries, segmenter: Callable = hamilton_segmenter):
 
@@ -344,12 +347,36 @@ class ECG(Biosignal):
         :return: A dictionary of % of flatline value(s) for each channel.
         """
         res = {}
+
+        # No longer using logic from BioSPPy
+        def flatline(signal, sampling_frequency):
+            """
+            Count every x consecutive 1st derivative points that are below THRESHOLD,
+            where x is the number of samples in 600 ms (~ 1 heartbeat).
+            Returns the percentage of the signal that is flatline.
+            """
+            window_length = int(sampling_frequency * 0.6)
+            count = 0
+            for i in range(0, len(signal) - window_length, window_length):
+                abs_der = abs(np.diff(signal[i:i + window_length + 1]))
+                if all(abs_der < THRESHOLD):
+                    count += window_length
+                    print(i)
+            return count / len(signal)
+
         for channel_name, channel in self:
-            skweness_by_segment = channel._apply_operation_and_return(pSQI)
-            if by_segment:
-                res[channel_name] = skweness_by_segment
+            if channel.units == Volt(Multiplier.m):
+                THRESHOLD = 0.1
+            elif channel.units is None:
+                THRESHOLD = 100
             else:
-                res[channel_name] = average(array(skweness_by_segment),
+                raise ValueError(f"Channel {channel_name} has units {channel.units}, which is not supported by this method.")
+
+            flatline_by_segment = channel._apply_operation_and_return(flatline, sampling_frequency=channel.sampling_frequency)
+            if by_segment:
+                res[channel_name] = flatline_by_segment
+            else:
+                res[channel_name] = average(array(flatline_by_segment),
                                             weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
 
         return res
@@ -495,18 +522,41 @@ class ECG(Biosignal):
             peaks1 = self.__r_indices(channel, hamilton_segmenter)
             peaks2 = self.__r_indices(channel, christov_segmenter)
 
-            res[channel_name] = [channel._apply_operation_and_return(ZZ2018, p1, p2, fs=channel.sampling_frequency, search_window=100, nseg=1024, mode='fuzzy')
+            def aux(signal, p1, p2, **kwargs):
+                return ZZ2018(signal, p1, p2, **kwargs)
+
+            res[channel_name] = [channel._apply_operation_and_return(aux, fs=channel.sampling_frequency, search_window=100, nseg=1024, mode='fuzzy')
                                  for p1, p2 in zip(peaks1, peaks2)]
 
             if not by_segment:
                 res[channel_name] = average(array(res[channel_name]),
                                             weights=list(map(lambda subdomain: subdomain.timedelta.total_seconds(), channel.domain)))
 
+    def acceptable_quality(self):
+        """
+        Suggested for single-lead ECG in
+        Zhao, Z., & Zhang, Y. (2018), SQI quality evaluation mechanism of single-lead ECG signal based on simple
+        heuristic fusion and fuzzy comprehensive evaluation, Frontiers in Physiology, 9, 727.
+        """
+        def aux(x, fs):
+            if len(x) >= 30:
+                peaks1 = self.__biosppy_r_indices(x, fs, hamilton_segmenter)
+                peaks2 = self.__biosppy_r_indices(x, fs, christov_segmenter)
+                return ZZ2018(x, peaks1, peaks2, fs=fs, mode='fuzzy')
+            else:
+                return "Unnaceptable"
+
+        return self.when(lambda x: aux(x, self.sampling_frequency) == 'Excellent', window=timedelta(seconds=10))
+
 
 class RRI(DerivedBiosignal):
 
-    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None, original=None):
+    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None, original: ECG | None = None):
         super().__init__(timeseries, source, patient, acquisition_location, name, original)
+
+    @classmethod
+    def fromECG(cls):
+        pass
 
     def plot_summary(self, show: bool = True, save_to: str = None):
         pass

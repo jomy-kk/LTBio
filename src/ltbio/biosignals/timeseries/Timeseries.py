@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 from math import ceil
 from os.path import join
 from tempfile import mkstemp
-from typing import List, Iterable, Collection, Dict, Tuple, Callable
+from typing import List, Iterable, Collection, Dict, Tuple, Callable, Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -29,6 +29,7 @@ from dateutil.parser import parse as to_datetime
 from numpy import array, append, ndarray, divide, concatenate, tile, memmap
 from scipy.signal import resample
 
+from ltbio.biosignals.timeseries import Timeline
 from ltbio.biosignals.timeseries.Event import Event
 from ltbio.biosignals.timeseries.Frequency import Frequency
 from ltbio.biosignals.timeseries.Unit import Unit
@@ -329,28 +330,46 @@ class Timeseries():
             return np.min(self.__samples)
 
         # ===================================
-        # Binary Logic using Time
+        # Binary Logic using Time and Conditions
 
         def __lt__(self, other):
             """A Segment comes before other Segment if its end is less than the other's start."""
-            return self.final_datetime < other.initial_datetime
+            if isinstance(other, Timeseries._Timeseries__Segment):
+                return self.final_datetime < other.initial_datetime
+            else:
+                return tuple(self.__when(self.__samples < other))
 
         def __le__(self, other):
-            return self.final_datetime <= other.initial_datetime
+            if isinstance(other, Timeseries._Timeseries__Segment):
+                return self.final_datetime <= other.initial_datetime
+            else:
+                return tuple(self.__when(self.__samples <= other))
 
         def __gt__(self, other):
             """A Segment comes after other Segment if its start is greater than the other's end."""
-            return self.initial_datetime > other.final_datetime
+            if isinstance(other, Timeseries._Timeseries__Segment):
+                return self.initial_datetime > other.final_datetime
+            else:
+                return tuple(self.__when(self.__samples > other))
 
         def __ge__(self, other):
-            return self.initial_datetime >= other.final_datetime
+            if isinstance(other, Timeseries._Timeseries__Segment):
+                return self.initial_datetime >= other.final_datetime
+            else:
+                return tuple(self.__when(self.__samples >= other))
 
         def __eq__(self, other):
             """A Segment corresponds to the same time period than other Segment if their start and end are equal."""
-            return self.initial_datetime == other.initial_datetime and self.final_datetime == other.final_datetime
+            if isinstance(other, Timeseries._Timeseries__Segment):
+                return self.initial_datetime == other.initial_datetime and self.final_datetime == other.final_datetime
+            else:
+                return tuple(self.__when(self.__samples == other))
 
         def __ne__(self, other):
-            return not self.__eq__(other)
+            if isinstance(other, Timeseries._Timeseries__Segment):
+                return not self.__eq__(other)
+            else:
+                return tuple(self.__when(self.__samples != other))
 
         def overlaps(self, other):
             """A Segment overlaps other Segment if its end comes after the other's start, or its start comes before the others' end, or vice versa."""
@@ -362,6 +381,54 @@ class Timeseries():
         def adjacent(self, other):
             """Returns True if the Segments' start or end touch."""
             return self.final_datetime == other.initial_datetime or self.initial_datetime == other.final_datetime
+
+        def __when(self, condition):
+            intervals = []
+            true_interval = False
+            start, end = None, None
+
+            for i, x in enumerate(condition):
+                if x:
+                    if not true_interval:  # not open
+                        true_interval = True  # then open
+                        start = i
+                else:
+                    if true_interval:  # is open
+                        true_interval = False
+                        end = i
+                        intervals.append((start, end))  # close interval
+
+            if true_interval:  # is open
+                intervals.append((start, i+1))  # then close
+
+            return intervals
+
+        def _when(self, condition, window_length: int = 1):
+            assert  window_length > 0
+            if window_length == 1:
+                evaluated = [condition(x) for x in self.__samples]
+            else:
+                evaluated = []
+                for i in range(0, len(self.__samples), window_length):
+                    x = self.__samples[i: i+window_length]
+                    evaluated += [condition(x), ] * len(x)
+            return self.__when(evaluated)
+
+        def sliding_window(self, window_length: int, overlap_length: int = 0) -> Iterable[ndarray]:
+            """
+            Yields windows of length window_length, sliding by overlap_length.
+            If the last window is smaller than window_length, these last samples are not yielded.
+            """
+            assert window_length > 0
+            assert overlap_length > 0
+            assert window_length > overlap_length
+
+            for i in range(0, len(self.__samples), window_length - overlap_length):
+                yield self.__samples[i: i+window_length]
+
+        def timeshift(self, delta: timedelta):
+            self.__initial_datetime = self.__initial_datetime + delta
+            self.__final_datetime = self.__final_datetime + delta
 
         # ===================================
         # INTERNAL USAGE - Accept Methods
@@ -442,11 +509,11 @@ class Timeseries():
             :return: A new Segment with the given fields changed. All other contents shall remain the same.
             :rtype: Segment
             """
-            samples = self.__samples.copy() if samples is None else samples  # copy
+            samples = self.__samples if samples is None else samples
             initial_datetime = self.__initial_datetime if initial_datetime is None else initial_datetime
-            sampling_frequency = self.__sampling_frequency.__copy__() if sampling_frequency is None else sampling_frequency
+            sampling_frequency = self.__sampling_frequency if sampling_frequency is None else sampling_frequency
             is_filtered = self.__is_filtered if is_filtered is None else is_filtered
-            raw_samples = self.__raw_samples if raw_samples is None else raw_samples  # no copy
+            raw_samples = self.__raw_samples if raw_samples is None else raw_samples
 
             new = type(self)(samples, initial_datetime, sampling_frequency, is_filtered)
             new._Segment__raw_samples = raw_samples
@@ -489,7 +556,7 @@ class Timeseries():
             res = []
 
             step = individual_length - overlap_length
-            for i in range(0, len(self) - individual_length, step):
+            for i in range(0, len(self), step):
                 trimmed_samples = self.__samples[i: i + individual_length]
                 trimmed_raw_samples = self.__raw_samples[i: i + individual_length]
                 res.append(self._new(samples=trimmed_samples, raw_samples=trimmed_raw_samples,
@@ -501,6 +568,8 @@ class Timeseries():
         # SERIALIZATION
 
         def _memory_map(self, path):
+            if len(self.__samples) == 0:  # Empty Segment, let it go, don't save. This is a very "engineering" solution to a problem that should not exist in the first place. But it works, so we'll keep it.
+                return
             if not isinstance(self.__samples, memmap):  # Create a memory map for the array
                 _, file_name = mkstemp(dir=path, suffix='.segment')
                 filepath = join(path, file_name)
@@ -619,8 +688,8 @@ class Timeseries():
             A symbolic name for the Timeseries. It is mentioned in plots, reports, error messages, etc.
         """
 
-        if len(segments_by_time) < 2:
-            raise TypeError("Use the regular initializer to instantiate a Timeseries with 1 contiguous segment.")
+        #if len(segments_by_time) < 2:
+        #    raise TypeError("Use the regular initializer to instantiate a Timeseries with 1 contiguous segment.")
 
         # Sort the segments
         ordered_arrays = sorted(segments_by_time.items())  # E.g. [ (datetime, array), (.., ..), .. ]
@@ -850,6 +919,53 @@ class Timeseries():
         raise TypeError("Trying to concatenate an object of type {}. Expected type: Timeseries.".format(type(other)))
 
     # ===================================
+    # Binary Logic using Time and Conditions
+
+    def __lt__(self, other):
+        if isinstance(other, Timeseries):
+            return self.final_datetime < other.initial_datetime
+        else:
+            return self._indices_to_timepoints([seg < other for seg in self.__segments])
+
+    def __le__(self, other):
+        if isinstance(other, Timeseries):
+            return self.final_datetime <= other.initial_datetime
+        else:
+            return self._indices_to_timepoints(np.concatenate([seg <= other for seg in self.__segments]), by_segment=False)
+
+    def __gt__(self, other):
+        if isinstance(other, Timeseries):
+            return self.initial_datetime > other.final_datetime
+        else:
+            return self._indices_to_timepoints([seg > other for seg in self.__segments])
+
+    def __ge__(self, other):
+        if isinstance(other, Timeseries):
+            return self.initial_datetime >= other.final_datetime
+        else:
+            return self._indices_to_timepoints(np.concatenate([seg >= other for seg in self.__segments]), by_segment=False)
+
+    def __eq__(self, other):
+        if isinstance(other, Timeseries):
+            return self.initial_datetime == other.initial_datetime and self.final_datetime == other.final_datetime
+        else:
+            return self._indices_to_timepoints(np.concatenate([seg == other for seg in self.__segments]), by_segment=False)
+
+    def __ne__(self, other):
+        if isinstance(other, Timeseries):
+            return not self.__eq__(other)
+        else:
+            return self._indices_to_timepoints(np.concatenate([seg != other for seg in self.__segments]), by_segment=False)
+
+    def _when(self, condition, window: timedelta):
+        if window is not None:
+            window_length = int(window.total_seconds() * self.__sampling_frequency)
+            x = [seg._when(condition, window_length) for seg in self.__segments]
+        else:
+            x = [seg._when(condition) for seg in self.__segments]
+        return self._indices_to_timepoints(x, by_segment=False)
+
+    # ===================================
     # Methods
 
     def max(self):
@@ -931,15 +1047,15 @@ class Timeseries():
             else:
                 self.__associated_events[event.name] = event
 
-        if isinstance(events, Event):
-            __add_event(events)
-        elif isinstance(events, dict):
+        if isinstance(events, dict):
             for event_key in events:
                 event = events[event_key]
                 __add_event(Event(event_key, event._Event__onset, event._Event__offset))  # rename with given key
-        else:
+        elif isinstance(events, (tuple, set, list)):
             for event in events:
                 __add_event(event)
+        else:  # single Event
+            __add_event(events)
 
     def disassociate(self, event_name: str):
         """
@@ -956,6 +1072,10 @@ class Timeseries():
     def delete_events(self):
         self.__associated_events = {}
 
+    def timeshift(self, delta: timedelta):
+        for segment in self:
+            segment.timeshift(delta)
+
     def tag(self, tags: str | tuple[str]):
         """
         Mark the Timeseries with a tag. Useful to mark machine learning targets.
@@ -969,6 +1089,34 @@ class Timeseries():
                 self.__tags.add(x)
         else:
             raise TypeError("Give one or multiple string labels to tag the Timeseries.")
+
+    def sliding_window(self, window_length: timedelta, overlap_length: timedelta = timedelta(0)):
+        for segment in self:
+            segment.sliding_window(int(window_length.total_seconds() * self.__sampling_frequency),
+                                   int(overlap_length.total_seconds() * self.__sampling_frequency))
+
+    def convert(self, to_unit: Unit, transfer_function: Callable[[ndarray], ndarray] = None):
+        """
+        Converts the Timeseries from the current units to 'to_unit'.
+        If the current units are None (raw signal), then the transfer function must be given.
+        :param to_unit: The unit to convert to.
+        :param transfer_function: The transfer function to apply, if raw signal.
+        :return: None (applied in-place)
+        """
+        if self.__units != to_unit:
+            if self.__units is None:
+                if transfer_function is not None:
+                    try:
+                        self._apply_operation(transfer_function)
+                        self.__units = to_unit
+                    except Exception as e:
+                        raise RuntimeError(f"Conversion failed: {e}")
+                else:
+                    raise ValueError("Cannot convert from raw signal without a transfer function. Give one as argument.")
+            else:
+                raise NotImplementedError("Conversion between units is not implemented yet.")
+        else:
+            print("This Timeseries is already on the given unit.")
 
     # ===================================
     # INTERNAL USAGE - Convert indexes <-> timepoints && Get Samples
@@ -1030,26 +1178,37 @@ class Timeseries():
                 raise IndexError(
                     f"Interval given is outside of Timeseries domain, {' U '.join([f'[{subdomain.start_datetime}, {subdomain.end_datetime}[' for subdomain in self.domain])}.")
 
-    def _indices_to_timepoints(self, indices: list[list[int]], by_segment=False) -> tuple[datetime] | tuple[list[datetime]]:
+    def _indices_to_timepoints(self, indices: Sequence[Sequence[int]] | Sequence[Sequence[Sequence[int]]], by_segment=False) -> Sequence[datetime] | Sequence[Sequence[datetime]] | Sequence[DateTimeRange] | Sequence[Sequence[DateTimeRange]]:
         all_timepoints = []
         for index, segment in zip(indices, self.__segments):
-            timepoints = divide(index, self.__sampling_frequency)  # Transform to timepoints
-            x = [segment.initial_datetime + timedelta(seconds=tp) for tp in timepoints]
+            timepoints = divide(index, self.__sampling_frequency)  # Transform to seconds
+            if isinstance(timepoints, ndarray) and len(timepoints.shape) == 2 and timepoints.shape[1] == 2:  # Intervals
+                x = [DateTimeRange(segment.initial_datetime + timedelta(seconds=tp[0]), segment.initial_datetime + timedelta(seconds=tp[1])) for tp in timepoints]
+            else:  # Timepoints
+                x = [segment.initial_datetime + timedelta(seconds=tp) for tp in timepoints]
             if by_segment:
                 all_timepoints.append(x)  # Append as list
             else:
                 all_timepoints += x  # Join them all
         return tuple(all_timepoints)
 
-    def _to_array(self) -> ndarray:
+    def to_array(self) -> np.ndarray:
         """
-        Converts Timeseries to NumPy ndarray, if it is equally segmented.
-        :return: MxN array, where M is the number of segments and N is their length.
-        :rtype: numpy.ndarray
+        Converts a Timeseries into a numpy array. If the Timeseries is composed of multiple Segments, the interruptions are filled with NaNs.
+        :return: A 1D numpy array with its samples.
         """
-        if not self.__is_equally_segmented:
-            raise AssertionError("Timeseries needs to be equally segmented to produce a matricial NumPy ndarray.")
-        return np.vstack([segment.samples for segment in self.__segments])
+        res = np.array(self.__segments[0].samples)
+        for i in range(1, len(self.__segments)):
+            segment = self.__segments[i]
+            # get the time between the end of the current segment and the start of the next one
+            time_between_segments = self.__segments[i].initial_datetime - self.__segments[i - 1].final_datetime
+            # number of NaNs to fill the gap
+            n_nans = round(self.__sampling_frequency * time_between_segments.total_seconds())
+            # fill the gap with NaNs
+            res = np.concatenate((res, [np.nan] * n_nans))
+            # add the samples of the current segment
+            res = np.concatenate((res, segment.samples))
+        return res
 
     # ===================================
     # INTERNAL USAGE - Plots
@@ -1202,8 +1361,7 @@ class Timeseries():
         """
 
         initial_datetime = self.initial_datetime if segments is None else segments[0].initial_datetime
-        segments = [seg.__copy__() for seg in
-                    self.__segments] if segments is None else segments  # Uses shortcut in __init__
+        segments = self.__segments if segments is None else segments  # Uses shortcut in __init__
         sampling_frequency = self.__sampling_frequency if sampling_frequency is None else sampling_frequency if isinstance(
             sampling_frequency,
             Frequency) else Frequency(sampling_frequency)
@@ -1588,6 +1746,10 @@ class OverlappingTimeseries(Timeseries):
                 domain.append(DateTimeRange(self._Timeseries__segments[i].initial_datetime, self._Timeseries__segments[i].final_datetime))
 
         return tuple(domain)
+
+    @property
+    def domain_timeline(self) -> Timeline:  # TODO: mmerge with domain
+        return Timeline(Timeline.Group(self.domain), name=self.name + ' Domain')
 
     @property
     def subdomains(self) -> Tuple[DateTimeRange]:

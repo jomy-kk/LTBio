@@ -1,6 +1,8 @@
 import unittest
 from datetime import timedelta, datetime
 
+import numpy as np
+
 from ltbio.biosignals.modalities.ACC import ACC
 from ltbio.biosignals.modalities.ECG import ECG
 from ltbio.biosignals.modalities.EDA import EDA
@@ -95,7 +97,7 @@ class PipelineIntegrationTests(unittest.TestCase):
         # 1. Create pipeline units
         unit1 = Segmenter(window_length = timedelta(seconds=2))
         unit2 = FeatureExtractor((TimeFeatures.mean, TimeFeatures.variance))
-        unit3 = FeatureSelector(lambda x: x[0] > 0.4)  # random function; it will only select 'mean'
+        unit3 = FeatureSelector(lambda x: np.all(np.array(x) > 0.4))  # random function; it will only select 'mean'
 
         # 2. Create pipeline and add units
         pipeline = Pipeline(name = 'My first pipeline')

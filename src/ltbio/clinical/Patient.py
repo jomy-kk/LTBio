@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-
+from datetime import timedelta
 # ===================================
 
 # IT - LongTermBiosignals
@@ -82,6 +82,19 @@ class Patient():
         if (not self.__locked):
             return
         """
+
+    def timeshift(self, delta: timedelta):
+        """
+        Time shifts all clinical information.
+        """
+        for procedure in self.__procedures:
+            procedure.date += delta
+
+    def __eq__(self, other):
+        return self.code == other.code
+
+    def __hash__(self):
+        return hash(self.__code) * hash(self.__name) * hash(self.__age) * hash(self.__sex)
 
     def __getstate__(self):
         """

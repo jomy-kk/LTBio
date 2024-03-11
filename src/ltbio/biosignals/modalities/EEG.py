@@ -22,8 +22,8 @@ class EEG(Biosignal):
 
     DEFAULT_UNIT = Volt(Multiplier.m)
 
-    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None):
-        super(EEG, self).__init__(timeseries, source, patient, acquisition_location, name)
+    def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None, **options):
+        super(EEG, self).__init__(timeseries, source, patient, acquisition_location, name, **options)
 
     def plot_summary(self, show: bool = True, save_to: str = None):
         pass

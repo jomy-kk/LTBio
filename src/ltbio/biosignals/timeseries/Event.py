@@ -19,6 +19,8 @@ from datetime import datetime, timedelta
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime
 
+from ltbio.biosignals.timeseries import Timeline
+
 
 class Event():
 
@@ -80,6 +82,10 @@ class Event():
         return DateTimeRange(self.__onset, self.__offset)
 
     @property
+    def domain_timeline(self) -> Timeline:  # TODO: mmerge with domain
+        return Timeline(Timeline.Group([self.domain, ]), name=self.name + ' Domain')
+
+    @property
     def name(self) -> str:
         return self.__name
 
@@ -102,6 +108,18 @@ class Event():
         start, end = start + before, end + after
 
         return DateTimeRange(start, end)
+
+    def timeshift(self, delta: timedelta):
+        """
+        Shifts the Event's onset and offset by the given timedelta.
+        :param delta: The timedelta to shift the Event by.
+        """
+        if not isinstance(delta, timedelta):
+            raise TypeError('delta must be a timedelta object.')
+        if self.__onset is not None:
+            self.__onset += delta
+        if self.__offset is not None:
+            self.__offset += delta
 
     def __repr__(self):
         if self.__offset is None:

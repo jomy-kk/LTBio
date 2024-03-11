@@ -30,6 +30,17 @@
         "4": "BodyLocation.INDEX_L"
       },
       "location": "BodyLocation.ARM_L"
+    },
+
+  "rafa":
+    {
+      "modalities": {
+        "ECG": [1]
+      },
+      "labels": {
+        "1": "ecg"
+      },
+      "location": "BodyLocation.V1"
     }
 }
 

@@ -17,15 +17,17 @@
 
 import csv
 from ast import literal_eval
-from datetime import datetime
+from datetime import datetime, timedelta
 from os import listdir, path, sep
 from os.path import isdir
 
+import numpy as np
 from numpy import vstack
 
 from .. import timeseries
 from .. import modalities
 from ..sources.BiosignalSource import BiosignalSource
+from ..timeseries.Timeline import Timeline
 
 
 class E4(BiosignalSource):
@@ -36,10 +38,14 @@ class E4(BiosignalSource):
         super().__init__()
 
     def __repr__(self):
-        return "Empatica E4 - Epilepsy Wristband"
+        return "Empatica E4"
+
+    @classmethod
+    def __str__(cls):
+        return "Empatica E4"
 
     @staticmethod
-    def __aux_date(date):
+    def _aux_date(date):
         """ Receives a string that contains a unix timestamp in UTC
         Returns a datetime after convertion
         """
@@ -85,7 +91,7 @@ class E4(BiosignalSource):
             channel_labels = (channel_labels, ) if len(a[0]) == 1 else ('x', 'y', 'z')
 
             # First row is the initial datetime
-            datetime = E4.__aux_date(a[0][0])
+            datetime = E4._aux_date(a[0][0])
 
             # Second row is sampling frequency
             sampling_frequency = float(a[1][0])
@@ -177,7 +183,7 @@ class E4(BiosignalSource):
                         # Events are named numerically
                         for i in range(len(a)):
                             n_events += 1
-                            res.append(timeseries.Event('event' + str(n_events), E4.__aux_date(a[i][0])))
+                            res.append(timeseries.Event('event' + str(n_events), E4._aux_date(a[i][0])))
         return res
 
     @staticmethod
@@ -191,3 +197,143 @@ class E4(BiosignalSource):
     @staticmethod
     def _transfer(samples, to_unit):
         pass
+
+    @staticmethod
+    def onbody(biosignal):
+
+        onbody = None
+        window = timedelta(minutes=1)
+
+        def condition_is_met_1_percent(x, condition):
+            count = np.count_nonzero(condition)
+            return count / len(x) >= 0.01
+
+        if type(biosignal) is modalities.ACC:
+            biosignal = biosignal['x'] + biosignal['y'] + biosignal['z']  # sum sample-by-sample the 3 axes
+            window_size = int(10 * biosignal.sampling_frequency)  # 10 s moving standard deviation
+
+            def moving_std(x):
+                cumsum = np.cumsum(x, dtype=float)
+                cumsum[window_size:] = cumsum[window_size:] - cumsum[:-window_size]
+                moving_averages = cumsum[window_size - 1:] / window_size
+                moving_sq_averages = np.cumsum(x ** 2, dtype=float)
+                moving_sq_averages[window_size:] = moving_sq_averages[window_size:] - moving_sq_averages[:-window_size]
+                moving_sq_averages = moving_sq_averages[window_size - 1:] / window_size
+                return np.sqrt(moving_sq_averages - moving_averages ** 2)
+
+            onbody = biosignal.when(lambda x: condition_is_met_1_percent(x, moving_std(x) > 0.2), window=window)
+
+        if type(biosignal) is modalities.EDA:
+            onbody = biosignal.when(lambda x: condition_is_met_1_percent(x, x > 0.05), window=window)
+
+        if type(biosignal) is modalities.TEMP:
+            onbody = biosignal.when(lambda x: condition_is_met_1_percent(x, (x > 25) & (x < 40)), window=window)
+
+        if type(biosignal) is modalities.PPG:
+            # PPG signal from E4 is raw, hence:
+            # For derivatives
+            FLATLINE_THRESHOLD = 20
+            BASELINE_FLATLINE_THRESHOLD = 3
+            DISCREPEANCY_THRESHOLD = 15
+            # For amplitudes
+            LOW_SATURATION_THRESHOLD = -450
+            HIGH_SATURATION_THRESHOLD = 450
+
+            # if signal is not in 64 Hz, as originally sampled, resample it, because thresholds are based on 64 Hz
+            biosignal = biosignal.__copy__()
+            biosignal.resample(64)
+
+            def total_flatline(x, threshold: float = None):
+                """All the segment must be flat."""
+                derivative = np.abs(np.diff(x))
+                if threshold is None:
+                    threshold = FLATLINE_THRESHOLD
+                return np.all(derivative < threshold)
+
+            def partial_flatline(x):
+                """At least 1/3 of the segment must be flat."""
+                derivative = np.abs(np.diff(x))
+                return np.count_nonzero(derivative < FLATLINE_THRESHOLD) > 1 / 3 * len(derivative)
+
+            def discrepancy(x):
+                """
+                When there is at least one derivative point that is above the discrepancy threshold.
+                """
+                derivative = np.abs(np.diff(x))
+                return np.any(derivative > DISCREPEANCY_THRESHOLD)
+
+            def low_saturation_region(x):
+                """
+                All the segment must be below low saturation threshold.
+                Lowest saturation region is usually attained when - electrode loses contact.
+                """
+                return np.all(x < LOW_SATURATION_THRESHOLD) and total_flatline(x)  # Amplitude < 15 and flatline
+
+            def high_saturation_region(x):
+                """
+                All the segment must be above high saturation threshold.
+                Highest saturation region is usually attained when + electrode loses contact.
+                """
+                return np.all(x > HIGH_SATURATION_THRESHOLD) and total_flatline(x)  # Amplitude > 3600 and flatline
+
+            def low_high_saturation_transition(x):
+                """
+                Transition from low to high saturation region.
+                There must exist samples in the low and high saturation regions, and partial flatline in between.
+                """
+                return np.max(x) - np.min(x) > HIGH_SATURATION_THRESHOLD - LOW_SATURATION_THRESHOLD and discrepancy(x)
+
+            def electronic_noise(x):
+                """
+                Electronic noise is usually attained when the reference electrode is in place, but the + and - electrodes are not.
+                There is no flatline, but the signal is very noisy.
+                It can be modeled as gaussian noise ~ N(0, max-min).
+                """
+                return False
+
+            def baseline_saturation(x):
+                """
+                Baseline saturation is usually attained when both + and - electrodes plus reference/ground lose contact.
+                There is total flatline and the signal is saturated at the baseline for periods longer than usual heartbeats,
+                so this should be applied only to segments of a typical heartbeat length.
+                Since we are checking in a longer period, the derivative threshold is lower, to be more strict.
+                -----
+                E.g.: Using a window of 800 ms, the derivative threshold should be lower than 50 during all 800ms.
+                This would not be the case in a shorter window.
+                """
+                decision = total_flatline(x, BASELINE_FLATLINE_THRESHOLD)
+                if False:
+                    print("DECISION 2: Baseline Saturated?", decision)
+                    print("derivatives:", np.abs(np.diff(x)))
+                    print("------")
+                return decision
+
+            def saturated(x):
+                a = low_saturation_region(x)
+                b = high_saturation_region(x)
+                c = low_high_saturation_transition(x)
+                decision = a or b or c
+                if False:
+                    print("Mean:", np.mean(x), "Median:", np.median(x), "Max:", np.max(x), "Min:", np.min(x))
+                    print("Any Below 20:", np.any(x < LOW_SATURATION_THRESHOLD))
+                    print("Any Above 3900:", np.any(x > HIGH_SATURATION_THRESHOLD))
+                    print("Derivative:", np.abs(np.diff(x - x.mean())),
+                          "Total flatline" if total_flatline(x) else "Partial flatline" if partial_flatline(
+                              x) else "No flatline detected")
+                    print("Discrepancy:", discrepancy(x))
+                    print("DECISION: Saturated?", decision)
+                    print("\t\tBecause of:", f"low_saturation_region:{a} |", f"high_saturation_region:{b} |",
+                          f"low_high_saturation_transition:{c}")
+                    print("-----")
+                return decision
+
+            not_saturated = biosignal.when(lambda x: not saturated(x), timedelta(milliseconds=100))
+            not_baseline_saturated = biosignal.when(lambda x: not baseline_saturation(x), timedelta(milliseconds=800))
+
+            #onbody = Timeline.intersection(not_saturated, not_baseline_saturated)
+            onbody = not_saturated
+
+        if onbody is not None:
+            onbody.name = biosignal.name + " when electrodes placed on-body"
+
+        return onbody

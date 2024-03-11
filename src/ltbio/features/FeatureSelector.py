@@ -38,7 +38,7 @@ class FeatureSelector(SinglePipelineUnit):
         for feature_name in features:
             ts = features[feature_name]
             assert len(ts.segments) == 1  # Feature Timeseries should have only 1 Segment
-            if self.__selection_function(ts._to_array()[0]):
+            if self.__selection_function(ts.samples):
                 selected_features[feature_name] = ts
 
         return selected_features
