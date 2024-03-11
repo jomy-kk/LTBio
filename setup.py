@@ -10,7 +10,7 @@ print("Installing dependencies...\n", requirements)
 
 setup(
     name='LongTermBiosignals',
-    version='1.0.1',
+    version='2.0.0',
     packages=find_packages(where="src"),
     package_dir={'': 'src'},
     package_data={'': ['src', 'requirements.txt']},
