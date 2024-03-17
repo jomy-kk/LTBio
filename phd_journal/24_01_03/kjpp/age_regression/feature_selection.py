@@ -1,6 +1,5 @@
-import numpy as np
 from matplotlib import pyplot as plt
-from pandas import DataFrame
+from pandas import DataFrame, read_csv
 from sklearn.feature_selection import RFE, VarianceThreshold, SelectKBest, r_regression, SelectPercentile, f_regression, \
     mutual_info_regression
 
@@ -143,15 +142,20 @@ def mutual_information_selection(features, targets, features_to_select: int|floa
     return features_transformed, indices
 
 
-def feature_wise_normalisation(features: DataFrame, method: str = 'mean-std'):
+def feature_wise_normalisation(features: DataFrame, method: str = 'mean-std', coefficients_filepath: str = None):
     """
     Normalise feature matrices in a feature-wise manner.
     The given DataFrame must be in the shape (n_samples, n_features).
     """
+    if coefficients_filepath is None:
+        coefficients = DataFrame([features.min(), features.max(), features.mean(), features.std()], index=['min', 'max', 'mean', 'std'])
+        #coefficients.to_csv('norm_coefficients.csv')
+    else:
+        coefficients = read_csv(coefficients_filepath, index_col=0)
     if method == 'mean-std':
-        return (features-features.mean())/features.std()
+        return (features-coefficients.loc['mean'])/coefficients.loc['std']
     elif method == 'min-max':
-        return (features-features.min())/(features.max()-features.min())
+        return (features-coefficients.loc['min'])/(coefficients.loc['max']-coefficients.loc['min'])
     else:
         raise ValueError("Invalid method. Choose from 'mean-std' or 'min-max'.")
 

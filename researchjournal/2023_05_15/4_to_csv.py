@@ -54,6 +54,8 @@ for code in subject_codes:
     # Change column name "Events" to "activities"
     df = df.rename(columns={'Events': 'activities'})
 
+    break
+
     # Save to CSV
     df.to_csv(join(dataset_csv_path, f'{code}.csv'))
 

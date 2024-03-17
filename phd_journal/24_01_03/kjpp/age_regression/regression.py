@@ -60,6 +60,21 @@ for session, session_features in zip(sessions, features):
     dataset.append((session_features, age))
 
 
+# EXTRA
+# Get adult stochastic pattern
+ages = np.array([x[1] for x in dataset])
+higher_175 = ages >= 17.5
+res = []
+for i, x in enumerate(ages>=17.5):
+    if x:
+        res.append(i)
+dataset_higher175 = [dataset[i] for i in res]
+higher175_features = np.array([x[0] for x in dataset_higher175])
+mean = higher175_features.mean(axis=0)
+std = higher175_features.std(axis=0)
+adult_stochastic_pattern = DataFrame([mean, std], index=('mean', 'std'), columns=selected_features)
+adult_stochastic_pattern.to_csv("adult_stochastic_pattern.csv")
+
 # 2.2. Keep only ages higher than 14
 #dataset = [(x, y) for x, y in dataset if y > 14]
 
