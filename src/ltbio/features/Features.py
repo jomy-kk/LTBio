@@ -137,7 +137,6 @@ class SpectralFeatures(ABC):
     def total_power(psd: PSD) -> float:
         return sum(psd.powers)
 
-    # 2) Relative Power
     @staticmethod
     def relative_power(psd: PSD, lower, upper) -> float:
         """
@@ -145,7 +144,6 @@ class SpectralFeatures(ABC):
         """
         return sum(psd[lower:upper].powers) / SpectralFeatures.total_power(psd)
 
-    # 3) Entropy (using Wiener and Shannon methods)
     @staticmethod
     def spectral_entropy(psd: PSD) -> float:
         """
@@ -167,22 +165,42 @@ class SpectralFeatures(ABC):
         normalised_powers = psd.powers / sum(psd.powers)
         return np.exp(np.mean(np.log2(normalised_powers))) / np.mean(normalised_powers)
 
-    # 4) Edge frequency (the cut-off frequency at which encompasses 95% of spectral power)
     @staticmethod
-    def spectral_edge_frequency(psd: PSD) -> float:
+    def spectral_edge_frequency(psd: PSD, percentile: float = 0.5) -> float:
         """
-        Returns the edge frequency of the PSD
+        Returns the edge frequency of the PSD at percentile%.
+        The SEF is a Hz, where the Hz is the threshold frequency where percentile% of the EEG power lies beneath it.
         :param psd:
         :return:
         """
-        return psd.freqs[np.where(np.cumsum(psd.powers) >= 0.95 * sum(psd.powers))[0][0]]
 
-    # 5) Differences between consecutive short-time spectral estimations
+        assert 0 <= percentile <= 1, "Percentile must be between 0 and 1"
+        freqs, powers = psd.freqs, psd.powers
+
+        # Compute the cumulative sum of the PSD
+        cumulative_psd = np.cumsum(powers)
+
+        # Find the frequency index at which the cumulative sum exceeds the desired percentile
+        sef_index = np.argmax(cumulative_psd >= percentile * cumulative_psd[-1])
+
+        # Get the corresponding frequency (SEF)
+        return freqs[sef_index]
+
     @staticmethod
-    def speactral_diff(psd: PSD) -> float:
+    def spectral_diff(psd: PSD) -> float:
         """
         Returns the difference between consecutive short-time spectral estimations
         :param psd:
         :return:
         """
         return sum(np.diff(psd.powers))
+
+    @staticmethod
+    def spectral_peak_freq(psd: PSD):
+        """
+        Returns the frequency of the peak power of the PSD
+        :param psd:
+        :return:
+        """
+        return psd.freqs[np.argmax(psd.powers)]
+

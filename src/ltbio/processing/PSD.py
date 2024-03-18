@@ -39,7 +39,8 @@ class PSD:
 
         psd_by_seg = x._apply_operation_and_return(welch_spectrum,
                                                    sampling_rate=x.sampling_frequency,
-                                                   size=window_length, overlap=window_overlap, window=window_type
+                                                   size=window_length, overlap=window_overlap, window=window_type,
+                                                   decibel=False
                                                    )
         if len(psd_by_seg) == 1:
             return cls(psd_by_seg[0][0], psd_by_seg[0][1], x.sampling_frequency)

@@ -1,13 +1,5 @@
-from glob import glob
-from os.path import join
-
-common_path = '/Volumes/MMIS-Saraiv/Datasets/BrainLat/denoised_biosignal'
-out_common_path = '/Volumes/MMIS-Saraiv/Datasets/BrainLat/features'
-
-# Get recursively all .biosignal files in common_path
-all_files = glob(join(common_path, '*.biosignal'))
-
 from datetime import timedelta
+from glob import glob
 from os import mkdir, remove
 from os.path import join, exists
 
@@ -20,10 +12,22 @@ from ltbio.features.Features import SpectralFeatures
 from ltbio.processing.PSD import PSD
 from ltbio.processing.formaters import Normalizer
 
+# FIXME: Change this to the correct path
+common_path = '/Volumes/MMIS-Saraiv/Datasets/Miltiadous Dataset/denoised_biosignal'
+out_common_path = '/Volumes/MMIS-Saraiv/Datasets/Miltiadous Dataset/features'
+
+
+#############################################
+# DO NOT CHANGE ANYTHING BELOW THIS LINE
+
+# Get recursively all .biosignal files in common_path
+all_files = glob(join(common_path, '**/*.biosignal'), recursive=True)
+
 # Processing tools
 normalizer = Normalizer(method='minmax')
+
+# Channels and Bands
 channel_order = ('C3', 'C4', 'Cz', 'F3', 'F4', 'F7', 'F8', 'Fp1', 'Fp2', 'Fpz', 'Fz', 'O1', 'O2', 'P3', 'P4', 'Pz', 'T3', 'T4', 'T5', 'T6')  # without mastoids
-#channel_order = ('C3', 'C4', 'F3', 'F4', 'F7', 'F8', 'Fp1', 'Fp2', 'O1', 'O2', 'P3', 'P4', 'T3', 'T4', 'T5', 'T6')  # without mid-line
 bands = {
     'delta': (1.5, 4),
     'theta': (4, 8),

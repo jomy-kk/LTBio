@@ -1,7 +1,7 @@
 import pickle
 from datetime import timedelta
 from glob import glob
-from os import mkdir
+from os import mkdir, remove
 from os.path import join, exists
 
 import numpy as np
@@ -26,17 +26,19 @@ normalizer = Normalizer(method='minmax')
 channel_order = ('C3', 'C4', 'Cz', 'F3', 'F4', 'F7', 'F8', 'Fp1', 'Fp2', 'Fpz', 'Fz', 'O1', 'O2', 'P3', 'P4', 'Pz', 'T3', 'T4', 'T5', 'T6')  # without mastoids
 #channel_order = ('C3', 'C4', 'F3', 'F4', 'F7', 'F8', 'Fp1', 'Fp2', 'O1', 'O2', 'P3', 'P4', 'T3', 'T4', 'T5', 'T6')  # without mid-line
 bands = {
-    'delta': (2, 3.9),
-    'theta': (4, 7.3),
-    'lowalpha': (7.5, 9.75),
-    'highalpha': (10.25, 12.5),
-    'beta': (13, 30),
-    'lowgamma': (31, 49),
+    'delta': (1.5, 4),
+    'theta': (4, 8),
+    'alpha1': (8, 10),
+    'alpha2': (10, 12),
+    'beta1': (12, 15),
+    'beta2': (15, 20),
+    'beta3': (20, 30),
+    'gamma': (30, 45),
 }
 
 
 def extract_spectral_features(eeg: EEG, fft_window_type: str, fft_window_length: timedelta, fft_window_overlap: timedelta,
-                              segment_length: timedelta = None, segment_overlap: timedelta = None, normalise=False):
+                              segment_length: timedelta = None, segment_overlap: timedelta = None, subject_out_path = None, normalise=False):
     """
     Extracts all spectral features from an EEG signal
     :param eeg: mne.Raw object
@@ -57,6 +59,15 @@ def extract_spectral_features(eeg: EEG, fft_window_type: str, fft_window_length:
         segment_overlap = segment_length  # no overlap
 
     segment_length, segment_overlap = segment_length.total_seconds(), segment_overlap.total_seconds()
+
+    feature_names_functions = {
+        'Spectral#RelativePower': SpectralFeatures.total_power,
+        'Spectral#Entropy': SpectralFeatures.spectral_entropy,
+        'Spectral#Flatness': SpectralFeatures.spectral_flatness,
+        'Spectral#EdgeFrequency': SpectralFeatures.spectral_edge_frequency,
+        'Spectral#PeakFrequency': SpectralFeatures.spectral_peak_freq,
+        'Spectral#Diff': SpectralFeatures.spectral_diff,
+    }
 
     # Go by segments with overlap
     feature_names, features = None, []
@@ -94,26 +105,21 @@ def extract_spectral_features(eeg: EEG, fft_window_type: str, fft_window_length:
             for band_name, (lower, upper) in bands.items():
                 psd_band = psd[lower:upper]
 
-                feature_names.append(f'{channel_name}_{band_name}_relative_power')
-                seg_features.append(SpectralFeatures.total_power(psd_band) / total_power)
-
-                feature_names.append(f'{channel_name}_{band_name}_spectral_entropy')
-                seg_features.append(SpectralFeatures.spectral_entropy(psd_band))
-
-                feature_names.append(f'{channel_name}_{band_name}_spectral_flatness')
-                seg_features.append(SpectralFeatures.spectral_flatness(psd_band))
-
-                feature_names.append(f'{channel_name}_{band_name}_spectral_edge_frequency')
-                seg_features.append(SpectralFeatures.spectral_edge_frequency(psd_band))
-
-                feature_names.append(f'{channel_name}_{band_name}_spectral_diff')
-                seg_features.append(SpectralFeatures.speactral_diff(psd_band))
+                for feature_name, feature_function in feature_names_functions.items():
+                    feature_names.append(f"{feature_name}#{channel_name}#{band_name}")
+                    res = feature_function(psd_band)
+                    if feature_name == 'Spectral#RelativePower':
+                        res /= total_power
+                    seg_features.append(res)
 
         # Append features of this segment
         features.append(seg_features)
         total_segments_analised += 1
 
     print(f"Contributing segments: {total_segments_analised} (out of {total_segments})")
+    # Write in txt file "{total_segments_analised}/{total_segments}"
+    with open(join(subject_out_path, 'segments_used_for_spectral.txt'), 'w') as f:
+        f.write(f"{total_segments_analised}/{total_segments}")
 
     # Average features across segments
     if len(features) > 1:
@@ -140,6 +146,9 @@ def extract_spectral_features(eeg: EEG, fft_window_type: str, fft_window_length:
 for filepath in all_files:
     filename = filepath.split('/')[-1].split('.')[0]
     print(filename)
+    subject_out_path = join(out_common_path, filename)
+    if not exists(subject_out_path):
+        mkdir(subject_out_path)
 
     # Load Biosignal
     x = EEG.load(filepath)
@@ -154,14 +163,14 @@ for filepath in all_files:
 
     # Extract all spectral features
     window_type = 'hamming'
-    window_length = timedelta(seconds=2)  # 2 seconds
+    window_length = timedelta(seconds=4)  # 2 seconds
     window_overlap = window_length / 2  # 50% overlap
 
     # Segmentation parameters
-    segment_length = timedelta(seconds=4)  # 2 seconds
+    segment_length = timedelta(seconds=4)  # 4 seconds
     segment_overlap = segment_length / 2  # 50% overlap
     feature_names, features = extract_spectral_features(x, window_type, window_length, window_overlap,
-                                                        segment_length, segment_overlap, normalise=False)
+                                                        segment_length, segment_overlap, subject_out_path, normalise=False)
     if features is None:
         continue  # no features extracted
 
@@ -170,8 +179,9 @@ for filepath in all_files:
     df.columns = feature_names
 
     # Save
-    subject_out_path = join(out_common_path, filename)
-    if not exists(subject_out_path):
-        mkdir(subject_out_path)
-    df.to_csv(join(subject_out_path, 'spectral.csv'), index=False)
+    df.to_csv(join(subject_out_path, 'Spectral#Channels.csv'), index=False)
 
+    # Delete "spectral.csv" if it exists
+    old_file = join(subject_out_path, 'spectral.csv')
+    if exists(old_file):
+        remove(old_file)
