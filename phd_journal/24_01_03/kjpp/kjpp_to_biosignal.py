@@ -5,37 +5,40 @@ from os.path import join, exists, split
 from ltbio.biosignals.modalities import EEG
 from ltbio.biosignals.sources.KJPP import KJPP
 
-common_path = '/Volumes/MMIS-Saraiv/Datasets/KJPP/autopreprocessed/1/greedy-evaluation'
+common_path = '/Volumes/MMIS-Saraiv/Datasets/KJPP/autopreprocessed/2/greedy-evaluation'
 #common_path = '/Volumes/MMIS-Saraiv/Datasets/KJPP/test'
-out_common_path = '/Volumes/MMIS-Saraiv/Datasets/KJPP/autopreprocessed_biosignal/1'
+out_common_path = '/Volumes/MMIS-Saraiv/Datasets/KJPP/autopreprocessed_biosignal/2'
 # socio_demog = '/Volumes/MMIS-Saraiv/Datasets/KJPP/demographics.csv'  # For future, when the demographics file is updated
 socio_demog = '/Volumes/MMIS-Saraiv/Datasets/KJPP/metadata_as_given.csv'
 source = KJPP(socio_demog)
 
-# Get recursively all .set files in common_path
+# Get recursively all directories in common_path
 all_session_directories = glob(join(common_path, '*'))
 
 for session_directory in all_session_directories:
     session_code = split(session_directory)[-1]
-
-    # Make Biosignal object
-    try:
-        x = EEG(session_directory, source)
-    except LookupError:
-        print(f"No age for {session_code}.")
-        continue
-    except FileNotFoundError:
-        print(f"No files for {session_code}.")
-        continue
-    # Structure its name
-    short_patient_code = x.patient_code
-    short_session_code = x.name
-    # out_filename = short_patient_code + '_' + short_session_code # For future, when the demographics file is updated
-    out_filename = short_session_code
+    out_filename = session_code
     out_filepath = join(out_common_path, out_filename + '.biosignal')
 
-    # If the file does not exist yet, save it
     if not exists(out_filepath):
+
+        # Make Biosignal object
+        try:
+            x = EEG(session_directory, source)
+        except LookupError:
+            print(f"No age for {session_code}.")
+            continue
+        except FileNotFoundError:
+            print(f"No files for {session_code}.")
+            continue
+        # Structure its name
+        short_patient_code = x.patient_code
+        short_session_code = x.name
+        # out_filename = short_patient_code + '_' + short_session_code # For future, when the demographics file is updated
+        #out_filename = short_session_code
+        #out_filepath = join(out_common_path, out_filename + '.biosignal')
+
+        # If the file does not exist yet, save it
         print(f"Done {session_code}.")
         x.save(out_filepath)
         # Take a sneak peek as well

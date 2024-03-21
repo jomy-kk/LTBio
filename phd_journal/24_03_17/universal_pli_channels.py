@@ -13,8 +13,8 @@ from ltbio.biosignals.timeseries import Timeline
 from ltbio.processing.formaters import Segmenter, Normalizer
 
 # FIXME: Change this to the correct path
-common_path = '/Volumes/MMIS-Saraiv/Datasets/KJPP/autopreprocessed_biosignal/1'
-out_common_path = '/Volumes/MMIS-Saraiv/Datasets/KJPP/features/1'
+common_path = '/Volumes/MMIS-Saraiv/Datasets/KJPP/autopreprocessed_biosignal/2'
+out_common_path = '/Volumes/MMIS-Saraiv/Datasets/KJPP/features/2'
 
 
 #############################################
@@ -185,7 +185,7 @@ for filepath in all_files:
 
 
 # get all pickle files with 'pli' on the name and delete them
-all_pli_files = glob(join(out_common_path, '**/pli*.pickle'), recursive=True)
-for file in all_pli_files:
-    remove(file)
-print('All .pickle files with PLI were deleted.')
+#all_pli_files = glob(join(out_common_path, '**/pli*.pickle'), recursive=True)
+#for file in all_pli_files:
+#    remove(file)
+#print('All .pickle files with PLI were deleted.')

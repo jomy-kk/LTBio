@@ -13,8 +13,8 @@ from ltbio.processing.PSD import PSD
 from ltbio.processing.formaters import Normalizer
 
 # FIXME: Change this to the correct path
-common_path = '/Volumes/MMIS-Saraiv/Datasets/Miltiadous Dataset/denoised_biosignal'
-out_common_path = '/Volumes/MMIS-Saraiv/Datasets/Miltiadous Dataset/features'
+common_path = '/Volumes/MMIS-Saraiv/Datasets/KJPP/autopreprocessed_biosignal/2'
+out_common_path = '/Volumes/MMIS-Saraiv/Datasets/KJPP/features/2'
 
 
 #############################################
@@ -180,11 +180,12 @@ for filepath in all_files:
     # Convert to dataframe
     df = DataFrame(features).T
     df.columns = feature_names
+    df.index = [filename, ]
 
     # Save
-    df.to_csv(join(subject_out_path, 'Spectral#Channels.csv'), index=False)
+    df.to_csv(join(subject_out_path, 'Spectral#Channels.csv'))
 
     # Delete "spectral.csv" if it exists
-    old_file = join(subject_out_path, 'spectral.csv')
-    if exists(old_file):
-        remove(old_file)
+    #old_file = join(subject_out_path, 'spectral.csv')
+    #if exists(old_file):
+    #    remove(old_file)
