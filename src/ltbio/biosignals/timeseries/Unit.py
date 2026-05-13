@@ -8,9 +8,9 @@
 # Module: Unit
 # Description: Defines relevant units for electrical and mechanical measures, and possible associated multipliers.
 
-# Contributors: João Saraiva
+# Contributors: João Saraiva, Seyedali Divbandroudbaraki
 # Created: 22/04/2022
-# Last Updated: 22/07/2022
+# Last Updated: 13/05/2026
 
 # ===================================
 
@@ -177,8 +177,8 @@ class BeatsPerMinute(Unit):
         pass
 
 class Decibels(Unit):
-    def __init__(self, multiplier=Multiplier._):
-        super().__init__(multiplier)
+    def __init__(self):
+        super().__init__(Multiplier._)
 
     SHORT = "dB"
 
@@ -221,5 +221,41 @@ class Percentage(Unit):
     def convert_to(self, unit):
         pass
 
+class Pascal(Unit):
+    def __init__(self, multiplier=Multiplier._):
+        super().__init__(multiplier)
+
+    SHORT = "Pa"
+
+    def convert_to(self, unit):
+        if unit is PulseCodeModulation:
+            pass  # TODO
+        elif unit is DecibelsSoundPressureLevel:
+            pass  # TODO
+
+class PulseCodeModulation(Unitless):
+    def __init__(self, pa_per_count: float = None):
+        super().__init__()
+        self.pa_per_count = pa_per_count  # pascals per PCM integer count; if != None, then we have a calibration factor
+
+    SHORT = "PCM"
+
+    def convert_to(self, unit):
+        if unit is Pascal:
+            pass  # TODO
+        elif unit is DecibelsSoundPressureLevel:
+            pass  # TODO
+
+class DecibelsSoundPressureLevel(Decibels):
+    def __init__(self):
+        super().__init__()
+
+    SHORT = "dB SPL"
+
+    def convert_to(self, unit):
+        if unit is PulseCodeModulation:
+            pass  # TODO
+        elif unit is DecibelsSoundPressureLevel:
+            pass  # TODO
 
 
