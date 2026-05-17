@@ -16,10 +16,11 @@
 # ===================================
 
 from ltbio.biosignals.modalities.Biosignal import Biosignal
+from ltbio.biosignals.timeseries.Unit import PulseCodeModulation
 
 
 class Speech(Biosignal):
-    DEFAULT_UNIT = None
+    DEFAULT_UNIT = PulseCodeModulation()
 
     def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None):
         super(Speech, self).__init__(timeseries, source, patient, acquisition_location, name)
