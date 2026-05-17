@@ -15,6 +15,10 @@
 
 # ===================================
 
+from datetime import timedelta
+import numpy as np
+from numpy import average, array
+
 from ltbio.biosignals.modalities.Biosignal import Biosignal
 from ltbio.biosignals.timeseries.Unit import PulseCodeModulation
 
@@ -25,7 +29,17 @@ class Speech(Biosignal):
     def __init__(self, timeseries, source=None, patient=None, acquisition_location=None, name=None):
         super(Speech, self).__init__(timeseries, source, patient, acquisition_location, name)
 
-    # TODO: Relevant methods for speech processing
+    @staticmethod
+    def __silence_ratio(samples: np.ndarray, sampling_frequency: float,
+        frame_duration: float = 0.02, threshold: float = 0.01) -> float:
+        frame_length = int(sampling_frequency * frame_duration)
+        if frame_length == 0 or len(samples) < frame_length:
+            return 0.0
+        n_frames = len(samples) // frame_length
+        frames = samples[:n_frames * frame_length].reshape(n_frames, frame_length)
+        rms = np.sqrt(np.mean(frames ** 2, axis=1))
+        return float(np.sum(rms < threshold) / n_frames)
+
 
     def silence_percentage(self, by_segment: bool = False):
         """
