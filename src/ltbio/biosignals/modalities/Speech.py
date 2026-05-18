@@ -41,7 +41,7 @@ class Speech(Biosignal):
         return float(np.sum(rms < threshold) / n_frames)
 
 
-    def silence_percentage(self, by_segment: bool = False):
+    def silence_percentage(self, by_segment: bool = False, threshold: float = 0.01) -> dict:
         """
         Computes the % of silence of each channel.
         If `by_segment` is True, a list of values is returned for each contiguous uninterrupted segment,
@@ -49,8 +49,22 @@ class Speech(Biosignal):
 
         :return: A dictionary of % of silence for each channel.
         """
-        pass
-        # TODO
+        
+        res = {}
+        for channel_name, channel in self:
+            values = channel._apply_operation_and_return(
+                self.__silence_ratio,
+                sampling_frequency = channel.sampling_frequency,
+                threshold=threshold
+            )
+            if by_segment:
+                res[channel_name] = values
+            else:
+                res[channel_name] = average(
+                    array(values),
+                    weights = [subdomain.timedelta.total.seconds() for subdomain in channel.domain]
+                )
+        return res
 
     def acceptable_quality(self):
         pass
