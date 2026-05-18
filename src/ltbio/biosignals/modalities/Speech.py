@@ -83,7 +83,10 @@ class Speech(Biosignal):
         return res
 
     def acceptable_quality(self):
-        
+        return self.when(
+            lambda samples: self.__is_good_quality(samples, self.sampling_frequency),
+            window=timedelta(seconds=10)
+        )
 
 
     def plot_summary(self, show: bool = True, save_to: str = None):
