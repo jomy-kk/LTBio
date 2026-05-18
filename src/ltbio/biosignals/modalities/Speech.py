@@ -39,7 +39,23 @@ class Speech(Biosignal):
         frames = samples[:n_frames * frame_length].reshape(n_frames, frame_length)
         rms = np.sqrt(np.mean(frames ** 2, axis=1))
         return float(np.sum(rms < threshold) / n_frames)
-
+    
+    @staticmethod
+    def __is_good_quality(samples: np.ndarray, sampling_frequency: float,
+                          silence_threshold: float = 0.01,
+                          max_silence_ratio: float = 0.8,
+                          clipping_threshold: float = 0.99) -> bool:
+        frame_length = max(1, int(sampling_frequency * 0.02))
+        n_frames = len(samples) // frame_length
+        if n_frames == 0:
+            return False
+        frames = samples[:n_frames * frame_length].reshape(n_frames, frame_length)
+        rms = np.sqrt(np.mean(frames ** 2, axis=1))
+        if np.sum(rms < silence_threshold) / n_frames > max_silence_ratio:
+                  return False
+        if np.max(np.abs(samples)) >= clipping_threshold:
+            return False
+        return True
 
     def silence_percentage(self, by_segment: bool = False, threshold: float = 0.01) -> dict:
         """
@@ -68,22 +84,7 @@ class Speech(Biosignal):
 
     def acceptable_quality(self):
         
-        @staticmethod
-        def __is_good_quality(samples: np.ndarray, sampling_frequency: float,
-                              silence_threshold: float = 0.01,
-                              max_silence_ratio: float = 0.8,
-                              clipping_threshold: float = 0.99) -> bool:
-            frame_length = max(1, int(sampling_frequency * 0.02))
-            n_frames = len(samples) // frame_length
-            if n_frames == 0:
-                return False
-            frames = samples[:n_frames * frame_length].reshape(n_frames, frame_length)
-            rms = np.sqrt(np.mean(frames ** 2, axis=1))
-            if np.sum(rms < silence_threshold) / n_frames > max_silence_ratio:
-                      return False
-            if np.max(np.abs(samples)) >= clipping_threshold:
-                return False
-            return True
+
 
     def plot_summary(self, show: bool = True, save_to: str = None):
         pass
