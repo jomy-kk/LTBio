@@ -78,7 +78,7 @@ class Speech(Biosignal):
             else:
                 res[channel_name] = average(
                     array(values),
-                    weights = [subdomain.timedelta.total.seconds() for subdomain in channel.domain]
+                    weights = [subdomain.timedelta.total_seconds() for subdomain in channel.domain]
                 )
         return res
 
