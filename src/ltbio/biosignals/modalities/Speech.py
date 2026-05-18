@@ -83,6 +83,10 @@ class Speech(Biosignal):
         return res
 
     def acceptable_quality(self):
+        """
+        Returns the periods of time, when the speech signal is not mostly silent and no clipping.
+        """
+
         return self.when(
             lambda samples: self.__is_good_quality(samples, self.sampling_frequency),
             window=timedelta(seconds=10)
