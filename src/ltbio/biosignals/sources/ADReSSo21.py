@@ -22,6 +22,9 @@ from numpy import ndarray
 from ..sources.BiosignalSource import BiosignalSource
 from ..timeseries.Timeline import Timeline
 from ..timeseries.Unit import Unit
+from datetime import datetime
+from scipy.io import wavfile
+from .. import timeseries
 
 
 class ADReSSo21(BiosignalSource):
@@ -48,15 +51,26 @@ class ADReSSo21(BiosignalSource):
 
     @staticmethod
     def _timeseries(file_path, type, **options):
-        """Reads speech timeseries and returns a Biosignal, associated with a Patient and Events.
-        @param file_path (str): directory that contains files
-        @param **options (dict):
-            diarization_path (str): Where the diarization CSV is to load the annotations as Events.
-
-        @return: A typical dictionary like {str: Timeseries}.
         """
+        Reads a .wav file and returns a dict of Timeseries.
+        @param file_path (str): path to a .wav file
+        @param **options:
+            initial_datetime (datetime): recording start datetime (default: datetime(1970, 1, 1))
+        @return: Dict[str, Timeseries]
+        """
+        initial_datetime = options.get('initial_datetime', datetime(1970, 1, 1))
+    
+        samples, sf = ADReSSo21.__read_wav(file_path)
+    
+        if samples.ndim == 1:
+            # Mono audio — single channel
+            return {'audio': timeseries.Timeseries(samples, initial_datetime, sampling_frequency=sf)}
+        else:
+            # Stereo or multi-channel
+            labels = ['left', 'right'] if samples.shape[1] == 2 else [f'ch{i}' for i in range(samples.shape[1])]
+            return {label: timeseries.Timeseries(samples[:, i], initial_datetime, sampling_frequency=sf)
+                    for i, label in enumerate(labels)}
 
-        pass  # TODO
 
     def _events(dir:str, file_key='tag'):
         """
@@ -86,3 +100,17 @@ class ADReSSo21(BiosignalSource):
         @return: A Timeline with the periods of time when the patient is speaking.
         """
         pass # TODO
+
+    @staticmethod
+    def __read_wav(file_path):
+        """
+        Reads a single .wav file.
+        @param file_path (str): path to the .wav file
+        @return: A tuple with:
+            a) samples (ndarray): audio samples as float32
+            b) sampling_frequency (int): samples per second
+        """
+        sampling_frequency, samples = wavfile.read(file_path)
+        samples = samples.astype('float32')
+        return samples, sampling_frequency
+
