@@ -2,3 +2,7 @@
 .venv
 /resources/ADReSSo21_WAV_tests/
 /resources/My_Voice/
+__pycache__/
+*.pyc
+*.pyo
+src/*.egg-info/
