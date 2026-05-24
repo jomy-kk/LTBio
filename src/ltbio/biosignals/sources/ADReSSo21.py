@@ -25,6 +25,11 @@ from ..timeseries.Unit import Unit
 from datetime import datetime
 from scipy.io import wavfile
 from .. import timeseries
+import csv
+from os.path import splitext
+from datetime import datetime, timedelta
+from ..timeseries.Event import Event
+
 
 
 class ADReSSo21(BiosignalSource):
@@ -72,13 +77,32 @@ class ADReSSo21(BiosignalSource):
                     for i, label in enumerate(labels)}
 
 
-    def _events(dir:str, file_key='tag'):
+    def _events(dir:str, **options):
         """
         Extracts onsets and offsets from diarization CSV files.
         Returns: A List of Event objects.
         """
 
-        pass  # TODO
+        csv_path = splitext(dir)[0] + '.csv'
+        base = datetime(1970, 1, 1)
+        events = []
+        par_count, inv_count = 0, 0
+
+        with open(csv_path, newline='') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                speaker = row['speaker'].strip()
+                onset  = base + timedelta(milliseconds=int(row['begin']))
+                offset = base + timedelta(milliseconds=int(row['end']))
+                if speaker == 'PAR':
+                    par_count += 1
+                    name = f'PAR_{par_count}'
+                else:
+                    inv_count += 1
+                    name = f'INV_{inv_count}'
+                events.append(Event(name, onset=onset, offset=offset))
+
+        return events
 
 
     @staticmethod
