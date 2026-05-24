@@ -18,6 +18,7 @@
 from typing import Callable
 
 from numpy import ndarray
+import numpy as np
 
 from ..sources.BiosignalSource import BiosignalSource
 from ..timeseries.Timeline import Timeline
@@ -119,11 +120,38 @@ class ADReSSo21(BiosignalSource):
         pass
 
     @staticmethod
-    def patient_speaking() -> Timeline:
+    def patient_speaking(speech) -> Timeline:
         """
-        @return: A Timeline with the periods of time when the patient is speaking.
+        Returns a Timeline of all periods when the patient (PAR) is speaking.
+        Overlapping PAR intervals are merged before building the Timeline.
+        @param speech: a Speech biosignal with events loaded from _events
+        @return: Timeline
         """
-        pass # TODO
+        from datetimerange import DateTimeRange
+
+        # Collect and sort all PAR intervals by onset
+        par_intervals = sorted(
+            [DateTimeRange(e.onset, e.offset)
+             for e in speech.events
+             if e.name.startswith('PAR')],
+            key=lambda r: r.start_datetime
+        )
+
+        # Merge overlapping intervals
+        merged = []
+        for interval in par_intervals:
+            if merged and interval.start_datetime <= merged[-1].end_datetime:
+                # Extend the last interval if this one overlaps
+                merged[-1] = DateTimeRange(merged[-1].start_datetime,
+                                           max(merged[-1].end_datetime, interval.end_datetime))
+            else:
+                merged.append(interval)
+
+        return Timeline(
+            Timeline.Group(merged, name='PAR'),
+            name='Patient speaking'
+        )
+
 
     @staticmethod
     def __read_wav(file_path):
@@ -131,10 +159,17 @@ class ADReSSo21(BiosignalSource):
         Reads a single .wav file.
         @param file_path (str): path to the .wav file
         @return: A tuple with:
-            a) samples (ndarray): audio samples as float32
+            a) samples (ndarray): normalized audio samples in [-1, 1] as float32
             b) sampling_frequency (int): samples per second
         """
         sampling_frequency, samples = wavfile.read(file_path)
         samples = samples.astype('float32')
+
+        # Normalize to [-1, 1] based on dtype range so thresholds work correctly
+        if samples.max() > 1.0 or samples.min() < -1.0:
+            max_val = float(np.iinfo(np.int16).max)  # 32767
+            samples = samples / max_val
+
         return samples, sampling_frequency
+
 
