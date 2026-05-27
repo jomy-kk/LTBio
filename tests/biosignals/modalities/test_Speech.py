@@ -5,7 +5,6 @@ import numpy as np
 from scipy.io import wavfile
 
 from ltbio.biosignals.modalities.Speech import Speech
-from ltbio.biosignals.sources.ADReSSo21 import ADReSSo21
 from ltbio.biosignals.timeseries import Timeseries
 from ltbio.clinical import Patient
 
