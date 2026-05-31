@@ -2,10 +2,16 @@ from ltbio.biosignals.modalities.Speech import Speech
 from ltbio.biosignals.sources.ADReSSo21 import ADReSSo21
 
 
-speech = Speech("/Users/homi/Documents/Master Thesis/LTBio/resources/ADReSSo21_WAV_tests/ad/adrso024.wav", source=ADReSSo21)
+speech = Speech("/Users/homi/Documents/Master Thesis/LTBio/resources/ADReSSo21_WAV_tests/cn/adrso002.wav", source=ADReSSo21)
+
+# speech.plot()
+print(speech)
 
 # Get only patient speech periods
 patient_timeline = ADReSSo21.patient_speaking(speech)
+
+# patient_timeline.domain_timeline.plot()
+# patient_timeline.plot()
 
 # Slice the biosignal to patient speech only
 patient_speech = speech[patient_timeline]
@@ -24,3 +30,6 @@ print(f"Patient speaking: {patient_seconds:.1f}s out of {total_seconds:.1f}s ({1
 
 # 3. Silence within patient speech with a stricter threshold
 print(patient_speech.silence_percentage(threshold=0.05))
+
+for e in speech.events:
+    print(e.duration)

@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-from tensorflow import variant
 
 # ===================================
 
@@ -32,7 +31,7 @@ class MMSE(ClinicalScore):
         return "MMSE - Mini Mental State Examination"
 
     def __repr__(self):
-        if variant:
+        if self.variant:
             return str(self) + f"({self.variant})"
         else:
             return str(self)
