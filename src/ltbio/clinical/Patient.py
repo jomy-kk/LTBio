@@ -68,6 +68,15 @@ class Patient():
     @property
     def notes(self):
         return self.__notes
+    
+    @property
+    def age(self):
+        return self.__age
+
+    @property
+    def sex(self):
+        return self.__sex
+
 
     def add_note(self, description:str):
         self.__notes.append(description)
