@@ -16,19 +16,15 @@ class SpeechTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """
-        This audio is in resources/Speech_tests/Process-test-002__CTD.wav:
-        https://www.kaggle.com/datasets/tahouramorovati/dementia-detection-using-speech/data
-        """
 
         # Read WAV file
-        filepath = "resources/Speech_tests/Process-test-002__CTD.wav"
+        filepath = "resources/My_Voice/myvoice.wav"
         cls.sampling_frequency, cls.samples = wavfile.read(filepath)
         cls.duration = len(cls.samples) / cls.sampling_frequency
 
         # Instantiate a dummy Patient object
-        cls.patient_code = "000"
-        cls.patient = Patient(cls.patient_code, "John Doe")
+        cls.patient_code = "003"
+        cls.patient = Patient(cls.patient_code, "Ali db")
 
         # Instantiate a Speech object
         cls.initial_datetime = datetime.now()
