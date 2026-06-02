@@ -1,11 +1,14 @@
+import os
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import numpy as np
 from scipy.io import wavfile
 
 from ltbio.biosignals.modalities.Speech import Speech
+from ltbio.biosignals.sources.ADReSSo21 import ADReSSo21
 from ltbio.biosignals.timeseries import Timeseries
+from ltbio.biosignals.timeseries.Timeline import Timeline
 from ltbio.clinical import Patient
 
 
@@ -14,9 +17,7 @@ class SpeechTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """
-        To test the Speech class we will use a WAV sample audio of a participant describing the "Cookie Theft" picture
-        from the Boston Diagnostic Aphasia Examination.
-        This audio is in resources/Speech_tests/Process-test-002__CTD.wav and was fetched with the MIT license from:
+        This audio is in resources/Speech_tests/Process-test-002__CTD.wav:
         https://www.kaggle.com/datasets/tahouramorovati/dementia-detection-using-speech/data
         """
 
@@ -73,6 +74,65 @@ class SpeechTestCase(unittest.TestCase):
         self.assertEqual(len(samples), len(self.samples))
         # Assert if all samples are the same
         self.assertTrue(np.all(samples == self.samples))
+
+_WAV_PATH = os.path.join("resources", "ADReSSO21_tests", "classify_diagnoses", "audio", "cn", "adrs154.wav")
+
+
+@unittest.skipUnless(os.path.exists(_WAV_PATH), "ADReSSo21 test WAV file not available")
+class SpeechFromADReSSo21TestCase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.speech = Speech(_WAV_PATH, source=ADReSSo21)
+        cls.patient_timeline = ADReSSo21.patient_speaking(cls.speech)
+        cls.patient_speech = cls.speech[cls.patient_timeline]
+
+    def test_print(self):
+        print(self.speech)
+
+    def test_silence_percentage_default(self):
+        result = self.speech.silence_percentage()
+        self.assertIsInstance(result, dict)
+        for v in result.values():
+            self.assertGreaterEqual(v, 0.0)
+            self.assertLessEqual(v, 1.0)
+
+    def test_silence_percentage_by_segment(self):
+        result = self.speech.silence_percentage(by_segment=True)
+        self.assertIsInstance(result, dict)
+        for segment_values in result.values():
+            self.assertIsInstance(segment_values, (list, np.ndarray))
+            for v in segment_values:
+                self.assertGreaterEqual(v, 0.0)
+                self.assertLessEqual(v, 1.0)
+
+    def test_silence_percentage_strict_threshold(self):
+        default_result = self.patient_speech.silence_percentage()
+        strict_result = self.patient_speech.silence_percentage(threshold=0.05)
+        self.assertIsInstance(strict_result, dict)
+        for channel in strict_result:
+            self.assertGreaterEqual(strict_result[channel], default_result[channel])
+
+    def test_acceptable_quality(self):
+        result = self.patient_speech.acceptable_quality()
+        self.assertIsInstance(result, Timeline)
+
+    def test_patient_speaking_returns_timeline(self):
+        self.assertIsInstance(self.patient_timeline, Timeline)
+
+    def test_slice_by_timeline_returns_speech(self):
+        self.assertIsInstance(self.patient_speech, Speech)
+
+    def test_patient_speech_shorter_than_full(self):
+        total_seconds = self.speech.duration.total_seconds()
+        patient_seconds = self.patient_timeline.duration.total_seconds()
+        self.assertLessEqual(patient_seconds, total_seconds)
+
+    def test_events_have_positive_duration(self):
+        for e in self.speech.events:
+            self.assertIsInstance(e.duration, timedelta)
+            self.assertGreater(e.duration.total_seconds(), 0)
+
 
 if __name__ == '__main__':
     unittest.main()

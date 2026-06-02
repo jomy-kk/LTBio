@@ -112,7 +112,7 @@ class ADReSSo21(BiosignalSource):
 
 
     @staticmethod
-    def _events(file_path, type, **options):
+    def _events(file_path, **options):
         """
         Extracts PAR speaking segments from the diarization CSV from wav file.
         INV segments are excluded — only the patient's voice.
@@ -141,7 +141,7 @@ class ADReSSo21(BiosignalSource):
 
 
     @staticmethod
-    def _patient(file_path, type, **options):
+    def _patient(file_path, **options):
         """
         Reads participant metadata from the ADReSSo21 metadata CSV and returns a Patient object.
         Condition and MMSE score are derived from the metadata and directory structure.
