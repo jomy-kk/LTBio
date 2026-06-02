@@ -16,20 +16,26 @@
 # ===================================
 
 from typing import Callable
+from pathlib import Path
+import re
+import csv
 
 from numpy import ndarray
 import numpy as np
 
 from ..sources.BiosignalSource import BiosignalSource
 from ..timeseries.Timeline import Timeline
-from ..timeseries.Unit import Unit
-from datetime import datetime
+from ..timeseries.Unit import Unit, Unitless
+from datetime import datetime, timedelta
 from scipy.io import wavfile
 from .. import timeseries
-import csv
 from os.path import splitext
-from datetime import datetime, timedelta
 from ..timeseries.Event import Event
+from ltbio.clinical.Patient import Patient, Sex
+from ltbio.clinical.conditions.AD import AD
+from ltbio.clinical.conditions.MCI import MCI
+from ltbio.clinical.conditions.ProbableAD import ProbableAD
+from ltbio.clinical.scores.MMSE import MMSE
 
 
 
@@ -53,58 +59,127 @@ class ADReSSo21(BiosignalSource):
     def __str__(cls):
         return "ADReSSo21 Dataset"
 
-    # TODO: Auxiliary methods, if needed, go here
+    @staticmethod
+    def __find_metadata_dir(file_path: str) -> str:
+        """going through file_path until a directory containing ADReSSo21 metadata CSVs is found."""
+        for parent in Path(file_path).resolve().parents:
+            if any(f.name.startswith('adresso21') and f.suffix == '.csv'
+                   for f in parent.iterdir() if f.is_file()):
+                return str(parent)
+        raise FileNotFoundError(f"Could not find ADReSSo21 metadata directory from {file_path}")
+
+    @staticmethod
+    def __lookup_metadata(participant_id: str, metadata_dir: str) -> dict:
+        """Find a participant's row in the appropriate metadata CSV."""
+        if participant_id.startswith('adrsp'):
+            csv_name = 'adresso21_progression_subset.csv'
+            lookup_id = participant_id
+        else:
+            csv_name = 'adresso21_diagnosis_subset.csv'
+            if participant_id.startswith('adrs') and not participant_id.startswith('adrso'):
+                lookup_id = 'adrso' + participant_id[4:]
+            else:
+                lookup_id = participant_id
+
+        csv_path = str(Path(metadata_dir) / csv_name)
+        with open(csv_path, newline='') as f:
+            for row in csv.DictReader(f):
+                if row['Adresso ID'].strip() == lookup_id:
+                    return row
+        raise KeyError(f"Participant '{participant_id}' not found in {csv_path}")
 
     @staticmethod
     def _timeseries(file_path, type, **options):
         """
         Reads a .wav file and returns a dict of Timeseries.
-        @param file_path (str): path to a .wav file
-        @param **options:
-            initial_datetime (datetime): recording start datetime (default: datetime(1970, 1, 1))
-        @return: Dict[str, Timeseries]
+        The initial_datetime is read from the Speech Date column in the ADReSSo21 metadata CSV.
+        file_path (str) -> path to a .wav file
+        return -> Dict[str, Timeseries]
         """
-        initial_datetime = options.get('initial_datetime', datetime(1970, 1, 1))
-    
+        stem = Path(file_path).stem
+        metadata_dir = ADReSSo21.__find_metadata_dir(file_path)
+        row = ADReSSo21.__lookup_metadata(stem, metadata_dir)
+        initial_datetime = datetime.strptime(row['Speech Date'].strip(), '%Y-%m-%d')
+
         samples, sf = ADReSSo21.__read_wav(file_path)
-    
+
         if samples.ndim == 1:
-            # Mono audio — single channel
-            return {'audio': timeseries.Timeseries(samples, initial_datetime, sampling_frequency=sf)}
+            return {'audio': timeseries.Timeseries(samples, initial_datetime, sampling_frequency=sf, units=Unitless)}
         else:
-            # Stereo or multi-channel
             labels = ['left', 'right'] if samples.shape[1] == 2 else [f'ch{i}' for i in range(samples.shape[1])]
-            return {label: timeseries.Timeseries(samples[:, i], initial_datetime, sampling_frequency=sf)
+            return {label: timeseries.Timeseries(samples[:, i], initial_datetime, sampling_frequency=sf, units=Unitless)
                     for i, label in enumerate(labels)}
 
 
-    def _events(dir:str, **options):
+    @staticmethod
+    def _events(file_path, type, **options):
         """
-        Extracts onsets and offsets from diarization CSV files.
-        Returns: A List of Event objects.
+        Extracts PAR speaking segments from the diarization CSV from wav file.
+        INV segments are excluded — only the patient's voice.
+        Event times are anchored to the recording's Speech Date from the metadata CSV.
+        return -> List of Event PAR segments only.
         """
+        stem = Path(file_path).stem
+        metadata_dir = ADReSSo21.__find_metadata_dir(file_path)
+        row = ADReSSo21.__lookup_metadata(stem, metadata_dir)
+        base = datetime.strptime(row['Speech Date'].strip(), '%Y-%m-%d')
 
-        csv_path = splitext(dir)[0] + '.csv'
-        base = datetime(1970, 1, 1)
+        csv_path = splitext(file_path)[0] + '.csv'
         events = []
-        par_count, inv_count = 0, 0
+        par_count = 0
 
         with open(csv_path, newline='') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                speaker = row['speaker'].strip()
-                onset  = base + timedelta(milliseconds=int(row['begin']))
+            for row in csv.DictReader(f):
+                if row['speaker'].strip() != 'PAR':
+                    continue
+                par_count += 1
+                onset = base + timedelta(milliseconds=int(row['begin']))
                 offset = base + timedelta(milliseconds=int(row['end']))
-                if speaker == 'PAR':
-                    par_count += 1
-                    name = f'PAR_{par_count}'
-                else:
-                    inv_count += 1
-                    name = f'INV_{inv_count}'
-                events.append(Event(name, onset=onset, offset=offset))
+                events.append(Event(f'PAR_{par_count}', onset=onset, offset=offset))
 
         return events
 
+
+    @staticmethod
+    def _patient(file_path, type, **options):
+        """
+        Reads participant metadata from the ADReSSo21 metadata CSV and returns a Patient object.
+        Condition and MMSE score are derived from the metadata and directory structure.
+        return -> Patient with conditions and neuropsychological scores populated.
+        """
+        stem = Path(file_path).stem
+        metadata_dir = ADReSSo21.__find_metadata_dir(file_path)
+        row = ADReSSo21.__lookup_metadata(stem, metadata_dir)
+
+        code = re.sub(r'^[a-z]+', '', stem)
+        age = int(row['Age'])
+        sex = Sex.M if row['Gender'].strip().lower() == 'male' else Sex.F
+        diagnosis = row['Diagnosis'].strip()
+        mmse_val = row.get('MMSE', '').strip()
+        mmse_date_str = row.get('MMSE Date', '').strip()
+
+        path_parts = Path(file_path).parts
+        if 'decline' in path_parts and 'no_decline' not in path_parts:
+            in_cognitive_decline = True
+        elif 'no_decline' in path_parts:
+            in_cognitive_decline = False
+        else:
+            in_cognitive_decline = None
+
+        conditions = []
+        if diagnosis == 'ProbableAD':
+            condition = ProbableAD()
+            if mmse_val and mmse_val != 'NA' and mmse_date_str:
+                mmse = MMSE(in_cognitive_decline=in_cognitive_decline)
+                mmse.add_score(datetime.strptime(mmse_date_str, '%Y-%m-%d'), int(mmse_val))
+                condition.neuropsychological_scores.append(mmse)
+            conditions.append(condition)
+        elif diagnosis == 'AD':
+            conditions.append(AD())
+        elif diagnosis == 'MCI':
+            conditions.append(MCI())
+
+        return Patient(code, age=age, sex=sex, conditions=tuple(conditions))
 
     @staticmethod
     def _acquisition_location(path, type, **options):
