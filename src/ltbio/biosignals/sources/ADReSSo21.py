@@ -96,6 +96,9 @@ class ADReSSo21(BiosignalSource):
         file_path (str) -> path to a .wav file
         return -> Dict[str, Timeseries]
         """
+        if type is not None and type.__name__ != 'Speech':
+            raise IOError(f"ADReSSo21 is a Speech source and cannot produce {type.__name__} biosignals.")
+
         stem = Path(file_path).stem
         metadata_dir = ADReSSo21.__find_metadata_dir(file_path)
         row = ADReSSo21.__lookup_metadata(stem, metadata_dir)
@@ -112,7 +115,7 @@ class ADReSSo21(BiosignalSource):
 
 
     @staticmethod
-    def _events(file_path, **options):
+    def _events(file_path, type=None, **options):
         """
         Extracts PAR speaking segments from the diarization CSV from wav file.
         INV segments are excluded — only the patient's voice.
@@ -141,7 +144,7 @@ class ADReSSo21(BiosignalSource):
 
 
     @staticmethod
-    def _patient(file_path, **options):
+    def _patient(file_path, type=None, **options):
         """
         Reads participant metadata from the ADReSSo21 metadata CSV and returns a Patient object.
         Condition and MMSE score are derived from the metadata and directory structure.
@@ -240,10 +243,10 @@ class ADReSSo21(BiosignalSource):
         sampling_frequency, samples = wavfile.read(file_path)
         samples = samples.astype('float32')
 
-        # Normalize to [-1, 1] based on dtype range so thresholds work correctly
-        if samples.max() > 1.0 or samples.min() < -1.0:
-            max_val = float(np.iinfo(np.int16).max)  # 32767
-            samples = samples / max_val
+        # Normalize to exactly [-1, 1] by peak amplitude
+        max_abs = float(np.max(np.abs(samples)))
+        if max_abs > 0:
+            samples = samples / max_abs
 
         return samples, sampling_frequency
 
