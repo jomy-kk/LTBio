@@ -20,6 +20,8 @@ class ADReSSo21TestCase(unittest.TestCase):
         self.progression_dir = join('resources', 'ADReSSO21_tests', 'classify_progression') # This is a test directory with test files in the original structure, as downloaded.
         self.diagnoses_dir = join('resources', 'ADReSSO21_tests', 'classify_diagnoses') # This is a test directory with test files in the original structure, as downloaded.
         self.sf = 44100
+        self.Speech = self.ADReSSo21  # self.Speech is used in 5 tests
+
         # We will use two WAV test files.
         # One of a participant with cognitive decline:
         self.adrsp003_test_filepath = join(self.progression_dir, 'audio', 'decline', 'adrsp003.wav')
@@ -28,6 +30,7 @@ class ADReSSo21TestCase(unittest.TestCase):
         self.adrsp003_first_samples = ((4.5141874e-07, -8.5010456e-08), (1.0700712e-06, 6.9679942e-07), (1.2866620e-06, 1.2698747e-06))
         # One of a participant without cognitive decline:
         self.adrsp001_test_filepath = join(self.progression_dir, 'audio', 'no_decline', 'adrsp001.wav')
+        self.adrsp042_test_filepath = join(self.progression_dir, 'audio', 'no_decline', 'adrsp042.wav')  # needed for test_read_patient_without_cognitive_decline
 
         # We will also use three more participants to test metadata is loading correctly:
         self.adrs154_test_filepath = join(self.diagnoses_dir, 'audio', 'cn', 'adrs154.wav')
@@ -63,7 +66,9 @@ class ADReSSo21TestCase(unittest.TestCase):
 
     def test_read_events(self):
         # Exists CSV file
-        self.assertTrue(exists(join(self.test_dir, '*', 'adrsp003.csv')))
+        # self.assertTrue(exists(join(self.test_dir, '*', 'adrsp003.csv')))
+
+        self.assertTrue(exists(join(self.progression_dir, 'audio', 'decline', 'adrsp003.csv')))
 
         # Ground-truth
         onsets_samples = (23000, 24084, 25700, 27646, 87676, 94500, 123845)
