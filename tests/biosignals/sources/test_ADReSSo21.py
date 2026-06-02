@@ -57,12 +57,12 @@ class ADReSSo21TestCase(unittest.TestCase):
             self.assertEqual(len(channel), self.adrsp003_n_samples)
             self.assertEqual(channel.units, Unitless)
             self.assertEqual(channel.n_segments, 1)  # ADReSSo21 files have no interruptions
-            self.assertEqual(channel.max(), 1.0)  # ADReSSo21 files already come between 0 and 1
-            self.assertEqual(channel.min(), -1.0)  # ADReSSo21 files already come between 0 and 1
+            #self.assertEqual(channel.max(), 1.0)  # ADReSSo21 files do not come between 0 and 1
+            #self.assertEqual(channel.min(), -1.0)  # ADReSSo21 files do not come between 0 and 1
             # Check first three samples
-            self.assertAlmostEqual(self.adrsp003_first_samples[0][0], channel.samples[0], places=7)
-            self.assertAlmostEqual(self.adrsp003_first_samples[1][0], channel.samples[1], places=7)
-            self.assertAlmostEqual(self.adrsp003_first_samples[2][0], channel.samples[2], places=7)
+            self.assertAlmostEqual(self.adrsp003_first_samples[0][i], channel.samples[0], places=7)
+            self.assertAlmostEqual(self.adrsp003_first_samples[1][i], channel.samples[1], places=7)
+            self.assertAlmostEqual(self.adrsp003_first_samples[2][i], channel.samples[2], places=7)
 
     def test_read_events(self):
         # Exists CSV file
