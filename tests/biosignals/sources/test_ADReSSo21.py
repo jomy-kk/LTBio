@@ -17,25 +17,27 @@ class ADReSSo21TestCase(unittest.TestCase):
 
     def setUp(self):
         self.ADReSSo21 = ADReSSo21() # Needs to be instantiated only to test _read and _write methods, for they are protected.
-        self.progression_dir = join('resources', 'ADReSSO21_tests', 'classify_progression') # This is a test directory with test files in the original structure, as downloaded.
-        self.diagnoses_dir = join('resources', 'ADReSSO21_tests', 'classify_diagnoses') # This is a test directory with test files in the original structure, as downloaded.
+        # Paths mirror the real ADReSSo21 dataset layout exactly.
+        self.progression_train_dir = join('resources', 'ADReSSO21_tests', 'progression-train', 'progression', 'train')
+        self.diagnoses_train_dir   = join('resources', 'ADReSSO21_tests', 'diagnosis-train',   'diagnosis',   'train')
         self.sf = 44100
         self.Speech = self.ADReSSo21  # self.Speech is used in 5 tests
 
-        # We will use two WAV test files.
-        # One of a participant with cognitive decline:
-        self.adrsp003_test_filepath = join(self.progression_dir, 'audio', 'decline', 'adrsp003.wav')
+        # Participant with cognitive decline (progression-train/audio/decline/):
+        self.adrsp003_test_filepath = join(self.progression_train_dir, 'audio', 'decline', 'adrsp003.wav')
         self.adrsp003_initial_date_time = datetime(1983, 8, 25)
         self.adrsp003_n_samples = 6307200
         self.adrsp003_first_samples = ((4.5141874e-07, -8.5010456e-08), (1.0700712e-06, 6.9679942e-07), (1.2866620e-06, 1.2698747e-06))
-        # One of a participant without cognitive decline:
-        self.adrsp001_test_filepath = join(self.progression_dir, 'audio', 'no_decline', 'adrsp001.wav')
-        self.adrsp042_test_filepath = join(self.progression_dir, 'audio', 'no_decline', 'adrsp042.wav')  # needed for test_read_patient_without_cognitive_decline
 
-        # We will also use three more participants to test metadata is loading correctly:
-        self.adrs154_test_filepath = join(self.diagnoses_dir, 'audio', 'cn', 'adrs154.wav')
-        self.adrs032_test_filepath = join(self.diagnoses_dir, 'audio', 'ad', 'adrs032.wav')
-        self.adrsp024_test_filepath = join(self.diagnoses_dir, 'audio', 'ad', 'adrsp024.wav')
+        # Participants without cognitive decline (progression-train/audio/no_decline/):
+        self.adrsp001_test_filepath = join(self.progression_train_dir, 'audio', 'no_decline', 'adrsp001.wav')
+        self.adrsp042_test_filepath = join(self.progression_train_dir, 'audio', 'no_decline', 'adrsp042.wav')
+        # adrsp024: progression participant (MCI); path used for metadata lookup only — no WAV needed:
+        self.adrsp024_test_filepath = join(self.progression_train_dir, 'audio', 'no_decline', 'adrsp024.wav')
+
+        # Diagnosis-train participants (audio/ad/ and audio/cn/); files named adrso* as in the real dataset:
+        self.adrs154_test_filepath = join(self.diagnoses_train_dir, 'audio', 'cn', 'adrso154.wav')
+        self.adrs032_test_filepath = join(self.diagnoses_train_dir, 'audio', 'ad', 'adrso032.wav')
 
 
     def test_read_timeseries(self):
@@ -68,7 +70,7 @@ class ADReSSo21TestCase(unittest.TestCase):
         # Exists CSV file
         # self.assertTrue(exists(join(self.test_dir, '*', 'adrsp003.csv')))
 
-        self.assertTrue(exists(join(self.progression_dir, 'audio', 'decline', 'adrsp003.csv')))
+        self.assertTrue(exists(join(self.progression_train_dir, 'segmentation', 'decline', 'adrsp003.csv')))
 
         # Ground-truth
         onsets_samples = (23000, 24084, 25700, 27646, 87676, 94500, 123845)
@@ -102,7 +104,7 @@ class ADReSSo21TestCase(unittest.TestCase):
         self.assertIsInstance(patient.conditions[0], ProbableAD)
         proableAD = patient.conditions[0]
         self.assertTrue(len(proableAD.neuropsychological_scores) == 1)
-        self.assertIsInstance(patient.conditions[0], MMSE)
+        self.assertIsInstance(patient.conditions[0].neuropsychological_scores[0], MMSE)
         mmse = proableAD.neuropsychological_scores[0]
         self.assertTrue(len(mmse.scores) == 1)
         self.assertTrue(tuple(mmse.scores.keys())[0] == datetime(1983, 8, 25))
@@ -110,7 +112,7 @@ class ADReSSo21TestCase(unittest.TestCase):
         self.assertTrue(mmse.in_cognitive_decline)  # must be True
 
     def test_read_patient_without_cognitive_decline(self):
-        patient = self.Speech._patient(self.adrsp003_test_filepath, Speech)
+        patient = self.Speech._patient(self.adrsp042_test_filepath, Speech)
         self.assertIsInstance(patient, Patient)
         self.assertEqual(patient.code, "042")
         self.assertEqual(patient.age, 68)
@@ -118,11 +120,11 @@ class ADReSSo21TestCase(unittest.TestCase):
 
         # MMSE
         self.assertTrue(len(patient.conditions) == 1)
-        self.assertIsInstance(patient.conditions[0], ProbableAD)
-        proableAD = patient.conditions[0]
-        self.assertTrue(len(proableAD.neuropsychological_scores) == 1)
-        self.assertIsInstance(patient.conditions[0], MMSE)
-        mmse = proableAD.neuropsychological_scores[0]
+        self.assertIsInstance(patient.conditions[0], MCI)
+        mci = patient.conditions[0]
+        self.assertTrue(len(mci.neuropsychological_scores) == 1)
+        self.assertIsInstance(patient.conditions[0].neuropsychological_scores[0], MMSE)
+        mmse = mci.neuropsychological_scores[0]
         self.assertTrue(len(mmse.scores) == 1)
         self.assertTrue(tuple(mmse.scores.keys())[0] == datetime(1983, 12, 19))
         self.assertTrue(mmse.scores[datetime(1983, 12, 19)] == 25)

@@ -29,7 +29,6 @@ from ..timeseries.Unit import Unit, Unitless
 from datetime import datetime, timedelta
 from scipy.io import wavfile
 from .. import timeseries
-from os.path import splitext
 from ..timeseries.Event import Event
 from ltbio.clinical.Patient import Patient, Sex
 from ltbio.clinical.conditions.AD import AD
@@ -127,7 +126,14 @@ class ADReSSo21(BiosignalSource):
         row = ADReSSo21.__lookup_metadata(stem, metadata_dir)
         base = datetime.strptime(row['Speech Date'].strip(), '%Y-%m-%d')
 
-        csv_path = splitext(file_path)[0] + '.csv'
+        # In the ADReSSo21 dataset, segmentation CSVs live in a sibling
+        # 'segmentation/' folder that mirrors the 'audio/' folder layout:
+        #   .../train/audio/<label>/file.wav  →  .../train/segmentation/<label>/file.csv
+        audio_dir = Path(file_path).parent
+        while audio_dir.name != 'audio' and audio_dir != audio_dir.parent:
+            audio_dir = audio_dir.parent
+        relative_subdirs = Path(file_path).parent.relative_to(audio_dir)
+        csv_path = str(audio_dir.parent / 'segmentation' / relative_subdirs / (stem + '.csv'))
         events = []
         par_count = 0
 
@@ -169,20 +175,26 @@ class ADReSSo21(BiosignalSource):
         else:
             in_cognitive_decline = None
 
-        conditions = []
+        msse equal None
+        if mmse_val and mmse_val != 'NA' and mmse_date_str:  # if exists
+            mmse = MMSE(in_cognitive_decline=in_cognitive_decline)
+            mmse.add_score(datetime.strptime(mmse_date_str, '%Y-%m-%d'), int(mmse_val))
+            
+        condition = None
         if diagnosis == 'ProbableAD':
             condition = ProbableAD()
-            if mmse_val and mmse_val != 'NA' and mmse_date_str:
-                mmse = MMSE(in_cognitive_decline=in_cognitive_decline)
-                mmse.add_score(datetime.strptime(mmse_date_str, '%Y-%m-%d'), int(mmse_val))
-                condition.neuropsychological_scores.append(mmse)
-            conditions.append(condition)
+            condition = 
         elif diagnosis == 'AD':
-            conditions.append(AD())
+            condition = 
         elif diagnosis == 'MCI':
-            conditions.append(MCI())
+            condition =
+            extend
+            else for error 
 
-        return Patient(code, age=age, sex=sex, conditions=tuple(conditions))
+        if mmse and conditiondouble points
+            condition.neuropsychological_scores.append(mmse)
+
+        return Patient(code, age=age, sex=sex, conditions=(condition, ))
 
     @staticmethod
     def _acquisition_location(path, type, **options):
