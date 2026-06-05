@@ -34,6 +34,9 @@ from ltbio.clinical.Patient import Patient, Sex
 from ltbio.clinical.conditions.AD import AD
 from ltbio.clinical.conditions.MCI import MCI
 from ltbio.clinical.conditions.ProbableAD import ProbableAD
+from ltbio.clinical.conditions.PossibleAD import PossibleAD
+from ltbio.clinical.conditions.VD import VD
+from ltbio.clinical.conditions.SMC import SMC
 from ltbio.clinical.scores.MMSE import MMSE
 
 
@@ -116,10 +119,12 @@ class ADReSSo21(BiosignalSource):
     @staticmethod
     def _events(file_path, type=None, **options):
         """
-        Extracts PAR speaking segments from the diarization CSV from wav file.
-        INV segments are excluded — only the patient's voice.
+        Extracts PAR speaking segments from the diarization CSV of a wav file.
+        INV segments are excluded — only the patient's voice is returned.
+        Consecutive PAR rows that are adjacent or overlapping are merged into
+        a single Event, representing one uninterrupted conversational turn.
         Event times are anchored to the recording's Speech Date from the metadata CSV.
-        return -> List of Event PAR segments only.
+        return -> List of merged PAR Event objects.
         """
         stem = Path(file_path).stem
         metadata_dir = ADReSSo21.__find_metadata_dir(file_path)
@@ -134,17 +139,33 @@ class ADReSSo21(BiosignalSource):
             audio_dir = audio_dir.parent
         relative_subdirs = Path(file_path).parent.relative_to(audio_dir)
         csv_path = str(audio_dir.parent / 'segmentation' / relative_subdirs / (stem + '.csv'))
-        events = []
-        par_count = 0
 
+        # Read sampling frequency from the WAV file to convert sample counts to time
+        sampling_frequency, _ = wavfile.read(file_path)
+
+        # Collect all PAR rows as (begin_sample, end_sample) pairs
+        par_intervals = []
         with open(csv_path, newline='') as f:
             for row in csv.DictReader(f):
                 if row['speaker'].strip() != 'PAR':
                     continue
-                par_count += 1
-                onset = base + timedelta(milliseconds=int(row['begin']))
-                offset = base + timedelta(milliseconds=int(row['end']))
-                events.append(Event(f'PAR_{par_count}', onset=onset, offset=offset))
+                par_intervals.append((int(row['begin']), int(row['end'])))
+
+        # Merge adjacent or overlapping intervals into conversational turns
+        par_intervals.sort(key=lambda x: x[0])
+        merged = []
+        for begin, end in par_intervals:
+            if merged and begin <= merged[-1][1]:  # adjacent or overlapping
+                merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+            else:
+                merged.append((begin, end))
+
+        # Build one Event per merged turn; convert sample counts to timedelta
+        events = []
+        for i, (begin_sample, end_sample) in enumerate(merged, start=1):
+            onset = base + timedelta(seconds=begin_sample / sampling_frequency)
+            offset = base + timedelta(seconds=end_sample / sampling_frequency)
+            events.append(Event(f'PAR_{i}', onset=onset, offset=offset))
 
         return events
 
@@ -175,26 +196,34 @@ class ADReSSo21(BiosignalSource):
         else:
             in_cognitive_decline = None
 
-        msse equal None
-        if mmse_val and mmse_val != 'NA' and mmse_date_str:  # if exists
+        mmse = None
+        if mmse_val and mmse_val != 'NA' and mmse_date_str:
             mmse = MMSE(in_cognitive_decline=in_cognitive_decline)
             mmse.add_score(datetime.strptime(mmse_date_str, '%Y-%m-%d'), int(mmse_val))
-            
+
         condition = None
         if diagnosis == 'ProbableAD':
             condition = ProbableAD()
-            condition = 
         elif diagnosis == 'AD':
-            condition = 
+            condition = AD()
         elif diagnosis == 'MCI':
-            condition =
-            extend
-            else for error 
+            condition = MCI()
+        elif diagnosis == 'PossibleAD':
+            condition = PossibleAD()
+        elif diagnosis == 'Vascular':
+            condition = VD()
+        elif diagnosis == 'SML':
+            condition = SMC()
+        elif diagnosis == 'Control':
+            condition = None 
+        else:
+            raise ValueError(f"Unknown diagnosis value '{diagnosis}' for participant '{stem}'")
 
-        if mmse and conditiondouble points
+        if mmse is not None and condition is not None:
             condition.neuropsychological_scores.append(mmse)
 
-        return Patient(code, age=age, sex=sex, conditions=(condition, ))
+        conditions = (condition,) if condition is not None else ()
+        return Patient(code, age=age, sex=sex, conditions=conditions)
 
     @staticmethod
     def _acquisition_location(path, type, **options):

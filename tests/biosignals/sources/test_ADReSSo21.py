@@ -86,11 +86,10 @@ class ADReSSo21TestCase(unittest.TestCase):
 
         events = sorted(events, key=lambda event: event.onset) # Sort events by onset
         for i, event in enumerate(events):
-            event.name = "speaking"
             self.assertTrue(event.has_onset)
-            self.assertEqual(onsets_samples[i], int((event.onset - self.adrsp003_initial_date_time).total_seconds() * self.sf))
+            self.assertEqual(onsets_samples[i], round((event.onset - self.adrsp003_initial_date_time).total_seconds() * self.sf))
             self.assertTrue(event.has_offset)
-            self.assertEqual(offsets_samples[i], int((event.offset - self.adrsp003_initial_date_time).total_seconds() * self.sf))
+            self.assertEqual(offsets_samples[i], round((event.offset - self.adrsp003_initial_date_time).total_seconds() * self.sf))
 
     def test_read_patient_with_cognitive_decline(self):
         patient = self.Speech._patient(self.adrsp003_test_filepath, Speech)
@@ -131,10 +130,12 @@ class ADReSSo21TestCase(unittest.TestCase):
         self.assertFalse(mmse.in_cognitive_decline)  # must be False
 
     def test_read_patient_with_AD(self):
+        # adrs032 (adrso032) has Diagnosis=ProbableAD in the metadata CSV;
+        # the value 'AD' does not appear in the ADReSSo21 dataset.
         patient = self.Speech._patient(self.adrs032_test_filepath, Speech)
         self.assertIsInstance(patient, Patient)
         self.assertTrue(len(patient.conditions) == 1)
-        self.assertIsInstance(patient.conditions[0], AD)
+        self.assertIsInstance(patient.conditions[0], ProbableAD)
 
     def test_read_patient_with_MCI(self):
         patient = self.Speech._patient(self.adrsp024_test_filepath, Speech)
