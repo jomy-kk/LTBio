@@ -165,7 +165,7 @@ class ADReSSo21(BiosignalSource):
         for i, (begin_sample, end_sample) in enumerate(merged, start=1):
             onset = base + timedelta(seconds=begin_sample / sampling_frequency)
             offset = base + timedelta(seconds=end_sample / sampling_frequency)
-            events.append(Event(f'PAR_{i}', onset=onset, offset=offset))
+            events.append(Event(f'speaking_{i}', onset=onset, offset=offset))
 
         return events
 

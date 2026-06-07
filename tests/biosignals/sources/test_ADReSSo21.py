@@ -86,6 +86,7 @@ class ADReSSo21TestCase(unittest.TestCase):
 
         events = sorted(events, key=lambda event: event.onset) # Sort events by onset
         for i, event in enumerate(events):
+            self.assertTrue("speaking" in event.name)
             self.assertTrue(event.has_onset)
             self.assertEqual(onsets_samples[i], round((event.onset - self.adrsp003_initial_date_time).total_seconds() * self.sf))
             self.assertTrue(event.has_offset)
