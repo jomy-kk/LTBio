@@ -36,7 +36,7 @@ datacommons-pandas==0.0.3
 datapane==0.15.3
 DateTime==5.1
 DateTimeRange==1.2.0
-debugpy==1.6.0
+debugy==1.6.0
 decorator==5.1.1
 defusedxml==0.7.1
 diagrams==0.21.1
@@ -44,8 +44,7 @@ dill==0.3.4
 docutils==0.18.1
 dominate==2.7.0
 dulwich==0.20.46
-edflib==0.84.1
-EDFlib-Python==1.0.6
+edflib==0.90.0
 entrypoints==0.4
 executing==0.8.3
 face==20.1.1
