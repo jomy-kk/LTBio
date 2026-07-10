@@ -43,7 +43,6 @@ datacommons==1.4.3
 datacommons-pandas==0.0.3
 datapane==0.15.3
 DateTimeRange==1.2.0
-debugy==1.6.0
 decorator==5.1.1
 defusedxml==0.7.1
 diagrams==0.21.1
