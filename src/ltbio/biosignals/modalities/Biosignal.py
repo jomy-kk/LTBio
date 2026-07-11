@@ -24,6 +24,7 @@ from tempfile import mkdtemp
 from typing import Dict, Tuple, Collection, Set, ClassVar, Callable
 
 import matplotlib.pyplot as plt
+from matplotlib.transforms import blended_transform_factory
 import numpy as np
 from datetimerange import DateTimeRange
 from dateutil.parser import parse as to_datetime, ParserError
@@ -995,9 +996,15 @@ class Biosignal(ABC):
         fig = plt.figure(figsize=(13, 2.5*len(self)))
 
         all_events = self.events
-        all_onsets = [e.onset for e in all_events if e.has_onset]
-        all_offsets = [e.offset for e in all_events if e.has_offset]
-        all_vlines = all_onsets+all_offsets
+        point_events = []
+        interval_events = []
+        for event in all_events:
+            if event.has_onset and event.has_offset:
+                interval_events.append(event)
+            elif event.has_onset:
+                point_events.append((event.name, event.onset))
+            elif event.has_offset:
+                point_events.append((event.name, event.offset))
 
         for i, channel_name in zip(range(len(self)), self.channel_names):
             channel = self.__timeseries[channel_name]
@@ -1012,7 +1019,30 @@ class Biosignal(ABC):
                 ax.grid()
             timeseries_plotting_method(self=channel)
 
-            _vlines = [int((t - channel.initial_datetime).total_seconds() * channel.sampling_frequency) for t in all_vlines if t in channel]
+            label_transform = blended_transform_factory(ax.transData, ax.transAxes)
+            _vlines = []
+            for event_name, event_datetime in point_events:
+                if event_datetime in channel:
+                    event_timepoint = int((event_datetime - channel.initial_datetime).total_seconds() * channel.sampling_frequency)
+                    _vlines.append(event_timepoint)
+                    ax.text(event_timepoint, 0.98, event_name, transform=label_transform, color='red',
+                            fontsize=8, ha='left', va='top', clip_on=True)
+            for event in interval_events:
+                onset, offset = None, None
+                if event.onset in channel:
+                    onset = int((event.onset - channel.initial_datetime).total_seconds() * channel.sampling_frequency)
+                    _vlines.append(onset)
+                if event.offset in channel:
+                    offset = int((event.offset - channel.initial_datetime).total_seconds() * channel.sampling_frequency)
+                    _vlines.append(offset)
+                if onset is not None and offset is not None:
+                    ax.axvspan(onset, offset, color='red', alpha=0.15)
+                    text_width = len(event.name) * 8 * fig.dpi / 72 * 0.6
+                    span_width = abs(ax.transData.transform((offset, 0))[0] - ax.transData.transform((onset, 0))[0])
+                    rotation = 0 if span_width >= text_width else 90
+                    y, va = (0.98, 'top') if rotation == 0 else (0.5, 'center')
+                    ax.text((onset + offset) / 2, y, event.name, transform=label_transform, color='red',
+                            fontsize=8, ha='center', va=va, rotation=rotation, rotation_mode='anchor', clip_on=True)
             plt.vlines(_vlines, ymin=channel.min(), ymax=channel.max(), colors='red')
 
         fig.suptitle((title + ' ' if title is not None else '') + self.name + ' from patient ' + str(self.patient_code), fontsize=11)

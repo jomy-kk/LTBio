@@ -1,12 +1,14 @@
 import unittest
 from datetime import datetime, timedelta
 from os import remove
+from unittest.mock import patch
 
 from ltbio.biosignals.timeseries.Unit import *
 from ltbio.biosignals.modalities.Biosignal import *
 from ltbio.biosignals.modalities.ECG import ECG
 from ltbio.biosignals.modalities.EDA import EDA
 from ltbio.biosignals.sources.HSM import HSM
+from ltbio.biosignals.timeseries.Event import Event
 from ltbio.biosignals.timeseries.Frequency import Frequency
 from ltbio.biosignals.timeseries.Timeseries import Timeseries
 from ltbio.clinical.conditions.Epilepsy import Epilepsy
@@ -268,6 +270,43 @@ class BiosignalTestCase(unittest.TestCase):
         #    cls.assertEqual(target.read(), test.read())
 
         remove(test_image_path)
+
+    def test_plot_draws_interval_events_as_shaded_areas(self):
+        ecg = ECG({"a": self.ts1})
+        ecg.associate((
+            Event("only-onset", onset=self.initial1 + timedelta(seconds=1)),
+            Event("only-offset", offset=self.initial1 + timedelta(seconds=2)),
+            Event("interval", onset=self.initial1 + timedelta(seconds=3), offset=self.initial1 + timedelta(seconds=5)),
+        ))
+
+        with patch("matplotlib.pyplot.vlines") as vlines, \
+                patch("matplotlib.axes.Axes.axvspan", autospec=True) as axvspan, \
+                patch("matplotlib.axes.Axes.text", autospec=True) as text:
+            ecg.plot(show=False)
+
+        self.assertEqual(sorted(vlines.call_args.args[0]), [1, 2, 3, 5])
+        axvspan.assert_called_once()
+        _, onset, offset = axvspan.call_args.args[:3]
+        self.assertEqual(onset, 3)
+        self.assertEqual(offset, 5)
+        self.assertEqual([call.args[3] for call in text.call_args_list], ["only-onset", "only-offset", "interval"])
+        self.assertEqual(text.call_args_list[0].kwargs["ha"], "left")
+        self.assertEqual(text.call_args_list[2].kwargs["ha"], "center")
+        self.assertEqual(text.call_args_list[2].kwargs["rotation"], 0)
+
+    def test_plot_rotates_interval_event_label_when_span_is_narrow(self):
+        ecg = ECG({"a": self.ts1})
+        event_name = "interval label too long to fit horizontally"
+        ecg.associate(Event(event_name, onset=self.initial1 + timedelta(seconds=3), offset=self.initial1 + timedelta(seconds=4)))
+
+        with patch("matplotlib.axes.Axes.text", autospec=True) as text:
+            ecg.plot(show=False)
+
+        self.assertEqual(text.call_args.args[3], event_name)
+        self.assertEqual(text.call_args.args[2], 0.5)
+        self.assertEqual(text.call_args.kwargs["rotation"], 90)
+        self.assertEqual(text.call_args.kwargs["ha"], "center")
+        self.assertEqual(text.call_args.kwargs["va"], "center")
 
     def test_resample(self):
         ecg = ECG(self.testpath, HSM)
