@@ -140,10 +140,10 @@ class ADReSSo21(BiosignalSource):
         relative_subdirs = Path(file_path).parent.relative_to(audio_dir)
         csv_path = str(audio_dir.parent / 'segmentation' / relative_subdirs / (stem + '.csv'))
 
-        # Read sampling frequency from the WAV file to convert sample counts to time
+        # Read the WAV file to validate it is available before loading events
         sampling_frequency, _ = wavfile.read(file_path)
 
-        # Collect all PAR rows as (begin_sample, end_sample) pairs
+        # Collect all PAR rows as (begin_ms, end_ms) pairs
         par_intervals = []
         with open(csv_path, newline='') as f:
             for row in csv.DictReader(f):
@@ -160,11 +160,11 @@ class ADReSSo21(BiosignalSource):
             else:
                 merged.append((begin, end))
 
-        # Build one Event per merged turn; convert sample counts to timedelta
+        # Build one Event per merged turn; begin/end values are milliseconds
         events = []
-        for i, (begin_sample, end_sample) in enumerate(merged, start=1):
-            onset = base + timedelta(seconds=begin_sample / sampling_frequency)
-            offset = base + timedelta(seconds=end_sample / sampling_frequency)
+        for i, (begin, end) in enumerate(merged, start=1):
+            onset = base + timedelta(milliseconds=begin)
+            offset = base + timedelta(milliseconds=end)
             events.append(Event(f'speaking_{i}', onset=onset, offset=offset))
 
         return events
@@ -290,5 +290,4 @@ class ADReSSo21(BiosignalSource):
             samples = samples / max_abs
 
         return samples, sampling_frequency
-
 

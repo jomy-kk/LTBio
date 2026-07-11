@@ -73,10 +73,8 @@ class ADReSSo21TestCase(unittest.TestCase):
         self.assertTrue(exists(join(self.progression_train_dir, 'segmentation', 'decline', 'adrsp003.csv')))
 
         # Ground-truth
-        onsets_samples = (23000, 24084, 25700, 27646, 87676, 94500, 123845)
-        onsets = tuple(self.adrsp003_initial_date_time + timedelta(seconds = sample / self.sf) for sample in onsets_samples)
-        offsets_samples = (23300, 24829, 26945, 54070, 93092, 95740, 137665)
-        offsets = tuple(self.adrsp003_initial_date_time + timedelta(seconds = sample / self.sf) for sample in offsets_samples)
+        onsets_ms = (23000, 24084, 25700, 27646, 87676, 94500, 123845)
+        offsets_ms = (23300, 24829, 26945, 54070, 93092, 95740, 137665)
 
         # Test
         events = self.Speech._events(self.adrsp003_test_filepath, Speech)
@@ -88,9 +86,9 @@ class ADReSSo21TestCase(unittest.TestCase):
         for i, event in enumerate(events):
             self.assertTrue("speaking" in event.name)
             self.assertTrue(event.has_onset)
-            self.assertEqual(onsets_samples[i], round((event.onset - self.adrsp003_initial_date_time).total_seconds() * self.sf))
+            self.assertEqual(onsets_ms[i], round((event.onset - self.adrsp003_initial_date_time).total_seconds() * 1000))
             self.assertTrue(event.has_offset)
-            self.assertEqual(offsets_samples[i], round((event.offset - self.adrsp003_initial_date_time).total_seconds() * self.sf))
+            self.assertEqual(offsets_ms[i], round((event.offset - self.adrsp003_initial_date_time).total_seconds() * 1000))
 
     def test_read_patient_with_cognitive_decline(self):
         patient = self.Speech._patient(self.adrsp003_test_filepath, Speech)
