@@ -32,7 +32,7 @@ from scipy.signal import resample
 from ltbio.biosignals.timeseries import Timeline
 from ltbio.biosignals.timeseries.Event import Event
 from ltbio.biosignals.timeseries.Frequency import Frequency
-from ltbio.biosignals.timeseries.Unit import Unit
+from ltbio.biosignals.timeseries.Unit import Unit, Unitless
 
 
 #from ltbio.processing.filters.Filter import Filter
@@ -1248,7 +1248,10 @@ class Timeseries():
         plt.tick_params(axis='x', direction='in')
 
         if self.units is not None:  # override ylabel
-            plt.gca().set_ylabel("Amplitude ({})".format(str(self.units)))
+            if self.units is Unitless or isinstance(self.units, Unitless):
+                plt.gca().set_ylabel("Amplitude")
+            else:
+                plt.gca().set_ylabel("Amplitude ({})".format(str(self.units)))
 
     # ===================================
     # INTERNAL USAGE - Accept methods

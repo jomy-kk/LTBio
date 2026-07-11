@@ -308,6 +308,14 @@ class BiosignalTestCase(unittest.TestCase):
         self.assertEqual(text.call_args.kwargs["ha"], "center")
         self.assertEqual(text.call_args.kwargs["va"], "center")
 
+    def test_plot_omits_units_from_unitless_y_label(self):
+        ecg = ECG({"a": Timeseries(self.samples1, self.initial1, self.sf, Unitless())})
+
+        with patch("matplotlib.axes.Axes.set_ylabel", autospec=True) as set_ylabel:
+            ecg.plot(show=False)
+
+        self.assertEqual(set_ylabel.call_args.args[1], "Amplitude")
+
     def test_resample(self):
         ecg = ECG(self.testpath, HSM)
         self.assertEqual(ecg.sampling_frequency, 1000.0)  # 1000 Hz
