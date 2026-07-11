@@ -1,7 +1,9 @@
 import os
 import unittest
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.io import wavfile
 
@@ -10,6 +12,41 @@ from ltbio.biosignals.sources.ADReSSo21 import ADReSSo21
 from ltbio.biosignals.timeseries import Timeseries
 from ltbio.biosignals.timeseries.Timeline import Timeline
 from ltbio.clinical import Patient
+
+
+class FakeSoundDevice:
+
+    class CallbackStop(Exception):
+        pass
+
+    class FakeOutputStream:
+
+        def __init__(self, owner, **kwargs):
+            self.owner = owner
+            self.kwargs = kwargs
+            self.started = False
+            self.closed = False
+
+        def start(self):
+            self.started = True
+
+        def stop(self):
+            self.owner.stop_calls += 1
+
+        def close(self):
+            self.closed = True
+
+    def __init__(self):
+        self.output_streams = []
+        self.stop_calls = 0
+
+    def OutputStream(self, **kwargs):
+        stream = self.__class__.FakeOutputStream(self, **kwargs)
+        self.output_streams.append(stream)
+        return stream
+
+    def stop(self):
+        self.stop_calls += 1
 
 
 class SpeechTestCase(unittest.TestCase):
@@ -74,6 +111,107 @@ class SpeechTestCase(unittest.TestCase):
         self.assertEqual(len(samples), len(self.samples))
         # Assert if all samples are the same
         self.assertTrue(np.all(samples == self.samples))
+
+    def test_plot_audio_matrix_stacks_channels(self):
+        left = Timeseries(np.array([0, 16384, -16384], dtype=np.int16), self.initial_datetime, 10)
+        right = Timeseries(np.array([16384, 0, -16384], dtype=np.int16), self.initial_datetime, 10)
+        speech = Speech({'left': left, 'right': right})
+
+        audio, sampling_frequency, playback_to_plot_x = speech._plot_audio_matrix()
+
+        self.assertEqual(audio.shape, (3, 2))
+        self.assertEqual(sampling_frequency, 10.0)
+        self.assertEqual(playback_to_plot_x.tolist(), [0, 1, 2])
+        self.assertLessEqual(np.max(np.abs(audio)), 1)
+
+    def test_plot_audio_matrix_accepts_matching_interrupted_domains(self):
+        second_segment_start = self.initial_datetime + timedelta(seconds=10)
+        left = Timeseries.withDiscontiguousSegments({
+            self.initial_datetime: np.array([0, 1, 2], dtype=np.int16),
+            second_segment_start: np.array([3, 4], dtype=np.int16),
+        }, 10)
+        right = Timeseries.withDiscontiguousSegments({
+            self.initial_datetime: np.array([5, 6, 7], dtype=np.int16),
+            second_segment_start: np.array([8, 9], dtype=np.int16),
+        }, 10)
+        speech = Speech({'left': left, 'right': right})
+
+        audio, sampling_frequency, playback_to_plot_x = speech._plot_audio_matrix()
+
+        self.assertEqual(audio.shape, (5, 2))
+        self.assertEqual(sampling_frequency, 10.0)
+        self.assertEqual(playback_to_plot_x.tolist(), [0, 1, 2, 22, 23])
+
+    def test_plot_adds_interactive_playback_controller(self):
+        plt.close('all')
+        fake_sounddevice = FakeSoundDevice()
+        with patch.dict('sys.modules', {'sounddevice': fake_sounddevice}), patch("matplotlib.pyplot.show"):
+            self.speech.plot(show=True)
+
+        fig = plt.gcf()
+        self.assertTrue(hasattr(fig, '_ltbio_speech_playback_controller'))
+        plt.close(fig)
+
+    def test_plot_skips_playback_when_sampling_rates_differ(self):
+        plt.close('all')
+        fake_sounddevice = FakeSoundDevice()
+        left = Timeseries(np.array([0, 1, 2]), self.initial_datetime, 10)
+        right = Timeseries(np.array([0, 1, 2]), self.initial_datetime, 20)
+        speech = Speech({'left': left, 'right': right})
+
+        with patch.dict('sys.modules', {'sounddevice': fake_sounddevice}), patch("matplotlib.pyplot.show"):
+            with self.assertWarns(UserWarning):
+                speech.plot(show=True)
+
+        fig = plt.gcf()
+        self.assertFalse(hasattr(fig, '_ltbio_speech_playback_controller'))
+        plt.close(fig)
+
+    def test_playback_controller_can_pause_and_seek(self):
+        plt.close('all')
+        fake_sounddevice = FakeSoundDevice()
+        with patch.dict('sys.modules', {'sounddevice': fake_sounddevice}), patch("matplotlib.pyplot.show"):
+            self.speech.plot(show=True)
+
+        fig = plt.gcf()
+        controller = fig._ltbio_speech_playback_controller
+        controller.play()
+        controller.seek(2)
+
+        self.assertTrue(controller.is_playing)
+        self.assertEqual(controller.current_sample, 2)
+        self.assertEqual(len(fake_sounddevice.output_streams), 2)
+        self.assertEqual(fake_sounddevice.output_streams[-1].kwargs["latency"], "high")
+        self.assertEqual(fake_sounddevice.output_streams[-1].kwargs["blocksize"], 8192)
+
+        controller.pause()
+        self.assertFalse(controller.is_playing)
+        self.assertGreaterEqual(fake_sounddevice.stop_calls, 2)
+        plt.close(fig)
+
+    def test_playback_controller_seeks_to_nearest_sample_in_interruption_gap(self):
+        plt.close('all')
+        fake_sounddevice = FakeSoundDevice()
+        second_segment_start = self.initial_datetime + timedelta(seconds=10)
+        left = Timeseries.withDiscontiguousSegments({
+            self.initial_datetime: np.array([0, 1, 2], dtype=np.int16),
+            second_segment_start: np.array([3, 4], dtype=np.int16),
+        }, 10)
+        right = Timeseries.withDiscontiguousSegments({
+            self.initial_datetime: np.array([5, 6, 7], dtype=np.int16),
+            second_segment_start: np.array([8, 9], dtype=np.int16),
+        }, 10)
+        speech = Speech({'left': left, 'right': right})
+
+        with patch.dict('sys.modules', {'sounddevice': fake_sounddevice}), patch("matplotlib.pyplot.show"):
+            speech.plot(show=True)
+
+        fig = plt.gcf()
+        controller = fig._ltbio_speech_playback_controller
+        controller.seek(20)
+
+        self.assertEqual(controller.current_sample, 3)
+        plt.close(fig)
 
 _WAV_PATH = os.path.join("resources", "ADReSSO21_tests", "classify_diagnoses", "audio", "cn", "adrs154.wav")
 

@@ -1006,9 +1006,11 @@ class Biosignal(ABC):
             elif event.has_offset:
                 point_events.append((event.name, event.offset))
 
+        axes = []
         for i, channel_name in zip(range(len(self)), self.channel_names):
             channel = self.__timeseries[channel_name]
             ax = plt.subplot(len(self), 1, i+1, title=channel_name)
+            axes.append(ax)
             ax.title.set_size(10)
             ax.margins(x=0)
             ax.set_xlabel(xlabel, fontsize=8, rotation=0, loc="right")
@@ -1047,11 +1049,15 @@ class Biosignal(ABC):
 
         fig.suptitle((title + ' ' if title is not None else '') + self.name + ' from patient ' + str(self.patient_code), fontsize=11)
         fig.tight_layout()
+        self._decorate_plot(fig, axes, timeseries_plotting_method, title, xlabel, ylabel, show, save_to)
         if save_to is not None:
             fig.savefig(save_to)
         plt.show() if show else plt.close()
 
         #return fig
+
+    def _decorate_plot(self, fig, axes, timeseries_plotting_method, title, xlabel, ylabel, show: bool, save_to: str = None):
+        pass
 
     def plot_spectrum(self, show:bool=True, save_to:str=None):
         '''
